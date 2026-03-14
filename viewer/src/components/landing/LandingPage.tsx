@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import transcriptsData from '../../data/transcripts.json';
 import type { Transcript, AgentInfo } from '../../types/transcript';
 import { TranscriptCard } from './TranscriptCard';
+import { ImageModal } from '../shared/ImageModal';
 
 const getAgentColor = (name: string): string => {
   const lower = name.toLowerCase();
@@ -20,6 +21,7 @@ const getAgentGlow = (name: string): string => {
 };
 
 export const LandingPage: React.FC = () => {
+  const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
   const transcripts = transcriptsData as Transcript[];
 
   const uniqueAgents = useMemo(() => {
@@ -56,6 +58,7 @@ export const LandingPage: React.FC = () => {
                     src={agent.avatar}
                     alt={agent.name}
                     className="landing__avatar"
+                    onClick={() => setModalImage({ src: agent.avatar!, alt: agent.name })}
                   />
                   <span className="landing__avatar-label">{agent.name}</span>
                 </div>
@@ -85,6 +88,14 @@ export const LandingPage: React.FC = () => {
         <div className="landing__footer-rule" />
         <span className="label">Research Harness / {new Date().getFullYear()}</span>
       </footer>
+
+      {modalImage && (
+        <ImageModal
+          src={modalImage.src}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
 
       <style>{`
         .landing {
@@ -123,8 +134,14 @@ export const LandingPage: React.FC = () => {
           height: 64px;
           object-fit: cover;
           border: 1px solid var(--agent-color);
-          transition: box-shadow 150ms;
+          transition: box-shadow 150ms, transform 150ms;
           display: block;
+          cursor: pointer;
+        }
+
+        .landing__avatar:hover {
+          transform: scale(1.05);
+          border-color: white;
         }
 
         .landing__avatar-wrap:hover .landing__avatar {

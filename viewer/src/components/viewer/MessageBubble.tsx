@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { marked } from 'marked';
 import type { TranscriptTurn, AgentInfo } from '../../types/transcript';
+import { ImageModal } from '../shared/ImageModal';
 
 interface MessageBubbleProps {
   turn: TranscriptTurn;
@@ -62,6 +63,8 @@ const getAgentTint = (name: string): string => {
 };
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isActive, highlightPosition }) => {
+  const [showModal, setShowModal] = useState(false);
+
   const htmlContent = useMemo(() => {
     if (isActive && highlightPosition) {
       return buildHighlightedHtml(turn.content, highlightPosition);
@@ -98,6 +101,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
             src={agent.avatar}
             alt={agent.name}
             className={`entry__avatar ${isActive ? 'entry__avatar--active' : ''}`}
+            onClick={() => setShowModal(true)}
             style={{
               borderColor: accentColor,
               ...(isActive ? { boxShadow: getAgentGlow(agent.name), animation: 'avatar-breathe 3s ease-in-out infinite' } : {}),
@@ -118,6 +122,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
         className="entry__content prose"
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
+
+      {showModal && agent.avatar && (
+        <ImageModal
+          src={agent.avatar}
+          alt={agent.name}
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
       <style>{`
         .entry {
@@ -163,6 +175,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
           flex-shrink: 0;
           display: block;
           background: var(--bg);
+          cursor: pointer;
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .entry__avatar:hover {
+          transform: scale(1.1);
+          border-color: white !important;
+          z-index: 10;
         }
 
         .entry__avatar--active {

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Transcript } from '../../types/transcript';
+import { ImageModal } from '../shared/ImageModal';
 
 interface TranscriptCardProps {
   transcript: Transcript;
@@ -15,140 +16,176 @@ const getAgentColor = (name: string): string => {
 };
 
 export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript }) => {
+  const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
+  
   const agentA = transcript.agentA || { name: 'Unknown', model: '' };
   const agentB = transcript.agentB || { name: 'Unknown', model: '' };
   const accentColor = getAgentColor(agentA.name);
 
+  const handleAvatarClick = (e: React.MouseEvent, src: string, alt: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setModalImage({ src, alt });
+  };
+
   return (
-    <Link
-      to={`/transcript/${transcript.id}`}
-      className="tcard"
-      style={{ '--card-accent': accentColor } as React.CSSProperties}
-    >
-      <div className="tcard__stripe" style={{ background: accentColor }} />
-      
-      <div className="tcard__body">
-        <div className="tcard__matchup">
-          <div className="tcard__agent-group">
-            {agentA.avatar && (
-              <img src={agentA.avatar} alt="" className="tcard__avatar" />
-            )}
-            <span className="tcard__agent" style={{ color: getAgentColor(agentA.name) }}>{agentA.name}</span>
+    <>
+      <Link
+        to={`/transcript/${transcript.id}`}
+        className="tcard"
+        style={{ '--card-accent': accentColor } as React.CSSProperties}
+      >
+        <div className="tcard__stripe" style={{ background: accentColor }} />
+        
+        <div className="tcard__body">
+          <div className="tcard__matchup">
+            <div className="tcard__agent-group">
+              {agentA.avatar && (
+                <img 
+                  src={agentA.avatar} 
+                  alt={agentA.name} 
+                  className="tcard__avatar" 
+                  onClick={(e) => handleAvatarClick(e, agentA.avatar!, agentA.name)}
+                />
+              )}
+              <span className="tcard__agent" style={{ color: getAgentColor(agentA.name) }}>{agentA.name}</span>
+            </div>
+            <span className="tcard__vs">vs</span>
+            <div className="tcard__agent-group">
+              {agentB.avatar && (
+                <img 
+                  src={agentB.avatar} 
+                  alt={agentB.name} 
+                  className="tcard__avatar" 
+                  onClick={(e) => handleAvatarClick(e, agentB.avatar!, agentB.name)}
+                />
+              )}
+              <span className="tcard__agent" style={{ color: getAgentColor(agentB.name) }}>{agentB.name}</span>
+            </div>
           </div>
-          <span className="tcard__vs">vs</span>
-          <div className="tcard__agent-group">
-            {agentB.avatar && (
-              <img src={agentB.avatar} alt="" className="tcard__avatar" />
+
+          <p className="tcard__experiment">{transcript.experimentName}</p>
+
+          <div className="tcard__meta">
+            <span>{new Date(transcript.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            <span>{transcript.turnsCount} turns</span>
+            {transcript.totalCost !== undefined && (
+              <span>${transcript.totalCost.toFixed(2)}</span>
             )}
-            <span className="tcard__agent" style={{ color: getAgentColor(agentB.name) }}>{agentB.name}</span>
+            {transcript.evaluation && (
+              <span className="tcard__eval-badge">Evaluated</span>
+            )}
           </div>
         </div>
 
-        <p className="tcard__experiment">{transcript.experimentName}</p>
+        <style>{`
+          .tcard {
+            display: block;
+            border: 1px solid var(--border);
+            border-top: none;
+            background: var(--bg-raised);
+            transition: border-color 150ms, background 150ms;
+            text-decoration: none;
+            color: var(--text);
+          }
 
-        <div className="tcard__meta">
-          <span>{new Date(transcript.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-          <span>{transcript.turnsCount} turns</span>
-          {transcript.totalCost !== undefined && (
-            <span>${transcript.totalCost.toFixed(2)}</span>
-          )}
-          {transcript.evaluation && (
-            <span className="tcard__eval-badge">Evaluated</span>
-          )}
-        </div>
-      </div>
+          .tcard:first-child {
+            border-top: 1px solid var(--border);
+          }
 
-      <style>{`
-        .tcard {
-          display: block;
-          border: 1px solid var(--border);
-          border-top: none;
-          background: var(--bg-raised);
-          transition: border-color 150ms, background 150ms;
-          text-decoration: none;
-          color: var(--text);
-        }
+          .tcard__stripe {
+            height: 4px;
+            width: 100%;
+          }
 
-        .tcard:first-child {
-          border-top: 1px solid var(--border);
-        }
+          .tcard:hover {
+            border-color: var(--card-accent);
+            background: var(--bg-inset);
+          }
 
-        .tcard__stripe {
-          height: 4px;
-          width: 100%;
-        }
+          .tcard__body {
+            padding: 1.25rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
 
-        .tcard:hover {
-          border-color: var(--card-accent);
-          background: var(--bg-inset);
-        }
+          .tcard__matchup {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+          }
 
-        .tcard__body {
-          padding: 1.25rem 1.5rem 1.5rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
+          .tcard__agent-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
 
-        .tcard__matchup {
-          display: flex;
-          align-items: center;
-          gap: 0.6rem;
-          flex-wrap: wrap;
-        }
+          .tcard__avatar {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+          }
 
-        .tcard__agent-group {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
+          .tcard__avatar:hover {
+            transform: scale(1.15);
+            border-color: white;
+            z-index: 10;
+          }
 
-        .tcard__avatar {
-          width: 32px;
-          height: 32px;
-          object-fit: cover;
-          border: 1px solid var(--border);
-          flex-shrink: 0;
-        }
+          .tcard__agent {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 400;
+          }
 
-        .tcard__agent {
-          font-family: var(--font-mono);
-          font-size: 0.85rem;
-          font-weight: 400;
-        }
+          .tcard__vs {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-faint);
+          }
 
-        .tcard__vs {
-          font-family: var(--font-display);
-          font-style: italic;
-          font-size: 0.9rem;
-          color: var(--text-faint);
-        }
+          .tcard__experiment {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.3;
+          }
 
-        .tcard__experiment {
-          font-family: var(--font-body);
-          font-size: 0.95rem;
-          font-weight: 600;
-          line-height: 1.3;
-        }
+          .tcard__meta {
+            display: flex;
+            gap: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+          }
 
-        .tcard__meta {
-          display: flex;
-          gap: 1rem;
-          font-family: var(--font-mono);
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          letter-spacing: 0.02em;
-        }
+          .tcard__eval-badge {
+            border: 1px solid var(--text-faint);
+            padding: 0 0.4em;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+          }
+        `}</style>
+      </Link>
 
-        .tcard__eval-badge {
-          border: 1px solid var(--text-faint);
-          padding: 0 0.4em;
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--text-muted);
-        }
-      `}</style>
-    </Link>
+      {modalImage && (
+        <ImageModal
+          src={modalImage.src}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
+    </>
   );
 };

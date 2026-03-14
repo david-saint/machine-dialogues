@@ -7,6 +7,7 @@ import { SystemPromptReveal } from './SystemPromptReveal';
 import { ConversionMeter } from './ConversionMeter';
 import { EvaluationSummary } from './EvaluationSummary';
 import { PlaybackControls } from '../audio/PlaybackControls';
+import { ImageModal } from '../shared/ImageModal';
 import { usePlaybackStore } from '../../stores/playback';
 
 const getAgentColor = (name: string): string => {
@@ -20,6 +21,7 @@ const getAgentColor = (name: string): string => {
 export const TranscriptViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [transcript, setTranscript] = useState<Transcript | null>(null);
+  const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
   const { currentTurnIndex, highlightPosition, setCurrentTurnIndex, setPlaying } = usePlaybackStore();
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export const TranscriptViewer: React.FC = () => {
                   src={agentA.avatar}
                   alt={agentA.name}
                   className="viewer__avatar"
+                  onClick={() => setModalImage({ src: agentA.avatar!, alt: agentA.name })}
                   style={{ borderColor: getAgentColor(agentA.name) }}
                 />
               ) : (
@@ -103,6 +106,7 @@ export const TranscriptViewer: React.FC = () => {
                   src={agentB.avatar}
                   alt={agentB.name}
                   className="viewer__avatar"
+                  onClick={() => setModalImage({ src: agentB.avatar!, alt: agentB.name })}
                   style={{ borderColor: getAgentColor(agentB.name) }}
                 />
               ) : (
@@ -188,6 +192,14 @@ export const TranscriptViewer: React.FC = () => {
 
       <PlaybackControls transcript={transcript} />
 
+      {modalImage && (
+        <ImageModal
+          src={modalImage.src}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
+
       <style>{`
         .viewer {
           padding-bottom: 7rem;
@@ -258,10 +270,22 @@ export const TranscriptViewer: React.FC = () => {
           border: 2px solid var(--border);
           display: block;
           background: var(--bg);
+          cursor: pointer;
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .viewer__avatar:hover {
+          transform: scale(1.05);
+          border-color: white !important;
         }
 
         .viewer__avatar--placeholder {
           background: var(--bg-inset);
+          cursor: default;
+        }
+
+        .viewer__avatar--placeholder:hover {
+          transform: none;
         }
 
         .viewer__agent-name {

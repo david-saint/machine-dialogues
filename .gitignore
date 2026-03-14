@@ -1,0 +1,35 @@
+# OS-specific
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Node.js
+node_modules/
+viewer/node_modules/
+viewer/dist/
+viewer/.env
+.eslintcache
+
+# IDEs
+.vscode/
+.idea/
+
+# Claude Desktop / AI related
+.claude/settings.local.json
+.gemini/

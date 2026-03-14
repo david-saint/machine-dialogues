@@ -19,6 +19,7 @@ export function parseTranscript(markdown: string, id: string): Transcript {
   const turns: TranscriptTurn[] = [];
   const costSummary: CostSummaryItem[] = [];
   let totalCost = 0;
+  const promptAgentCounts: Record<string, number> = {};
 
   let currentSection = '';
   let currentAgent: AgentInfo | null = null;
@@ -79,11 +80,21 @@ export function parseTranscript(markdown: string, id: string): Transcript {
       }
       continue;
     }
-
     if (currentSection === 'system_prompts') {
       if (line.startsWith('### ')) {
         const agentName = line.replace('### ', '').trim();
-        currentAgent = agents.find(a => a.name === agentName) || null;
+        const occurrenceIndex = promptAgentCounts[agentName] || 0;
+        promptAgentCounts[agentName] = occurrenceIndex + 1;
+
+        // Find the n-th agent with this name in the predefined agents array
+        let foundCount = 0;
+        currentAgent = agents.find(a => {
+          if (a.name === agentName) {
+            if (foundCount === occurrenceIndex) return true;
+            foundCount++;
+          }
+          return false;
+        }) || null;
         continue;
       }
       if (currentAgent && line && !line.startsWith('##')) {

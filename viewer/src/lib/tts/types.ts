@@ -1,6 +1,6 @@
 export type TTSProviderId = 'webspeech' | 'kokoro' | 'elevenlabs';
 
-export type AgentKey = 'claude' | 'gemini';
+export type AgentKey = 'agentA' | 'agentB';
 
 export type HighlightPosition = {
   charIndex: number;

@@ -9,6 +9,7 @@ interface MessageBubbleProps {
   isAgentA: boolean;
   isActive?: boolean;
   highlightPosition?: { charIndex: number; charLength: number } | null;
+  index: number;
 }
 
 const escapeHtml = (value: string): string =>
@@ -62,7 +63,7 @@ const getAgentTint = (name: string): string => {
   return 'transparent';
 };
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isActive, highlightPosition }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isActive, highlightPosition, index }) => {
   const [showModal, setShowModal] = useState(false);
 
   const htmlContent = useMemo(() => {
@@ -84,9 +85,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
     <article
       className={`entry ${isActive ? 'entry--active' : ''}`}
       data-turn={turn.turnNumber}
+      data-index={index}
       style={isActive ? {
         background: getAgentTint(agent.name),
         borderLeft: `3px solid ${accentColor}`,
+        scrollMarginTop: '100px',
       } : undefined}
     >
       <div className="entry__border" style={{ background: accentColor }} />

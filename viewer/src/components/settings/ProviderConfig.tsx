@@ -11,7 +11,7 @@ type ProviderConfigProps = {
   onClearCache: () => Promise<void>;
 };
 
-const agentLabel = (agent: AgentKey) => (agent === 'claude' ? 'Claude' : 'Gemini');
+const agentLabel = (agent: AgentKey) => (agent === 'agentA' ? 'Agent A' : 'Agent B');
 
 export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   provider,
@@ -36,6 +36,11 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   const [voices, setVoices] = useState<TTSProviderVoice[]>([]);
   const [busy, setBusy] = useState(false);
 
+  const getVoiceNameById = (voiceId: string): string => {
+    const match = voices.find((voice) => voice.id === voiceId);
+    return match ? `${match.name} (${match.id})` : voiceId;
+  };
+
   const withBusy = async (job: () => Promise<void>) => {
     setBusy(true);
     try {
@@ -48,7 +53,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   if (provider === 'webspeech') {
     return (
       <div className="provider-grid">
-        {(['claude', 'gemini'] as AgentKey[]).map((agent) => (
+        {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
           <div key={agent} className="provider-card">
             <p className="provider-title">{agentLabel(agent)} Voice</p>
             <label>
@@ -78,7 +83,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
               <input
                 value={webspeech[agent].voiceName ?? ''}
                 onChange={(event) => updateWebSpeech(agent, { voiceName: event.target.value })}
-                placeholder={agent === 'claude' ? 'Daniel' : 'Samantha'}
+                placeholder={agent === 'agentA' ? 'Daniel' : 'Samantha'}
               />
             </label>
           </div>
@@ -113,7 +118,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           </button>
         </div>
 
-        {(['claude', 'gemini'] as AgentKey[]).map((agent) => (
+        {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
           <div key={agent} className="provider-card">
             <p className="provider-title">{agentLabel(agent)} Voice</p>
             <label>
@@ -198,7 +203,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
         </div>
       </div>
 
-      {(['claude', 'gemini'] as AgentKey[]).map((agent) => (
+      {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
         <div key={agent} className="provider-card">
           <p className="provider-title">{agentLabel(agent)} Voice</p>
           <label>
@@ -207,10 +212,12 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
               value={elevenlabs[agent].voiceId}
               onChange={(event) => updateElevenLabs(agent, { voiceId: event.target.value })}
             >
-              <option value={elevenlabs[agent].voiceId}>Current ({elevenlabs[agent].voiceId})</option>
+              <option value={elevenlabs[agent].voiceId}>
+                Current ({getVoiceNameById(elevenlabs[agent].voiceId)})
+              </option>
               {voices.map((voice) => (
                 <option key={voice.id} value={voice.id}>
-                  {voice.name}
+                  {voice.name} ({voice.id})
                 </option>
               ))}
             </select>

@@ -36,9 +36,9 @@ export const TranscriptViewer: React.FC = () => {
 
   useEffect(() => {
     if (currentTurnIndex >= 0) {
-      const element = document.querySelector(`[data-turn="${currentTurnIndex + 1}"]`);
+      const element = document.querySelector(`[data-index="${currentTurnIndex}"]`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   }, [currentTurnIndex]);
@@ -172,6 +172,7 @@ export const TranscriptViewer: React.FC = () => {
           {transcript.turns.map((turn, index) => (
             <MessageBubble
               key={index}
+              index={index}
               turn={turn}
               agent={turn.agentName === agentA.name ? agentA : agentB}
               isAgentA={turn.agentName === agentA.name}

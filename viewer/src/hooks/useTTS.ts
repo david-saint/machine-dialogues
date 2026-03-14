@@ -1,20 +1,15 @@
 import { useCallback, useMemo } from 'react';
 import { ttsOrchestrator } from '../lib/tts/index';
-import type { AgentInfo, TranscriptTurn } from '../types/transcript';
+import type { AgentKey } from '../lib/tts/types';
+import type { TranscriptTurn } from '../types/transcript';
 import { usePlaybackStore } from '../stores/playback';
 import { useToastStore } from '../stores/toast';
 import { useTTSSettingsStore } from '../stores/ttsSettings';
 
-const getAgentKey = (agentName: string): 'claude' | 'gemini' => {
-  if (agentName.toLowerCase().includes('claude')) {
-    return 'claude';
-  }
-  return 'gemini';
-};
-
 type SpeakTurnArgs = {
   turn: TranscriptTurn;
   speed: number;
+  agentKey: AgentKey;
   onEnd?: () => void;
 };
 
@@ -41,12 +36,12 @@ export const useTTS = () => {
     [elevenLabsApiKey, elevenlabs, kokoro, kokoroServerUrl, provider, webspeech],
   );
 
-  const speakTurn = useCallback(async ({ turn, speed, onEnd }: SpeakTurnArgs) => {
+  const speakTurn = useCallback(async ({ turn, speed, agentKey, onEnd }: SpeakTurnArgs) => {
     await ttsOrchestrator.speak(
       {
         text: turn.content,
         speed,
-        agent: getAgentKey(turn.agentName),
+        agent: agentKey,
         settings,
       },
       {
@@ -120,5 +115,3 @@ export const useTTS = () => {
 
   return api;
 };
-
-export const agentKeyFromInfo = (agent: AgentInfo): 'claude' | 'gemini' => getAgentKey(agent.name);

@@ -36,23 +36,23 @@ interface TTSSettingsState {
 }
 
 const initialWebSpeech = (): Record<AgentKey, WebSpeechVoiceConfig> => ({
-  claude: { ...DEFAULT_WEBSPEECH_CONFIG.claude },
-  gemini: { ...DEFAULT_WEBSPEECH_CONFIG.gemini },
+  agentA: { ...DEFAULT_WEBSPEECH_CONFIG.agentA },
+  agentB: { ...DEFAULT_WEBSPEECH_CONFIG.agentB },
 });
 
 const initialKokoro = (): Record<AgentKey, KokoroVoiceConfig> => ({
-  claude: { ...DEFAULT_KOKORO_CONFIG.claude },
-  gemini: { ...DEFAULT_KOKORO_CONFIG.gemini },
+  agentA: { ...DEFAULT_KOKORO_CONFIG.agentA },
+  agentB: { ...DEFAULT_KOKORO_CONFIG.agentB },
 });
 
 const initialElevenLabs = (): Record<AgentKey, ElevenLabsVoiceConfig> => ({
-  claude: {
-    ...DEFAULT_ELEVENLABS_CONFIG.claude,
-    voiceSettings: { ...DEFAULT_ELEVENLABS_CONFIG.claude.voiceSettings },
+  agentA: {
+    ...DEFAULT_ELEVENLABS_CONFIG.agentA,
+    voiceSettings: { ...DEFAULT_ELEVENLABS_CONFIG.agentA.voiceSettings },
   },
-  gemini: {
-    ...DEFAULT_ELEVENLABS_CONFIG.gemini,
-    voiceSettings: { ...DEFAULT_ELEVENLABS_CONFIG.gemini.voiceSettings },
+  agentB: {
+    ...DEFAULT_ELEVENLABS_CONFIG.agentB,
+    voiceSettings: { ...DEFAULT_ELEVENLABS_CONFIG.agentB.voiceSettings },
   },
 });
 

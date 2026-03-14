@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Settings2 } from 'lucide-react';
+import type { AgentKey } from '../../lib/tts/types';
 import { usePlaybackStore } from '../../stores/playback';
 import type { Transcript } from '../../types/transcript';
 import { useTTS } from '../../hooks/useTTS';
@@ -32,6 +33,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
     return 'ElevenLabs';
   }, [provider]);
 
+  const getAgentKeyForTurn = (turnAgentName: string): AgentKey =>
+    turnAgentName === transcript.agentA?.name ? 'agentA' : 'agentB';
+
   useEffect(() => {
     if (isPlaying && currentTurnIndex >= 0 && currentTurnIndex < transcript.turns.length) {
       const turn = transcript.turns[currentTurnIndex];
@@ -40,6 +44,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
         void speakTurn({
           turn,
           speed,
+          agentKey: getAgentKeyForTurn(turn.agentName),
           onEnd: () => {
             if (currentTurnIndex < transcript.turns.length - 1) {
               nextTurn();

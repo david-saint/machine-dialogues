@@ -11,13 +11,13 @@ import type {
 export const DEFAULT_PROVIDER: TTSProviderId = 'webspeech';
 
 export const DEFAULT_WEBSPEECH_CONFIG: Record<AgentKey, WebSpeechVoiceConfig> = {
-  claude: { provider: 'webspeech', pitch: 0.9, rate: 0.85, voiceName: 'Daniel' },
-  gemini: { provider: 'webspeech', pitch: 1.1, rate: 0.95, voiceName: 'Samantha' },
+  agentA: { provider: 'webspeech', pitch: 0.9, rate: 0.85, voiceName: 'Daniel' },
+  agentB: { provider: 'webspeech', pitch: 1.1, rate: 0.95, voiceName: 'Samantha' },
 };
 
 export const DEFAULT_KOKORO_CONFIG: Record<AgentKey, KokoroVoiceConfig> = {
-  claude: { provider: 'kokoro', voiceId: 'am_adam', model: 'kokoro', responseFormat: 'mp3' },
-  gemini: { provider: 'kokoro', voiceId: 'af_heart', model: 'kokoro', responseFormat: 'mp3' },
+  agentA: { provider: 'kokoro', voiceId: 'am_adam', model: 'kokoro', responseFormat: 'mp3' },
+  agentB: { provider: 'kokoro', voiceId: 'af_heart', model: 'kokoro', responseFormat: 'mp3' },
 };
 
 export const DEFAULT_KOKORO_SERVER_URL = 'http://localhost:8880';
@@ -30,13 +30,13 @@ export const DEFAULT_ELEVENLABS_VOICE_SETTINGS: ElevenLabsVoiceSettings = {
 };
 
 export const DEFAULT_ELEVENLABS_CONFIG: Record<AgentKey, ElevenLabsVoiceConfig> = {
-  claude: {
+  agentA: {
     provider: 'elevenlabs',
     voiceId: 'EXAVITQu4vr4xnSDxMaL',
     modelId: 'eleven_multilingual_v2',
     voiceSettings: DEFAULT_ELEVENLABS_VOICE_SETTINGS,
   },
-  gemini: {
+  agentB: {
     provider: 'elevenlabs',
     voiceId: '21m00Tcm4TlvDq8ikWAM',
     modelId: 'eleven_multilingual_v2',

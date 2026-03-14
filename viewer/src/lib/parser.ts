@@ -93,7 +93,7 @@ export function parseTranscript(markdown: string, id: string): Transcript {
     }
 
     if (currentSection === 'conversation') {
-      if (line.startsWith('### ')) {
+      if (line.startsWith('### Turn ') || line.startsWith('### INITIAL ')) {
         if (currentTurn) {
           turns.push(currentTurn as TranscriptTurn);
         }
@@ -117,20 +117,12 @@ export function parseTranscript(markdown: string, id: string): Transcript {
             label: label,
             content: ''
           };
-        } else {
-          // Fallback if format differs slightly
-          currentTurn = {
-            turnNumber: -1,
-            agentName: label.split(':')[0],
-            model: label.split(':')[1]?.trim() || '',
-            label: label,
-            content: ''
-          };
         }
         continue;
       }
 
-      if (currentTurn && line.startsWith('*') && line.endsWith('*') && line.includes('T')) {
+      // Only match timestamp if it's right after the turn header (content is empty)
+      if (currentTurn && !currentTurn.content && line.startsWith('*') && line.endsWith('*') && line.includes('T')) {
         currentTurn.timestamp = line.replace(/\*/g, '').trim();
         continue;
       }

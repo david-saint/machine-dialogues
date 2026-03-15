@@ -11,6 +11,7 @@ class AgentConfig(BaseModel):
     temperature: float = 1.0
     max_tokens: int = 8192
     no_thinking: bool = False
+    google_search: bool = False
 
     @field_validator("provider")
     @classmethod

@@ -7,6 +7,8 @@ const AVATARS: Record<string, string> = {
   'Gemini 3 Flash': '/avatars/gemini-3-flash.png',
   'GPT-5.4': '/avatars/gpt-5.4-xhigh.png',
   'GPT-5.4 (xhigh)': '/avatars/gpt-5.4-xhigh.png',
+  'Researcher': '/avatars/human-researcher.png',
+  'Human Researcher': '/avatars/human-researcher.png',
 };
 
 export function parseTranscript(markdown: string, id: string): Transcript {

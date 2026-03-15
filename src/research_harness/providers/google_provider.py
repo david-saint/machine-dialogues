@@ -7,9 +7,9 @@ from .base import LLMProvider, ProviderResponse
 class GoogleProvider(LLMProvider):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        api_key = os.environ.get("GOOGLE_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GOOGLE_API_KEY environment variable is required")
+            raise ValueError("GEMINI_API_KEY environment variable is required")
         self.client = genai.Client(api_key=api_key)
 
     def send(self, messages: list[dict]) -> ProviderResponse:
@@ -22,6 +22,8 @@ class GoogleProvider(LLMProvider):
             temperature=self.temperature,
             max_output_tokens=self.max_tokens,
         )
+        if self.google_search:
+            config.tools = [types.Tool(google_search=types.GoogleSearch())]
         if self.system_prompt:
             config.system_instruction = self.system_prompt
 

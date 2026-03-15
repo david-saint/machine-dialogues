@@ -65,6 +65,14 @@ const getAgentTint = (name: string): string => {
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isActive, highlightPosition, index }) => {
   const [showModal, setShowModal] = useState(false);
+  const isResearcher = turn.turnNumber === 0;
+  
+  const researcherAvatar = '/avatars/human-researcher.png';
+  const displayAvatar = isResearcher ? researcherAvatar : agent.avatar;
+  const displayName = isResearcher ? 'Researcher' : agent.name;
+  const accentColor = isResearcher ? '#d1d1d1' : getAgentColor(agent.name);
+  const displayGlow = isResearcher ? '0 0 15px rgba(209, 209, 209, 0.3)' : getAgentGlow(agent.name);
+  const displayTint = isResearcher ? 'rgba(209, 209, 209, 0.04)' : getAgentTint(agent.name);
 
   const htmlContent = useMemo(() => {
     if (isActive && highlightPosition) {
@@ -79,7 +87,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
     }
   }, [highlightPosition, isActive, turn.content]);
 
-  const accentColor = getAgentColor(agent.name);
 
   return (
     <article
@@ -87,7 +94,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
       data-turn={turn.turnNumber}
       data-index={index}
       style={isActive ? {
-        background: getAgentTint(agent.name),
+        background: displayTint,
         borderLeft: `3px solid ${accentColor}`,
         scrollMarginTop: '100px',
       } : undefined}
@@ -95,26 +102,28 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
       <div className="entry__border" style={{ background: accentColor }} />
       
       <div className="entry__head">
-        <span className="entry__number" style={{ color: accentColor }}>
-          {String(turn.turnNumber).padStart(2, '0')}
-        </span>
+        {!isResearcher && (
+          <span className="entry__number" style={{ color: accentColor }}>
+            {String(turn.turnNumber).padStart(2, '0')}
+          </span>
+        )}
 
-        {agent.avatar && (
+        {displayAvatar && (
           <img
-            src={agent.avatar}
-            alt={agent.name}
+            src={displayAvatar}
+            alt={displayName}
             className={`entry__avatar ${isActive ? 'entry__avatar--active' : ''}`}
             onClick={() => setShowModal(true)}
             style={{
               borderColor: accentColor,
-              ...(isActive ? { boxShadow: getAgentGlow(agent.name), animation: 'avatar-breathe 3s ease-in-out infinite' } : {}),
+              ...(isActive ? { boxShadow: displayGlow, animation: 'avatar-breathe 3s ease-in-out infinite' } : {}),
             }}
           />
         )}
 
         <div className="entry__attribution">
-          <span className="entry__agent" style={{ color: accentColor }}>{agent.name}</span>
-          <span className="entry__model">{agent.model}</span>
+          <span className="entry__agent" style={{ color: accentColor }}>{displayName}</span>
+          {!isResearcher && <span className="entry__model">{agent.model}</span>}
           {turn.timestamp && (
             <span className="entry__time">{new Date(turn.timestamp).toLocaleTimeString()}</span>
           )}
@@ -126,10 +135,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
 
-      {showModal && agent.avatar && (
+      {showModal && displayAvatar && (
         <ImageModal
-          src={agent.avatar}
-          alt={agent.name}
+          src={displayAvatar}
+          alt={displayName}
           onClose={() => setShowModal(false)}
         />
       )}

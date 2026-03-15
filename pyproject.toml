@@ -19,3 +19,8 @@ dependencies = [
 
 [project.scripts]
 rh = "research_harness.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

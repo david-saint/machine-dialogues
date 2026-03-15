@@ -5,6 +5,7 @@ import { ImageModal } from '../shared/ImageModal';
 
 interface TranscriptCardProps {
   transcript: Transcript;
+  featured?: boolean;
 }
 
 const getAgentColor = (name: string): string => {
@@ -15,9 +16,9 @@ const getAgentColor = (name: string): string => {
   return 'var(--text-faint)';
 };
 
-export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript }) => {
+export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, featured }) => {
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
-  
+
   const agentA = transcript.agentA || { name: 'Unknown', model: '' };
   const agentB = transcript.agentB || { name: 'Unknown', model: '' };
   const accentColor = getAgentColor(agentA.name);
@@ -32,12 +33,13 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript }) =>
     <>
       <Link
         to={`/transcript/${transcript.id}`}
-        className="tcard"
+        className={`tcard${featured ? ' tcard--featured' : ''}`}
         style={{ '--card-accent': accentColor } as React.CSSProperties}
       >
-        <div className="tcard__stripe" style={{ background: accentColor }} />
+        <div className="tcard__stripe" style={{ background: featured ? `linear-gradient(90deg, ${accentColor}, var(--text), ${accentColor})` : accentColor }} />
         
         <div className="tcard__body">
+          {featured && <span className="tcard__featured-badge">Featured</span>}
           <div className="tcard__matchup">
             <div className="tcard__agent-group">
               {agentA.avatar && (
@@ -175,6 +177,55 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript }) =>
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--text-muted);
+          }
+
+          /* ---- Featured card ---- */
+
+          .tcard--featured {
+            border-color: var(--border-emphasis);
+            background: var(--bg-inset);
+            position: relative;
+          }
+
+          .tcard--featured .tcard__stripe {
+            height: 6px;
+          }
+
+          .tcard--featured:hover {
+            border-color: var(--text-muted);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.04);
+          }
+
+          .tcard--featured .tcard__avatar {
+            width: 48px;
+            height: 48px;
+          }
+
+          .tcard--featured .tcard__agent {
+            font-size: 1rem;
+          }
+
+          .tcard--featured .tcard__vs {
+            font-size: 1.1rem;
+          }
+
+          .tcard--featured .tcard__experiment {
+            font-size: 1.15rem;
+            font-family: var(--font-display);
+            font-style: italic;
+            font-weight: 400;
+          }
+
+          .tcard__featured-badge {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-emphasis);
+            padding: 0.15em 0.6em;
+            align-self: flex-start;
           }
         `}</style>
       </Link>

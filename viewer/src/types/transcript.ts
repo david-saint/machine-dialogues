@@ -48,6 +48,7 @@ export type Transcript = {
     agentB?: SelfReport;
   };
   evaluation?: EvaluationSummary;
+  featured?: boolean;
 };
 
 export const TRANSCRIPT_VERSION = '1.0';

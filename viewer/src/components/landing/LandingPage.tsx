@@ -24,6 +24,15 @@ export const LandingPage: React.FC = () => {
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
   const transcripts = transcriptsData as Transcript[];
 
+  const { featured, rest } = useMemo(() => {
+    const featured: Transcript[] = [];
+    const rest: Transcript[] = [];
+    for (const t of transcripts) {
+      (t.featured ? featured : rest).push(t);
+    }
+    return { featured, rest };
+  }, [transcripts]);
+
   const uniqueAgents = useMemo(() => {
     const seen = new Map<string, AgentInfo>();
     for (const t of transcripts) {
@@ -74,14 +83,22 @@ export const LandingPage: React.FC = () => {
         <div className="landing__hero-rule" />
       </header>
 
+      {featured.length > 0 && (
+        <section className="landing__featured container">
+          {featured.map((t) => (
+            <TranscriptCard key={t.id} transcript={t} featured />
+          ))}
+        </section>
+      )}
+
       <section className="landing__grid container">
-        {transcripts.length > 0 ? (
-          transcripts.map((t) => (
+        {rest.length > 0 ? (
+          rest.map((t) => (
             <TranscriptCard key={t.id} transcript={t} />
           ))
-        ) : (
+        ) : transcripts.length === 0 ? (
           <p className="landing__empty">No transcripts found. Run <code>npm run parse</code> to generate data.</p>
-        )}
+        ) : null}
       </section>
 
       <footer className="landing__footer container">
@@ -174,10 +191,21 @@ export const LandingPage: React.FC = () => {
           width: 100%;
         }
 
+        .landing__featured {
+          padding-top: 2.5rem;
+          padding-bottom: 0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .landing__featured .tcard {
+          max-width: 600px;
+        }
+
         .landing__grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-          padding-top: 0;
+          padding-top: 2rem;
           padding-bottom: 6rem;
           flex: 1;
         }

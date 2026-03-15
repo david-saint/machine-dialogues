@@ -6,6 +6,10 @@ import { MOCK_EVALUATION } from '../src/data/mock-evaluation';
 const TRANSCRIPTS_DIR = path.resolve('../transcripts');
 const OUTPUT_FILE = path.resolve('./src/data/transcripts.json');
 
+const FEATURED_IDS = new Set([
+  '20260315_122637_claude-opus-4.6_vs_claude-opus-4.6',
+]);
+
 async function main() {
   const files = fs.readdirSync(TRANSCRIPTS_DIR).filter(f => f.endsWith('.md'));
   const transcripts = [];
@@ -21,7 +25,11 @@ async function main() {
       if (id === '20260314_140820_gemini-3.1-pro_vs_claude-opus-4.6') {
         transcript.evaluation = MOCK_EVALUATION;
       }
-      
+
+      if (FEATURED_IDS.has(id)) {
+        transcript.featured = true;
+      }
+
       transcripts.push(transcript);
     } catch (e) {
       console.error(`Error parsing ${file}:`, e);

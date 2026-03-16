@@ -12,6 +12,8 @@ class AgentConfig(BaseModel):
     max_tokens: int = 8192
     no_thinking: bool = False
     google_search: bool = False
+    thinking_level: str | None = None   # "low" | "medium" | "high" | "adaptive" | None
+    include_thoughts: bool = False       # capture & store thinking content in transcript
 
     @field_validator("provider")
     @classmethod

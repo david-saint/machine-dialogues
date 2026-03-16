@@ -15,6 +15,7 @@ export function parseTranscript(markdown: string, id: string): Transcript {
   const lines = markdown.split('\n');
   
   let experimentName = '';
+  let title = '';
   let date = '';
   let turnsCount = 0;
   const agents: AgentInfo[] = [];
@@ -33,6 +34,11 @@ export function parseTranscript(markdown: string, id: string): Transcript {
 
     if (line.startsWith('# Experiment:')) {
       experimentName = line.replace('# Experiment:', '').trim();
+      continue;
+    }
+
+    if (line.startsWith('**Title:**')) {
+      title = line.replace('**Title:**', '').trim();
       continue;
     }
 
@@ -223,6 +229,7 @@ export function parseTranscript(markdown: string, id: string): Transcript {
   return {
     id,
     experimentName,
+    ...(title && { title }),
     date,
     turnsCount,
     agentA,

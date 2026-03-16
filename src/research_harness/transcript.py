@@ -111,6 +111,8 @@ def save_transcript(
 
     lines = []
     lines.append(f"# Experiment: {config.agent_a.name} vs {config.agent_b.name}")
+    if config.title:
+        lines.append(f"**Title:** {config.title}")
     lines.append(f"**Date:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
     lines.append(f"**Turns:** {config.turns}")
     lines.append("")

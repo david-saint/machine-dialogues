@@ -66,7 +66,10 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
             </div>
           </div>
 
-          <p className="tcard__experiment">{transcript.experimentName}</p>
+          <p className="tcard__experiment">{transcript.title || transcript.experimentName}</p>
+          {transcript.title && (
+            <p className="tcard__subtitle">{transcript.experimentName}</p>
+          )}
 
           <div className="tcard__meta">
             <span>{new Date(transcript.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -159,6 +162,13 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
             font-size: 0.95rem;
             font-weight: 600;
             line-height: 1.3;
+          }
+
+          .tcard__subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: -0.4rem;
           }
 
           .tcard__meta {

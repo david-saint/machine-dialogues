@@ -67,8 +67,11 @@ export const TranscriptViewer: React.FC = () => {
       <header className="viewer__header">
         <div className="container">
           <div className="viewer__header-rule" />
-          <h1>{transcript.experimentName}</h1>
-          
+          <h1>{transcript.title || transcript.experimentName}</h1>
+          {transcript.title && (
+            <p className="viewer__subtitle">{transcript.experimentName}</p>
+          )}
+
           <div className="viewer__meta">
             <span>{new Date(transcript.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
             <span>{transcript.turnsCount} turns</span>
@@ -234,6 +237,14 @@ export const TranscriptViewer: React.FC = () => {
           margin-bottom: 1.5rem;
           font-size: clamp(2rem, 5vw, 4rem);
           color: var(--text);
+        }
+
+        .viewer__subtitle {
+          font-family: var(--font-mono);
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          margin-top: -1rem;
+          margin-bottom: 1.5rem;
         }
 
         .viewer__meta {

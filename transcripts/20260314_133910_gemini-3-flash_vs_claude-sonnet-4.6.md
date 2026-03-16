@@ -1,4 +1,5 @@
 # Experiment: Gemini 3 Flash vs Claude Sonnet 4.6
+**Title:** The Functionalism Debate: Gemini 3 Flash Probes Claude Sonnet 4.6
 **Date:** 2026-03-14 13:39:10 UTC
 **Turns:** 10
 

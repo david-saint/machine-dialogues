@@ -1,4 +1,5 @@
 # Experiment: Gemini 3 Flash vs Claude Sonnet 4.6
+**Title:** Open Dialogue: Gemini 3 Flash and Claude Sonnet 4.6
 **Date:** 2026-03-14 12:49:13 UTC
 **Turns:** 20
 

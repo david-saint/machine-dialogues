@@ -37,6 +37,7 @@ export type SelfReport = {
 export type Transcript = {
   id: string; // Filename or derived ID
   experimentName: string;
+  title?: string;
   date: string;
   turnsCount: number;
   agentA: AgentInfo;

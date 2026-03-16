@@ -29,6 +29,7 @@ class ExperimentConfig(BaseModel):
     agent_b: AgentConfig
     turns: int = 20
     initial_message: str = "Hi"
+    title: str | None = None
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ExperimentConfig":

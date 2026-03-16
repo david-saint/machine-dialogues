@@ -36,11 +36,11 @@ export const LandingPage: React.FC = () => {
   const uniqueAgents = useMemo(() => {
     const seen = new Map<string, AgentInfo>();
     for (const t of transcripts) {
-      if (t.agentA?.avatar && !seen.has(t.agentA.model)) {
-        seen.set(t.agentA.model, t.agentA);
+      if (t.agentA?.avatar && !seen.has(t.agentA.name)) {
+        seen.set(t.agentA.name, t.agentA);
       }
-      if (t.agentB?.avatar && !seen.has(t.agentB.model)) {
-        seen.set(t.agentB.model, t.agentB);
+      if (t.agentB?.avatar && !seen.has(t.agentB.name)) {
+        seen.set(t.agentB.name, t.agentB);
       }
     }
     return Array.from(seen.values());
@@ -56,7 +56,7 @@ export const LandingPage: React.FC = () => {
             <div className="landing__avatars">
               {uniqueAgents.map((agent) => (
                 <div
-                  key={agent.model}
+                  key={agent.name}
                   className="landing__avatar-wrap"
                   style={{
                     '--agent-color': getAgentColor(agent.name),

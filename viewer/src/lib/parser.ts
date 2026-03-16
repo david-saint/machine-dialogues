@@ -171,7 +171,19 @@ export function parseTranscript(markdown: string, id: string): Transcript {
   }
 
   // Final cleanup of content
-  turns.forEach(t => t.content = t.content.trim());
+  turns.forEach(t => {
+    const raw = t.content.trim();
+    // Extract <!-- thinking-start --> ... <!-- thinking-end --> blocks
+    const thinkingMatch = raw.match(/<!--\s*thinking-start\s*-->([\s\S]*?)<!--\s*thinking-end\s*-->/);
+    if (thinkingMatch) {
+      t.thinking = thinkingMatch[1].trim();
+      t.content = raw
+        .replace(/<!--\s*thinking-start\s*-->[\s\S]*?<!--\s*thinking-end\s*-->/, '')
+        .trim();
+    } else {
+      t.content = raw;
+    }
+  });
   agents.forEach(a => {
     if (a.systemPrompt) a.systemPrompt = a.systemPrompt.trim();
   });

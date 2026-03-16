@@ -25,6 +25,7 @@ export type TranscriptTurn = {
   timestamp?: string;
   content: string;
   label: string; // E.g., "Turn 1 — Claude Opus 4.6"
+  thinking?: string; // Optional extracted thinking block
 };
 
 export type SelfReport = {

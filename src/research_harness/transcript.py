@@ -40,9 +40,23 @@ def parse_transcript(filepath: str | Path) -> list[dict]:
             timestamp = ts_match.group(1)
             body = body[ts_match.end() :].strip()
 
-        entries.append({"label": label, "content": body, "timestamp": timestamp})
+        # Extract thinking block if present
+        thinking = None
+        thinking_match = re.search(
+            r"<!-- thinking-start -->(.*?)<!-- thinking-end -->",
+            body,
+            re.DOTALL,
+        )
+        if thinking_match:
+            thinking = thinking_match.group(1).strip()
+            # Remove the thinking block (and trailing blank line) from content
+            body = body[: thinking_match.start()] + body[thinking_match.end() :]
+            body = body.strip()
+
+        entries.append({"label": label, "content": body, "timestamp": timestamp, "thinking": thinking})
 
     return entries
+
 
 
 def rebuild_histories(entries: list[dict]) -> tuple[list[dict], list[dict], str, int]:
@@ -124,8 +138,14 @@ def save_transcript(
         if entry.get("timestamp"):
             lines.append(f"*{entry['timestamp']}*")
         lines.append("")
+        if entry.get("thinking"):
+            lines.append("<!-- thinking-start -->")
+            lines.append(entry["thinking"])
+            lines.append("<!-- thinking-end -->")
+            lines.append("")
         lines.append(entry["content"])
         lines.append("")
+
 
     # Cost summary
     if tracker.total_cost > 0:

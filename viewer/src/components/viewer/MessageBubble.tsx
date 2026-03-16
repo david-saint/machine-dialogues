@@ -87,6 +87,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
     }
   }, [highlightPosition, isActive, turn.content]);
 
+  const thinkingHtml = useMemo(() => {
+    if (!turn.thinking) return '';
+    try {
+      return marked.parse(turn.thinking) as string;
+    } catch {
+      return turn.thinking;
+    }
+  }, [turn.thinking]);
+
 
   return (
     <article
@@ -129,6 +138,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
           )}
         </div>
       </div>
+
+      {turn.thinking && (
+        <details className="entry__thinking">
+          <summary className="entry__thinking-summary">
+            <span className="entry__thinking-icon">🧠</span>
+            <span>Thinking</span>
+          </summary>
+          <div
+            className="entry__thinking-content prose"
+            dangerouslySetInnerHTML={{ __html: thinkingHtml }}
+            style={{ borderLeftColor: accentColor }}
+          />
+        </details>
+      )}
 
       <div
         className="entry__content prose"
@@ -225,6 +248,60 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
           font-size: 0.65rem;
           color: var(--text-faint);
         }
+
+        .entry__thinking {
+          margin-bottom: 1.25rem;
+          padding-left: 4rem;
+        }
+
+        .entry__thinking-summary {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          cursor: pointer;
+          user-select: none;
+          font-size: 0.72rem;
+          font-family: var(--font-mono);
+          color: var(--text-muted);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          list-style: none;
+          outline: none;
+          padding: 0.25rem 0;
+          transition: color 0.15s ease;
+        }
+
+        .entry__thinking-summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .entry__thinking-summary:hover {
+          color: var(--text);
+        }
+
+        .entry__thinking-icon {
+          font-size: 0.85rem;
+          opacity: 0.6;
+        }
+
+        .entry__thinking[open] .entry__thinking-summary {
+          color: var(--text);
+          margin-bottom: 0.75rem;
+        }
+
+        .entry__thinking-content {
+          font-size: 0.82rem;
+          font-style: italic;
+          line-height: 1.65;
+          color: var(--text-muted);
+          padding: 0.75rem 1rem;
+          border-left: 2px solid currentColor;
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 0 4px 4px 0;
+        }
+
+        .entry__thinking-content p:first-child { margin-top: 0; }
+        .entry__thinking-content p:last-child  { margin-bottom: 0; }
 
         .entry__content {
           padding-left: 4rem;

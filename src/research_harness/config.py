@@ -18,7 +18,7 @@ class AgentConfig(BaseModel):
     @field_validator("provider")
     @classmethod
     def validate_provider(cls, v: str) -> str:
-        valid = {"openrouter", "openai", "anthropic", "google"}
+        valid = {"openrouter", "openai", "anthropic", "google", "mock"}
         if v not in valid:
             raise ValueError(f"Provider must be one of: {', '.join(sorted(valid))}")
         return v

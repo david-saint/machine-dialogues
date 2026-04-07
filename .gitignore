@@ -33,3 +33,4 @@ viewer/.env
 # Claude Desktop / AI related
 .claude/settings.local.json
 .gemini/
+.opencode/

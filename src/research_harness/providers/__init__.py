@@ -3,12 +3,14 @@ from .openrouter import OpenRouterProvider
 from .openai_provider import OpenAIProvider
 from .anthropic_provider import AnthropicProvider
 from .google_provider import GoogleProvider
+from .mock_provider import MockProvider
 
 PROVIDERS = {
     "openrouter": OpenRouterProvider,
     "openai": OpenAIProvider,
     "anthropic": AnthropicProvider,
     "google": GoogleProvider,
+    "mock": MockProvider,
 }
 
 

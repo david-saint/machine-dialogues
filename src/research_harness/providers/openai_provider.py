@@ -13,8 +13,9 @@ class OpenAIProvider(LLMProvider):
 
     def send(self, messages: list[dict]) -> ProviderResponse:
         msgs = []
-        if self.system_prompt:
-            msgs.append({"role": "system", "content": self.system_prompt})
+        system = self.get_system_prompt()
+        if system:
+            msgs.append({"role": "system", "content": system})
         msgs.extend(messages)
 
         response = self.client.chat.completions.create(

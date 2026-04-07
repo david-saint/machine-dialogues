@@ -61,6 +61,10 @@ def run_experiment(config: ExperimentConfig):
             if interrupted:
                 break
 
+            # Update turn counters in system prompts
+            provider_a.set_turn_info(turn, config.turns)
+            provider_b.set_turn_info(turn, config.turns)
+
             # Agent A responds
             history_a.append({"role": "user", "content": current_message})
             try:
@@ -173,6 +177,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
     try:
         # Handle incomplete last turn — Agent B still needs to respond
         if not last_turn_complete and not interrupted:
+            provider_b.set_turn_info(last_turn, config.turns)
             history_b.append({"role": "user", "content": current_message})
             try:
                 response_b = provider_b.send(history_b)
@@ -198,6 +203,10 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
         for turn in range(start_turn, start_turn + additional_turns):
             if interrupted:
                 break
+
+            # Update turn counters in system prompts
+            provider_a.set_turn_info(turn, config.turns)
+            provider_b.set_turn_info(turn, config.turns)
 
             # Agent A responds
             history_a.append({"role": "user", "content": current_message})

@@ -18,8 +18,9 @@ class AnthropicProvider(LLMProvider):
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
         }
-        if self.system_prompt:
-            kwargs["system"] = self.system_prompt
+        system = self.get_system_prompt()
+        if system:
+            kwargs["system"] = system
 
         response = self.client.messages.create(**kwargs)
 

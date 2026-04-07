@@ -24,8 +24,9 @@ class GoogleProvider(LLMProvider):
         )
         if self.google_search:
             config.tools = [types.Tool(google_search=types.GoogleSearch())]
-        if self.system_prompt:
-            config.system_instruction = self.system_prompt
+        system = self.get_system_prompt()
+        if system:
+            config.system_instruction = system
 
         response = self.client.models.generate_content(
             model=self.model,

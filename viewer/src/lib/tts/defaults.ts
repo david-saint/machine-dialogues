@@ -86,11 +86,20 @@ export const GEMINI_VOICES: Array<{ id: string; name: string }> = [
   { id: 'Sulafat', name: 'Sulafat — Warm' },
 ];
 
-export const DEFAULT_GEMINI_STYLE_INSTRUCTION =
+// Kept for the settings-store migration: users who still have this persisted
+// get upgraded to the calmer default below.
+export const LEGACY_GEMINI_STYLE_INSTRUCTION =
   'You are {speaker}, locked in a heated live debate against {opponent}. ' +
   'Deliver the following argument exactly as written, as a real debater would — impassioned and insistent, ' +
   'with rising intensity on key points, sharp rhetorical emphasis, and the urgency of someone who must win ' +
   'over the room right now';
+
+export const DEFAULT_GEMINI_STYLE_INSTRUCTION =
+  'You are {speaker}, in a live debate against {opponent}. Speak with the calm, measured confidence ' +
+  'of a seasoned debater: composed, conversational, deliberate pacing, letting quiet conviction carry ' +
+  'the argument. Keep the delivery even and natural throughout, and reserve genuine passion for the one ' +
+  'or two moments where the point truly hinges — a brief rise in intensity, then settle back to composure. ' +
+  'Never theatrical, never breathless';
 
 export const DEFAULT_GEMINI_CONFIG: Record<AgentKey, GeminiVoiceConfig> = {
   agentA: {

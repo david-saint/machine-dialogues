@@ -170,6 +170,9 @@ export class GeminiProvider implements TTSProvider {
   }
 }
 
+// Vague prompts can make the model read the style direction aloud; the docs'
+// mitigation is a synthesis preamble plus an explicit label marking where the
+// spoken transcript begins.
 export const buildDebatePrompt = (
   styleInstruction: string,
   text: string,
@@ -184,7 +187,15 @@ export const buildDebatePrompt = (
   if (!instruction) {
     return text;
   }
-  return `${instruction}:\n\n${text}`;
+  return [
+    "Synthesize speech for one debater's turn in a live debate. Read aloud ONLY the text under TRANSCRIPT.",
+    '',
+    "### DIRECTOR'S NOTES",
+    `${instruction}.`,
+    '',
+    '#### TRANSCRIPT',
+    text,
+  ].join('\n');
 };
 
 // Gemini TTS returns mimeType like "audio/L16;codec=pcm;rate=24000".

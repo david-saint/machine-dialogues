@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GEMINI_TTS_MODELS, GEMINI_VOICES } from '../../lib/tts/defaults';
 import type { AgentKey, TTSProviderId, TTSProviderVoice } from '../../lib/tts/types';
 import { useTTSSettingsStore } from '../../stores/ttsSettings';
 
@@ -7,6 +8,7 @@ type ProviderConfigProps = {
   cacheSizeLabel: string;
   onCheckKokoro: (serverUrl: string) => Promise<boolean>;
   onValidateElevenLabs: (apiKey: string) => Promise<boolean>;
+  onValidateGemini: (apiKey: string) => Promise<boolean>;
   onLoadElevenLabsVoices: (apiKey: string) => Promise<TTSProviderVoice[]>;
   onClearCache: () => Promise<void>;
 };
@@ -18,19 +20,24 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   cacheSizeLabel,
   onCheckKokoro,
   onValidateElevenLabs,
+  onValidateGemini,
   onLoadElevenLabsVoices,
   onClearCache,
 }) => {
   const webspeech = useTTSSettingsStore((state) => state.webspeech);
   const kokoro = useTTSSettingsStore((state) => state.kokoro);
   const elevenlabs = useTTSSettingsStore((state) => state.elevenlabs);
+  const gemini = useTTSSettingsStore((state) => state.gemini);
   const kokoroServerUrl = useTTSSettingsStore((state) => state.kokoroServerUrl);
   const elevenLabsApiKey = useTTSSettingsStore((state) => state.elevenLabsApiKey);
+  const geminiApiKey = useTTSSettingsStore((state) => state.geminiApiKey);
   const updateWebSpeech = useTTSSettingsStore((state) => state.updateWebSpeech);
   const updateKokoro = useTTSSettingsStore((state) => state.updateKokoro);
   const updateElevenLabs = useTTSSettingsStore((state) => state.updateElevenLabs);
+  const updateGemini = useTTSSettingsStore((state) => state.updateGemini);
   const setKokoroServerUrl = useTTSSettingsStore((state) => state.setKokoroServerUrl);
   const setElevenLabsApiKey = useTTSSettingsStore((state) => state.setElevenLabsApiKey);
+  const setGeminiApiKey = useTTSSettingsStore((state) => state.setGeminiApiKey);
 
   const [status, setStatus] = useState<string>('');
   const [voices, setVoices] = useState<TTSProviderVoice[]>([]);
@@ -146,6 +153,90 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
                 <option value="mp3">mp3</option>
                 <option value="wav">wav</option>
               </select>
+            </label>
+          </div>
+        ))}
+
+        <div className="provider-card provider-card--full">
+          <p className="provider-title">Audio Cache</p>
+          <p className="provider-meta">Current cache size: {cacheSizeLabel}</p>
+          <button disabled={busy} onClick={() => withBusy(onClearCache)}>
+            Clear Audio Cache
+          </button>
+        </div>
+
+        {status && <p className="provider-status">{status}</p>}
+      </div>
+    );
+  }
+
+  if (provider === 'gemini') {
+    return (
+      <div className="provider-grid">
+        <div className="provider-card provider-card--full">
+          <p className="provider-title">Gemini API</p>
+          <label>
+            API Key
+            <input
+              type="password"
+              value={geminiApiKey}
+              onChange={(event) => setGeminiApiKey(event.target.value)}
+              placeholder="AIza..."
+            />
+          </label>
+          <button
+            disabled={busy || !geminiApiKey.trim()}
+            onClick={() =>
+              withBusy(async () => {
+                const ok = await onValidateGemini(geminiApiKey);
+                setStatus(ok ? 'API key validated' : 'API key invalid');
+              })
+            }
+          >
+            Validate Key
+          </button>
+          <p className="provider-meta">
+            Each turn is voiced in character — use {'{speaker}'} and {'{opponent}'} in the debate
+            direction to reference the agents by name.
+          </p>
+        </div>
+
+        {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
+          <div key={agent} className="provider-card">
+            <p className="provider-title">{agentLabel(agent)} Voice</p>
+            <label>
+              Voice
+              <select
+                value={gemini[agent].voiceName}
+                onChange={(event) => updateGemini(agent, { voiceName: event.target.value })}
+              >
+                {GEMINI_VOICES.map((voice) => (
+                  <option key={voice.id} value={voice.id}>
+                    {voice.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Model
+              <select
+                value={gemini[agent].model}
+                onChange={(event) => updateGemini(agent, { model: event.target.value })}
+              >
+                {GEMINI_TTS_MODELS.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Debate Direction
+              <textarea
+                rows={5}
+                value={gemini[agent].styleInstruction}
+                onChange={(event) => updateGemini(agent, { styleInstruction: event.target.value })}
+              />
             </label>
           </div>
         ))}

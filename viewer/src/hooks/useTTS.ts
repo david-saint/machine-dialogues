@@ -10,7 +10,16 @@ type SpeakTurnArgs = {
   turn: TranscriptTurn;
   speed: number;
   agentKey: AgentKey;
+  speakerName?: string;
+  opponentName?: string;
   onEnd?: () => void;
+};
+
+const PROVIDER_LABELS: Record<string, string> = {
+  webspeech: 'Web Speech',
+  kokoro: 'Kokoro',
+  elevenlabs: 'ElevenLabs',
+  gemini: 'Gemini',
 };
 
 export const useTTS = () => {
@@ -21,8 +30,10 @@ export const useTTS = () => {
   const webspeech = useTTSSettingsStore((state) => state.webspeech);
   const kokoro = useTTSSettingsStore((state) => state.kokoro);
   const elevenlabs = useTTSSettingsStore((state) => state.elevenlabs);
+  const gemini = useTTSSettingsStore((state) => state.gemini);
   const kokoroServerUrl = useTTSSettingsStore((state) => state.kokoroServerUrl);
   const elevenLabsApiKey = useTTSSettingsStore((state) => state.elevenLabsApiKey);
+  const geminiApiKey = useTTSSettingsStore((state) => state.geminiApiKey);
 
   const settings = useMemo(
     () => ({
@@ -30,19 +41,22 @@ export const useTTS = () => {
       webspeech,
       kokoro,
       elevenlabs,
+      gemini,
       kokoroServerUrl,
       elevenLabsApiKey,
+      geminiApiKey,
     }),
-    [elevenLabsApiKey, elevenlabs, kokoro, kokoroServerUrl, provider, webspeech],
+    [elevenLabsApiKey, elevenlabs, gemini, geminiApiKey, kokoro, kokoroServerUrl, provider, webspeech],
   );
 
-  const speakTurn = useCallback(async ({ turn, speed, agentKey, onEnd }: SpeakTurnArgs) => {
+  const speakTurn = useCallback(async ({ turn, speed, agentKey, speakerName, opponentName, onEnd }: SpeakTurnArgs) => {
     await ttsOrchestrator.speak(
       {
         text: turn.content,
         speed,
         agent: agentKey,
         settings,
+        context: { speakerName: speakerName ?? turn.agentName, opponentName },
       },
       {
         onLoadingChange: (loading) => setLoading(loading),
@@ -61,7 +75,7 @@ export const useTTS = () => {
           });
         },
         onFallback: (failedProvider) => {
-          const label = failedProvider === 'kokoro' ? 'Kokoro' : 'ElevenLabs';
+          const label = PROVIDER_LABELS[failedProvider] ?? failedProvider;
           pushToast({
             message: `${label} unavailable, using Web Speech API`,
             level: 'warning',
@@ -83,6 +97,7 @@ export const useTTS = () => {
   const setPlaybackRate = useCallback((rate: number) => ttsOrchestrator.setPlaybackRate(rate), []);
   const checkKokoroConnection = useCallback((serverUrl: string) => ttsOrchestrator.checkKokoroConnection(serverUrl), []);
   const validateElevenLabsKey = useCallback((apiKey: string) => ttsOrchestrator.validateElevenLabsKey(apiKey), []);
+  const validateGeminiKey = useCallback((apiKey: string) => ttsOrchestrator.validateGeminiKey(apiKey), []);
   const getElevenLabsVoices = useCallback((apiKey: string) => ttsOrchestrator.getElevenLabsVoices(apiKey), []);
   const clearAudioCache = useCallback(() => ttsOrchestrator.clearCache(), []);
   const getCacheSizeBytes = useCallback(() => ttsOrchestrator.getCacheSizeBytes(), []);
@@ -96,6 +111,7 @@ export const useTTS = () => {
     setPlaybackRate,
     checkKokoroConnection,
     validateElevenLabsKey,
+    validateGeminiKey,
     getElevenLabsVoices,
     clearAudioCache,
     getCacheSizeBytes,
@@ -111,6 +127,7 @@ export const useTTS = () => {
     speakTurn,
     stop,
     validateElevenLabsKey,
+    validateGeminiKey,
   ]);
 
   return api;

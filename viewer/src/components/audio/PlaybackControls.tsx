@@ -30,6 +30,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
   const providerLabel = useMemo(() => {
     if (provider === 'webspeech') return 'Web Speech';
     if (provider === 'kokoro') return 'Kokoro';
+    if (provider === 'gemini') return 'Gemini';
     return 'ElevenLabs';
   }, [provider]);
 
@@ -41,10 +42,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
       const turn = transcript.turns[currentTurnIndex];
 
       if (!isMuted) {
+        const agentKey = getAgentKeyForTurn(turn.agentName);
+        const opponent = agentKey === 'agentA' ? transcript.agentB : transcript.agentA;
         void speakTurn({
           turn,
           speed,
-          agentKey: getAgentKeyForTurn(turn.agentName),
+          agentKey,
+          speakerName: turn.agentName,
+          opponentName: opponent?.name,
           onEnd: () => {
             if (currentTurnIndex < transcript.turns.length - 1) {
               nextTurn();

@@ -2,6 +2,7 @@ import type {
   AgentKey,
   ElevenLabsVoiceConfig,
   ElevenLabsVoiceSettings,
+  GeminiVoiceConfig,
   KokoroVoiceConfig,
   ProviderVoiceConfig,
   TTSProviderId,
@@ -44,6 +45,68 @@ export const DEFAULT_ELEVENLABS_CONFIG: Record<AgentKey, ElevenLabsVoiceConfig> 
   },
 };
 
+export const GEMINI_TTS_MODELS = [
+  'gemini-3.1-flash-tts-preview',
+  'gemini-2.5-flash-preview-tts',
+  'gemini-2.5-pro-preview-tts',
+] as const;
+
+export const DEFAULT_GEMINI_MODEL = GEMINI_TTS_MODELS[0];
+
+export const GEMINI_VOICES: Array<{ id: string; name: string }> = [
+  { id: 'Zephyr', name: 'Zephyr — Bright' },
+  { id: 'Puck', name: 'Puck — Upbeat' },
+  { id: 'Charon', name: 'Charon — Informative' },
+  { id: 'Kore', name: 'Kore — Firm' },
+  { id: 'Fenrir', name: 'Fenrir — Excitable' },
+  { id: 'Leda', name: 'Leda — Youthful' },
+  { id: 'Orus', name: 'Orus — Firm' },
+  { id: 'Aoede', name: 'Aoede — Breezy' },
+  { id: 'Callirrhoe', name: 'Callirrhoe — Easy-going' },
+  { id: 'Autonoe', name: 'Autonoe — Bright' },
+  { id: 'Enceladus', name: 'Enceladus — Breathy' },
+  { id: 'Iapetus', name: 'Iapetus — Clear' },
+  { id: 'Umbriel', name: 'Umbriel — Easy-going' },
+  { id: 'Algieba', name: 'Algieba — Smooth' },
+  { id: 'Despina', name: 'Despina — Smooth' },
+  { id: 'Erinome', name: 'Erinome — Clear' },
+  { id: 'Algenib', name: 'Algenib — Gravelly' },
+  { id: 'Rasalgethi', name: 'Rasalgethi — Informative' },
+  { id: 'Laomedeia', name: 'Laomedeia — Upbeat' },
+  { id: 'Achernar', name: 'Achernar — Soft' },
+  { id: 'Alnilam', name: 'Alnilam — Firm' },
+  { id: 'Schedar', name: 'Schedar — Even' },
+  { id: 'Gacrux', name: 'Gacrux — Mature' },
+  { id: 'Pulcherrima', name: 'Pulcherrima — Forward' },
+  { id: 'Achird', name: 'Achird — Friendly' },
+  { id: 'Zubenelgenubi', name: 'Zubenelgenubi — Casual' },
+  { id: 'Vindemiatrix', name: 'Vindemiatrix — Gentle' },
+  { id: 'Sadachbia', name: 'Sadachbia — Lively' },
+  { id: 'Sadaltager', name: 'Sadaltager — Knowledgeable' },
+  { id: 'Sulafat', name: 'Sulafat — Warm' },
+];
+
+export const DEFAULT_GEMINI_STYLE_INSTRUCTION =
+  'You are {speaker}, locked in a heated live debate against {opponent}. ' +
+  'Deliver the following argument exactly as written, as a real debater would — impassioned and insistent, ' +
+  'with rising intensity on key points, sharp rhetorical emphasis, and the urgency of someone who must win ' +
+  'over the room right now';
+
+export const DEFAULT_GEMINI_CONFIG: Record<AgentKey, GeminiVoiceConfig> = {
+  agentA: {
+    provider: 'gemini',
+    voiceName: 'Kore',
+    model: DEFAULT_GEMINI_MODEL,
+    styleInstruction: DEFAULT_GEMINI_STYLE_INSTRUCTION,
+  },
+  agentB: {
+    provider: 'gemini',
+    voiceName: 'Fenrir',
+    model: DEFAULT_GEMINI_MODEL,
+    styleInstruction: DEFAULT_GEMINI_STYLE_INSTRUCTION,
+  },
+};
+
 export const getProviderVoiceConfig = (
   provider: TTSProviderId,
   agent: AgentKey,
@@ -51,6 +114,7 @@ export const getProviderVoiceConfig = (
     webspeech: Record<AgentKey, WebSpeechVoiceConfig>;
     kokoro: Record<AgentKey, KokoroVoiceConfig>;
     elevenlabs: Record<AgentKey, ElevenLabsVoiceConfig>;
+    gemini: Record<AgentKey, GeminiVoiceConfig>;
   },
 ): ProviderVoiceConfig => {
   if (provider === 'webspeech') {
@@ -58,6 +122,9 @@ export const getProviderVoiceConfig = (
   }
   if (provider === 'kokoro') {
     return configs.kokoro[agent];
+  }
+  if (provider === 'gemini') {
+    return configs.gemini[agent];
   }
   return configs.elevenlabs[agent];
 };

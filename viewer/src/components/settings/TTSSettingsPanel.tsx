@@ -29,6 +29,7 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
   const {
     checkKokoroConnection,
     validateElevenLabsKey,
+    validateGeminiKey,
     getElevenLabsVoices,
     clearAudioCache,
     getCacheSizeBytes,
@@ -49,6 +50,7 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
       { id: 'webspeech', label: 'Web Speech' },
       { id: 'kokoro', label: 'Kokoro' },
       { id: 'elevenlabs', label: 'ElevenLabs' },
+      { id: 'gemini', label: 'Gemini' },
     ],
     [],
   );
@@ -89,6 +91,7 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
           cacheSizeLabel={cacheSize}
           onCheckKokoro={checkKokoroConnection}
           onValidateElevenLabs={validateElevenLabsKey}
+          onValidateGemini={validateGeminiKey}
           onLoadElevenLabsVoices={getElevenLabsVoices}
           onClearCache={async () => {
             await clearAudioCache();
@@ -236,13 +239,19 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         }
 
         .provider-card input,
-        .provider-card select {
+        .provider-card select,
+        .provider-card textarea {
           border: 1px solid var(--border);
           background: var(--bg-inset);
           color: var(--text);
           font-family: var(--font-mono);
           font-size: 0.72rem;
           padding: 0.36rem 0.5rem;
+        }
+
+        .provider-card textarea {
+          resize: vertical;
+          line-height: 1.45;
         }
 
         .provider-card button {

@@ -1,17 +1,21 @@
 import {
   DEFAULT_ELEVENLABS_CONFIG,
+  DEFAULT_GEMINI_CONFIG,
   DEFAULT_KOKORO_CONFIG,
   DEFAULT_WEBSPEECH_CONFIG,
   getProviderVoiceConfig,
 } from './defaults';
 import { AudioCache } from './cache';
 import { ElevenLabsProvider } from './providers/elevenlabs';
+import { GeminiProvider } from './providers/gemini';
 import { KokoroProvider } from './providers/kokoro';
 import { webSpeechProvider } from './providers/webspeech';
 import type {
   AgentKey,
   ElevenLabsVoiceConfig,
+  GeminiVoiceConfig,
   KokoroVoiceConfig,
+  SpeakerContext,
   TTSEvents,
   TTSProvider,
   TTSProviderId,
@@ -24,8 +28,10 @@ export type TTSOrchestratorSettings = {
   webspeech: Record<AgentKey, WebSpeechVoiceConfig>;
   kokoro: Record<AgentKey, KokoroVoiceConfig>;
   elevenlabs: Record<AgentKey, ElevenLabsVoiceConfig>;
+  gemini: Record<AgentKey, GeminiVoiceConfig>;
   kokoroServerUrl: string;
   elevenLabsApiKey: string;
+  geminiApiKey: string;
 };
 
 type TTSOrchestratorEvents = TTSEvents & {
@@ -37,6 +43,7 @@ type SpeakArgs = {
   speed: number;
   agent: AgentKey;
   settings: TTSOrchestratorSettings;
+  context?: SpeakerContext;
 };
 
 export class TTSOrchestrator {
@@ -50,17 +57,20 @@ export class TTSOrchestrator {
       ['webspeech', webSpeechProvider],
       ['kokoro', new KokoroProvider(this.cache)],
       ['elevenlabs', new ElevenLabsProvider(this.cache)],
+      ['gemini', new GeminiProvider(this.cache)],
     ]);
     this.activeProvider = webSpeechProvider;
   }
 
   async speak(args: SpeakArgs, events: TTSOrchestratorEvents = {}): Promise<void> {
     const selectedProvider = this.providers.get(args.settings.provider) ?? webSpeechProvider;
-    const config = getProviderVoiceConfig(args.settings.provider, args.agent, {
+    const voiceConfigs = {
       webspeech: args.settings.webspeech,
       kokoro: args.settings.kokoro,
       elevenlabs: args.settings.elevenlabs,
-    });
+      gemini: args.settings.gemini,
+    };
+    const config = getProviderVoiceConfig(args.settings.provider, args.agent, voiceConfigs);
 
     const runProvider = async (provider: TTSProvider, providerId: TTSProviderId) => {
       this.activeProvider = provider;
@@ -71,13 +81,10 @@ export class TTSOrchestrator {
           agent: args.agent,
           config: providerId === args.settings.provider
             ? config
-            : getProviderVoiceConfig(providerId, args.agent, {
-                webspeech: args.settings.webspeech,
-                kokoro: args.settings.kokoro,
-                elevenlabs: args.settings.elevenlabs,
-              }),
-          apiKey: args.settings.elevenLabsApiKey,
+            : getProviderVoiceConfig(providerId, args.agent, voiceConfigs),
+          apiKey: providerId === 'gemini' ? args.settings.geminiApiKey : args.settings.elevenLabsApiKey,
           serverUrl: args.settings.kokoroServerUrl,
+          context: args.context,
         },
         events,
       );
@@ -133,6 +140,14 @@ export class TTSOrchestrator {
     return provider.checkAvailability({ apiKey });
   }
 
+  async validateGeminiKey(apiKey: string): Promise<boolean> {
+    const provider = this.providers.get('gemini');
+    if (!provider?.checkAvailability) {
+      return false;
+    }
+    return provider.checkAvailability({ apiKey });
+  }
+
   async getElevenLabsVoices(apiKey: string): Promise<TTSProviderVoice[]> {
     const provider = this.providers.get('elevenlabs');
     if (!provider?.getVoices) {
@@ -157,6 +172,8 @@ export const getDefaultTTSSettings = (): TTSOrchestratorSettings => ({
   webspeech: DEFAULT_WEBSPEECH_CONFIG,
   kokoro: DEFAULT_KOKORO_CONFIG,
   elevenlabs: DEFAULT_ELEVENLABS_CONFIG,
+  gemini: DEFAULT_GEMINI_CONFIG,
   kokoroServerUrl: 'http://localhost:8880',
   elevenLabsApiKey: '',
+  geminiApiKey: '',
 });

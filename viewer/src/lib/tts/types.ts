@@ -1,4 +1,4 @@
-export type TTSProviderId = 'webspeech' | 'kokoro' | 'elevenlabs';
+export type TTSProviderId = 'webspeech' | 'kokoro' | 'elevenlabs' | 'gemini';
 
 export type AgentKey = 'agentA' | 'agentB';
 
@@ -43,7 +43,18 @@ export type ElevenLabsVoiceConfig = {
   voiceSettings: ElevenLabsVoiceSettings;
 };
 
-export type ProviderVoiceConfig = WebSpeechVoiceConfig | KokoroVoiceConfig | ElevenLabsVoiceConfig;
+export type GeminiVoiceConfig = {
+  provider: 'gemini';
+  voiceName: string;
+  model: string;
+  styleInstruction: string;
+};
+
+export type ProviderVoiceConfig =
+  | WebSpeechVoiceConfig
+  | KokoroVoiceConfig
+  | ElevenLabsVoiceConfig
+  | GeminiVoiceConfig;
 
 export type TTSEvents = {
   onStart?: () => void;
@@ -54,6 +65,11 @@ export type TTSEvents = {
   onWordBoundary?: (word: WordTimestamp) => void;
 };
 
+export type SpeakerContext = {
+  speakerName?: string;
+  opponentName?: string;
+};
+
 export type TTSRequest = {
   text: string;
   speed: number;
@@ -61,6 +77,7 @@ export type TTSRequest = {
   config: ProviderVoiceConfig;
   apiKey?: string;
   serverUrl?: string;
+  context?: SpeakerContext;
 };
 
 export type TTSProviderVoice = {

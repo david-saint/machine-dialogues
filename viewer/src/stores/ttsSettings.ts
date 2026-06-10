@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
   DEFAULT_ELEVENLABS_CONFIG,
+  DEFAULT_GEMINI_CONFIG,
   DEFAULT_KOKORO_CONFIG,
   DEFAULT_KOKORO_SERVER_URL,
   DEFAULT_PROVIDER,
@@ -11,6 +12,7 @@ import type {
   AgentKey,
   ElevenLabsVoiceConfig,
   ElevenLabsVoiceSettings,
+  GeminiVoiceConfig,
   KokoroVoiceConfig,
   TTSProviderId,
   WebSpeechVoiceConfig,
@@ -25,14 +27,18 @@ interface TTSSettingsState {
   webspeech: Record<AgentKey, WebSpeechVoiceConfig>;
   kokoro: Record<AgentKey, KokoroVoiceConfig>;
   elevenlabs: Record<AgentKey, ElevenLabsVoiceConfig>;
+  gemini: Record<AgentKey, GeminiVoiceConfig>;
   kokoroServerUrl: string;
   elevenLabsApiKey: string;
+  geminiApiKey: string;
   setProvider: (provider: TTSProviderId) => void;
   updateWebSpeech: (agent: AgentKey, patch: Partial<Omit<WebSpeechVoiceConfig, 'provider'>>) => void;
   updateKokoro: (agent: AgentKey, patch: Partial<Omit<KokoroVoiceConfig, 'provider'>>) => void;
   updateElevenLabs: (agent: AgentKey, patch: ElevenLabsUpdate) => void;
+  updateGemini: (agent: AgentKey, patch: Partial<Omit<GeminiVoiceConfig, 'provider'>>) => void;
   setKokoroServerUrl: (url: string) => void;
   setElevenLabsApiKey: (key: string) => void;
+  setGeminiApiKey: (key: string) => void;
 }
 
 const initialWebSpeech = (): Record<AgentKey, WebSpeechVoiceConfig> => ({
@@ -43,6 +49,11 @@ const initialWebSpeech = (): Record<AgentKey, WebSpeechVoiceConfig> => ({
 const initialKokoro = (): Record<AgentKey, KokoroVoiceConfig> => ({
   agentA: { ...DEFAULT_KOKORO_CONFIG.agentA },
   agentB: { ...DEFAULT_KOKORO_CONFIG.agentB },
+});
+
+const initialGemini = (): Record<AgentKey, GeminiVoiceConfig> => ({
+  agentA: { ...DEFAULT_GEMINI_CONFIG.agentA },
+  agentB: { ...DEFAULT_GEMINI_CONFIG.agentB },
 });
 
 const initialElevenLabs = (): Record<AgentKey, ElevenLabsVoiceConfig> => ({
@@ -63,8 +74,10 @@ export const useTTSSettingsStore = create<TTSSettingsState>()(
       webspeech: initialWebSpeech(),
       kokoro: initialKokoro(),
       elevenlabs: initialElevenLabs(),
+      gemini: initialGemini(),
       kokoroServerUrl: DEFAULT_KOKORO_SERVER_URL,
       elevenLabsApiKey: '',
+      geminiApiKey: '',
       setProvider: (provider) => set({ provider }),
       updateWebSpeech: (agent, patch) =>
         set((state) => ({
@@ -100,8 +113,19 @@ export const useTTSSettingsStore = create<TTSSettingsState>()(
             },
           },
         })),
+      updateGemini: (agent, patch) =>
+        set((state) => ({
+          gemini: {
+            ...state.gemini,
+            [agent]: {
+              ...state.gemini[agent],
+              ...patch,
+            },
+          },
+        })),
       setKokoroServerUrl: (url) => set({ kokoroServerUrl: url }),
       setElevenLabsApiKey: (key) => set({ elevenLabsApiKey: key }),
+      setGeminiApiKey: (key) => set({ geminiApiKey: key }),
     }),
     {
       name: 'tts-settings-v1',
@@ -110,8 +134,10 @@ export const useTTSSettingsStore = create<TTSSettingsState>()(
         webspeech: state.webspeech,
         kokoro: state.kokoro,
         elevenlabs: state.elevenlabs,
+        gemini: state.gemini,
         kokoroServerUrl: state.kokoroServerUrl,
         elevenLabsApiKey: state.elevenLabsApiKey,
+        geminiApiKey: state.geminiApiKey,
       }),
     },
   ),

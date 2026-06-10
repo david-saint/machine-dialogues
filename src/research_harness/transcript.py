@@ -59,6 +59,38 @@ def parse_transcript(filepath: str | Path) -> list[dict]:
 
 
 
+def parse_cost_summary(filepath: str | Path) -> list[dict]:
+    """Parse per-agent token counts from a transcript's Cost Summary table.
+
+    Returns one dict per agent row (the **Total** row is skipped). Dollar
+    figures are not restored — costs are recomputed from token counts using
+    current pricing when the rows are re-added to a CostTracker.
+    """
+    text = Path(filepath).read_text()
+
+    section_match = re.search(r"^## Cost Summary\s*$", text, re.MULTILINE)
+    if not section_match:
+        return []
+
+    row_pattern = re.compile(
+        r"^\|\s*(?P<agent>[^|]+?)\s*\|\s*(?P<input>[\d,]+)\s*\|\s*(?P<output>[\d,]+)\s*\|\s*(?P<thinking>[\d,]+)\s*\|",
+        re.MULTILINE,
+    )
+
+    rows = []
+    for match in row_pattern.finditer(text[section_match.end():]):
+        agent = match.group("agent")
+        if agent.startswith("**"):  # Total row
+            continue
+        rows.append({
+            "agent": agent,
+            "input_tokens": int(match.group("input").replace(",", "")),
+            "output_tokens": int(match.group("output").replace(",", "")),
+            "thinking_tokens": int(match.group("thinking").replace(",", "")),
+        })
+    return rows
+
+
 def rebuild_histories(entries: list[dict]) -> tuple[list[dict], list[dict], str, int]:
     """Rebuild history_a, history_b, current_message, and last_turn from parsed entries."""
     history_a: list[dict] = []

@@ -6,12 +6,20 @@ from .config import ExperimentConfig
 from .providers import create_provider
 from .pricing import CostTracker, load_pricing
 from .formatter import print_header, print_initial_message, print_turn, print_cost_summary, console
-from .transcript import save_transcript, parse_transcript, rebuild_histories
+from .transcript import save_transcript, parse_transcript, parse_cost_summary, rebuild_histories
+
+
+def _tracker_keys(config: ExperimentConfig) -> tuple[str, str]:
+    """Cost-tracking keys for the two agents, disambiguated for mirror matches."""
+    if config.agent_a.name == config.agent_b.name:
+        return f"{config.agent_a.name} (A)", f"{config.agent_b.name} (B)"
+    return config.agent_a.name, config.agent_b.name
 
 
 def run_experiment(config: ExperimentConfig):
     pricing_data = load_pricing()
     tracker = CostTracker(pricing=pricing_data)
+    key_a, key_b = _tracker_keys(config)
 
     provider_a = create_provider(
         provider=config.agent_a.provider,
@@ -76,7 +84,7 @@ def run_experiment(config: ExperimentConfig):
             content_a = response_a.content or "[empty response]"
             history_a.append({"role": "assistant", "content": content_a})
             cost_a = tracker.add(
-                config.agent_a.name, config.agent_a.model,
+                key_a, config.agent_a.model,
                 response_a.input_tokens, response_a.output_tokens, response_a.thinking_tokens,
             )
             ts_a = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -101,7 +109,7 @@ def run_experiment(config: ExperimentConfig):
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(
-                config.agent_b.name, config.agent_b.model,
+                key_b, config.agent_b.model,
                 response_b.input_tokens, response_b.output_tokens, response_b.thinking_tokens,
             )
             ts_b = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -126,6 +134,18 @@ def run_experiment(config: ExperimentConfig):
 def resume_experiment(config: ExperimentConfig, transcript_path: str, additional_turns: int = 1):
     pricing_data = load_pricing()
     tracker = CostTracker(pricing=pricing_data)
+    key_a, key_b = _tracker_keys(config)
+
+    # Carry over costs from previous sessions so the rewritten summary
+    # covers the whole run, not just the resumed turns. Dollar amounts are
+    # recomputed from token counts at current pricing.
+    model_by_key = {key_a: config.agent_a.model, key_b: config.agent_b.model}
+    for row in parse_cost_summary(transcript_path):
+        model = model_by_key.get(row["agent"], config.agent_a.model)
+        tracker.add(
+            row["agent"], model,
+            row["input_tokens"], row["output_tokens"], row["thinking_tokens"],
+        )
 
     entries = parse_transcript(transcript_path)
     if len(entries) < 1:
@@ -188,7 +208,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(
-                config.agent_b.name, config.agent_b.model,
+                key_b, config.agent_b.model,
                 response_b.input_tokens, response_b.output_tokens, response_b.thinking_tokens,
             )
             ts_b = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -219,7 +239,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
             content_a = response_a.content or "[empty response]"
             history_a.append({"role": "assistant", "content": content_a})
             cost_a = tracker.add(
-                config.agent_a.name, config.agent_a.model,
+                key_a, config.agent_a.model,
                 response_a.input_tokens, response_a.output_tokens, response_a.thinking_tokens,
             )
             ts_a = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -244,7 +264,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(
-                config.agent_b.name, config.agent_b.model,
+                key_b, config.agent_b.model,
                 response_b.input_tokens, response_b.output_tokens, response_b.thinking_tokens,
             )
             ts_b = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

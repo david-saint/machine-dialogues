@@ -12,7 +12,7 @@ class AgentConfig(BaseModel):
     max_tokens: int = 8192
     no_thinking: bool = False
     google_search: bool = False
-    thinking_level: str | None = None   # "low" | "medium" | "high" | "adaptive" | None
+    thinking_level: str | None = None   # OpenRouter reasoning.effort, e.g. "low" | "medium" | "high" | "xhigh" | "max"
     include_thoughts: bool = False       # capture & store thinking content in transcript
 
     @field_validator("provider")

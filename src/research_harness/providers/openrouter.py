@@ -30,6 +30,8 @@ class OpenRouterProvider(LLMProvider):
 
         if self.no_thinking:
             kwargs["extra_body"] = {"reasoning": {"exclude": True}}
+        elif self.thinking_level:
+            kwargs["extra_body"] = {"reasoning": {"effort": self.thinking_level}}
 
         response = self.client.chat.completions.create(**kwargs)
 

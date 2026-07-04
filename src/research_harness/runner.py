@@ -29,6 +29,7 @@ def run_experiment(config: ExperimentConfig):
         max_tokens=config.agent_a.max_tokens,
         no_thinking=config.agent_a.no_thinking,
         google_search=config.agent_a.google_search,
+        thinking_level=config.agent_a.thinking_level,
     )
     provider_b = create_provider(
         provider=config.agent_b.provider,
@@ -38,6 +39,7 @@ def run_experiment(config: ExperimentConfig):
         max_tokens=config.agent_b.max_tokens,
         no_thinking=config.agent_b.no_thinking,
         google_search=config.agent_b.google_search,
+        thinking_level=config.agent_b.thinking_level,
     )
 
     print_header(config, pricing_enabled=bool(pricing_data))
@@ -169,6 +171,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
         max_tokens=config.agent_a.max_tokens,
         no_thinking=config.agent_a.no_thinking,
         google_search=config.agent_a.google_search,
+        thinking_level=config.agent_a.thinking_level,
     )
     provider_b = create_provider(
         provider=config.agent_b.provider,
@@ -178,6 +181,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
         max_tokens=config.agent_b.max_tokens,
         no_thinking=config.agent_b.no_thinking,
         google_search=config.agent_b.google_search,
+        thinking_level=config.agent_b.thinking_level,
     )
 
     print_header(config, pricing_enabled=bool(pricing_data))

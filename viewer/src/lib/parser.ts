@@ -2,11 +2,13 @@ import type { Transcript, TranscriptTurn, AgentInfo, CostSummaryItem, SelfReport
 
 const AVATARS: Record<string, string> = {
   'Claude Opus 4.6': '/avatars/claude-opus-4.6.png',
+  'Claude Opus 4.8': '/avatars/claude-opus-4.6.png',
   'Claude Sonnet 4.6': '/avatars/claude-sonnet-4.6.png',
   'Gemini 3.1 Pro': '/avatars/gemini-3.1-pro.png',
   'Gemini 3 Flash': '/avatars/gemini-3-flash.png',
   'GPT-5.4': '/avatars/gpt-5.4-xhigh.png',
   'GPT-5.4 (xhigh)': '/avatars/gpt-5.4-xhigh.png',
+  'GPT-5.5': '/avatars/gpt-5.4-xhigh.png',
   'Researcher': '/avatars/human-researcher.png',
   'Human Researcher': '/avatars/human-researcher.png',
 };

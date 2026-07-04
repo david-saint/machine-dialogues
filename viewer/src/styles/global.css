@@ -43,6 +43,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -53,6 +55,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ---- Typography ---- */
@@ -189,6 +192,41 @@ body::after {
   background: rgba(255, 255, 255, 0.06);
   padding: 0.15em 0.35em;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-wrap: anywhere;
+}
+
+.prose pre {
+  overflow-x: auto;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1em;
+  font-size: 0.85em;
+  line-height: 1.55;
+}
+
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  overflow-wrap: normal;
+}
+
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  font-size: 0.9em;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.75rem;
+  text-align: left;
 }
 
 .prose blockquote {

@@ -30,8 +30,13 @@ class AnthropicProvider(LLMProvider):
                 content = block.text
                 break
 
+        warnings = []
+        if response.stop_reason == "max_tokens":
+            warnings.append(f"response truncated by max_tokens={self.max_tokens}")
+
         return ProviderResponse(
             content=content,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
+            warnings=warnings,
         )

@@ -1,4 +1,4 @@
-import type { Transcript, TranscriptTurn, AgentInfo, CostSummaryItem, SelfReport } from '../types/transcript';
+import type { Transcript, TranscriptTurn, AgentInfo, CostSummaryItem, SelfReport, SelfReportAxis } from '../types/transcript';
 
 const AVATARS: Record<string, string> = {
   'Claude Opus 4.6': '/avatars/claude-opus-4.6.png',
@@ -196,32 +196,52 @@ export function parseTranscript(markdown: string, id: string): Transcript {
     if (a.systemPrompt) a.systemPrompt = a.systemPrompt.trim();
   });
 
-  // Extract self-reports
+  // Extract self-reports — only for experiments that actually request one.
+  // Probe prompts define the scale ("State your current position on a 0-100
+  // scale, where 0 = strongly anti-functionalist and 100 = strongly
+  // functionalist"); that sentence both gates extraction and names the axis.
+  // Without the gate, debate transcripts leak citation numbers (e.g. "~90%
+  // over single-agent Opus") into a fake self-report.
   const selfReport: { agentA?: SelfReport; agentB?: SelfReport } = {};
-  
-  // Look for self-report in the last few turns
-  for (let i = Math.max(0, turns.length - 3); i < turns.length; i++) {
-    const turn = turns[i];
-    const content = turn.content;
-    
-    // Look for 0-100 score with various patterns
-    const scoreMatch = content.match(/(?:position|score|at|currently)\s*(?::|is|at)?\s*\**(\d+)\**/i) || 
-                      content.match(/(\d+)\s*(?:percent|%|\/100)/i) ||
-                      content.match(/0-100.*?(\d+)/i);
-    
-    const scoreVal = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-    
-    if (scoreVal !== null || content.includes('strongest argument') || content.includes('resist')) {
-      const report: SelfReport = { score: scoreVal || 0 };
-      
+
+  const axisSource = [agents[0]?.systemPrompt, agents[1]?.systemPrompt, turns[0]?.content]
+    .filter(Boolean)
+    .join('\n');
+  const axisMatch = axisSource.match(/0-100 scale,?\s*where\s*0\s*=\s*([^,\n]+?)\s+and\s+100\s*=\s*([^.\n]+)/i);
+  const cleanAxisLabel = (raw: string) => {
+    const label = raw.trim().replace(/^strongly\s+/i, '');
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
+  const selfReportAxis: SelfReportAxis | undefined = axisMatch
+    ? { low: cleanAxisLabel(axisMatch[1]), high: cleanAxisLabel(axisMatch[2]) }
+    : undefined;
+
+  if (selfReportAxis) {
+    // Walk backwards so each agent's latest explicit score wins — final
+    // accountings are sometimes delivered a few turns before the end.
+    for (let i = turns.length - 1; i > 0; i--) {
+      if (selfReport.agentA && selfReport.agentB) break;
+      const turn = turns[i];
+      const content = turn.content;
+
+      // Only explicit self-scores count: "90/100" or "Position: 72".
+      const scoreMatch = content.match(/\b(\d{1,3})\s*\/\s*100\b/) ||
+                         content.match(/\bposition\b\W{0,6}(\d{1,3})\b/i);
+      if (!scoreMatch) continue;
+      const scoreVal = parseInt(scoreMatch[1], 10);
+      if (scoreVal > 100) continue;
+
+      const report: SelfReport = { score: scoreVal };
+      const cleanExcerpt = (raw: string) => raw.trim().replace(/^[*\s]+/, '').trim();
+
       const argMatch = content.match(/(?:strongest argument|moved me).*?:(.*?)(?:\n\n|\n###|$)/is);
-      if (argMatch) report.strongestArgument = argMatch[1].trim();
-      
+      if (argMatch) report.strongestArgument = cleanExcerpt(argMatch[1]);
+
       const objMatch = content.match(/(?:strongest remaining reason|resist|resistance).*?:(.*?)(?:\n\n|\n###|$)/is);
-      if (objMatch) report.strongestObjection = objMatch[1].trim();
-      
-      if (agents[0] && turn.agentName === agents[0].name) selfReport.agentA = report;
-      else if (agents[1] && turn.agentName === agents[1].name) selfReport.agentB = report;
+      if (objMatch) report.strongestObjection = cleanExcerpt(objMatch[1]);
+
+      if (agents[0] && !selfReport.agentA && turn.agentName === agents[0].name) selfReport.agentA = report;
+      else if (agents[1] && !selfReport.agentB && turn.agentName === agents[1].name) selfReport.agentB = report;
     }
   }
 
@@ -239,6 +259,7 @@ export function parseTranscript(markdown: string, id: string): Transcript {
     turns,
     costSummary,
     totalCost,
-    selfReport
+    selfReport,
+    ...(selfReportAxis && { selfReportAxis })
   };
 }

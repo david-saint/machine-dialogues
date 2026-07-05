@@ -38,9 +38,15 @@ class GoogleProvider(LLMProvider):
         output_tokens = response.usage_metadata.candidates_token_count or 0
         thinking_tokens = getattr(response.usage_metadata, "thoughts_token_count", 0) or 0
 
+        warnings = []
+        finish_reason = response.candidates[0].finish_reason if response.candidates else None
+        if finish_reason == types.FinishReason.MAX_TOKENS:
+            warnings.append(f"response truncated by max_output_tokens={self.max_tokens}")
+
         return ProviderResponse(
             content=response.text,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             thinking_tokens=thinking_tokens,
+            warnings=warnings,
         )

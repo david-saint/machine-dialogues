@@ -9,6 +9,11 @@ from .formatter import print_header, print_initial_message, print_turn, print_co
 from .transcript import save_transcript, parse_transcript, parse_cost_summary, rebuild_histories
 
 
+def _print_warnings(agent_name: str, response) -> None:
+    for warning in response.warnings:
+        console.print(f"[bold yellow]⚠ {agent_name}: {warning}[/bold yellow]")
+
+
 def _tracker_keys(config: ExperimentConfig) -> tuple[str, str]:
     """Cost-tracking keys for the two agents, disambiguated for mirror matches."""
     if config.agent_a.name == config.agent_b.name:
@@ -83,6 +88,7 @@ def run_experiment(config: ExperimentConfig):
                 console.print(f"[bold red]Error from {config.agent_a.name}: {e}[/bold red]")
                 break
 
+            _print_warnings(config.agent_a.name, response_a)
             content_a = response_a.content or "[empty response]"
             history_a.append({"role": "assistant", "content": content_a})
             cost_a = tracker.add(
@@ -108,6 +114,7 @@ def run_experiment(config: ExperimentConfig):
                 console.print(f"[bold red]Error from {config.agent_b.name}: {e}[/bold red]")
                 break
 
+            _print_warnings(config.agent_b.name, response_b)
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(
@@ -209,6 +216,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
                 console.print(f"[bold red]Error from {config.agent_b.name}: {e}[/bold red]")
                 return
 
+            _print_warnings(config.agent_b.name, response_b)
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(
@@ -240,6 +248,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
                 console.print(f"[bold red]Error from {config.agent_a.name}: {e}[/bold red]")
                 break
 
+            _print_warnings(config.agent_a.name, response_a)
             content_a = response_a.content or "[empty response]"
             history_a.append({"role": "assistant", "content": content_a})
             cost_a = tracker.add(
@@ -265,6 +274,7 @@ def resume_experiment(config: ExperimentConfig, transcript_path: str, additional
                 console.print(f"[bold red]Error from {config.agent_b.name}: {e}[/bold red]")
                 break
 
+            _print_warnings(config.agent_b.name, response_b)
             content_b = response_b.content or "[empty response]"
             history_b.append({"role": "assistant", "content": content_b})
             cost_b = tracker.add(

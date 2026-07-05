@@ -34,6 +34,13 @@ export type SelfReport = {
   strongestObjection?: string;
 };
 
+// What the endpoints of the 0-100 self-report scale mean, parsed from the
+// probe prompt (e.g. "where 0 = strongly anti-functionalist and 100 = strongly functionalist").
+export type SelfReportAxis = {
+  low: string; // label for 0
+  high: string; // label for 100
+};
+
 export type Transcript = {
   id: string; // Filename or derived ID
   experimentName: string;
@@ -49,6 +56,7 @@ export type Transcript = {
     agentA?: SelfReport;
     agentB?: SelfReport;
   };
+  selfReportAxis?: SelfReportAxis;
   evaluation?: EvaluationSummary;
   featured?: boolean;
 };

@@ -175,6 +175,8 @@ export const TranscriptViewer: React.FC = () => {
               score={transcript.selfReport.agentB.score}
               label={`${agentB.name} Position`}
               accent={colorB}
+              lowLabel={transcript.selfReportAxis?.low}
+              highLabel={transcript.selfReportAxis?.high}
             />
             {transcript.selfReport.agentB.strongestArgument && (
               <div className="viewer__report-item">

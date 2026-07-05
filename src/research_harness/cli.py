@@ -2,6 +2,7 @@ import click
 from pathlib import Path
 
 from .config import ExperimentConfig
+from .judge import JudgeError, run_judge
 from .runner import run_experiment, resume_experiment
 
 
@@ -35,6 +36,28 @@ def resume(config_path: str, transcript_path: str, turns: int):
     """Resume an experiment from a saved transcript."""
     config = ExperimentConfig.from_yaml(config_path)
     resume_experiment(config, transcript_path, additional_turns=turns)
+
+
+@main.command()
+@click.argument("transcript_path", type=click.Path(exists=True))
+@click.option("--model", required=True, help="Judge model id, e.g. anthropic/claude-opus-4.8")
+@click.option("--provider", default="openrouter", show_default=True, help="Provider to route the judge model through")
+@click.option("--thinking-level", default=None, help="Reasoning effort for the judge, e.g. high, xhigh, max")
+@click.option("--judge-name", default=None, help="Human-readable judge name (defaults to the model id)")
+@click.option("--output-dir", default="judgments", show_default=True, type=click.Path(), help="Directory to write judgments under")
+def judge(transcript_path: str, model: str, provider: str, thinking_level: str | None, judge_name: str | None, output_dir: str):
+    """Score a debate transcript with a judge model."""
+    try:
+        run_judge(
+            transcript_path=transcript_path,
+            model=model,
+            provider=provider,
+            thinking_level=thinking_level,
+            judge_name=judge_name,
+            output_dir=output_dir,
+        )
+    except JudgeError as e:
+        raise click.ClickException(str(e))
 
 
 if __name__ == "__main__":

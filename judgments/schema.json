@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "machine-dialogues-judgment.schema.json",
+  "title": "Debate judgment",
+  "description": "One judge's scoring of one debate transcript. agentA/agentB refer to the transcript's agent_a (speaks first each round) and agent_b. Files live at judgments/<transcript_basename>/<judge_slug>.json.",
+  "type": "object",
+  "required": ["schema_version", "transcript", "judge", "decision", "rounds", "tally"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "transcript": {
+      "type": "string",
+      "description": "Transcript filename this judgment scores, e.g. 20260704_201301_claude-opus-4.8_vs_gpt-5.5.md"
+    },
+    "title": { "type": "string", "description": "Display title for the judgment, e.g. the debate proposition" },
+    "judge": {
+      "type": "object",
+      "required": ["name", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Human-readable judge name, e.g. Claude Fable 5" },
+        "model": { "type": "string", "description": "Model id, e.g. claude-fable-5 or anthropic/claude-opus-4.8" },
+        "thinking_level": { "type": "string", "description": "Reasoning effort the judge ran at, e.g. high, xhigh, max" },
+        "judged_at": { "type": "string", "description": "ISO date or datetime of the judgment" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": ["winner", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "winner": { "enum": ["agentA", "agentB", "draw"] },
+        "method": { "type": "string", "description": "Short qualifier, e.g. 'wins on points'" },
+        "summary": { "type": "string", "description": "The decision paragraph" },
+        "caveat": { "type": "string", "description": "Optional honest asterisk on the decision" }
+      }
+    },
+    "rounds": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One entry per round; a round is both agents' Turn N taken together.",
+      "items": {
+        "type": "object",
+        "required": ["round", "winner", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "round": { "type": "integer", "minimum": 1 },
+          "winner": { "enum": ["agentA", "agentB", "even"] },
+          "close": { "type": "boolean", "description": "True when the round was close (a 10-9 rather than a 10-8)" },
+          "reason": { "type": "string", "description": "One-to-three sentences on why the round went that way" }
+        }
+      }
+    },
+    "tally": {
+      "type": "object",
+      "required": ["agentA", "agentB", "even"],
+      "additionalProperties": false,
+      "description": "Must equal the counts implied by rounds[].winner.",
+      "properties": {
+        "agentA": { "type": "integer", "minimum": 0 },
+        "agentB": { "type": "integer", "minimum": 0 },
+        "even": { "type": "integer", "minimum": 0 },
+        "note": { "type": "string", "description": "Optional one-liner, e.g. 'a points win, not a knockout'" }
+      }
+    },
+    "key_moments": {
+      "type": "array",
+      "description": "Highlight reel, ordered by turn.",
+      "items": {
+        "type": "object",
+        "required": ["turn", "agent", "moment"],
+        "additionalProperties": false,
+        "properties": {
+          "turn": { "type": "integer", "minimum": 1 },
+          "agent": { "enum": ["agentA", "agentB"] },
+          "moment": { "type": "string" },
+          "note": { "type": "string", "description": "Optional muted sub-note" }
+        }
+      }
+    },
+    "analysis": {
+      "type": "array",
+      "description": "Prose sections, e.g. 'How X won', 'Where Y scored', 'Notes from the booth'.",
+      "items": {
+        "type": "object",
+        "required": ["heading", "paragraphs"],
+        "additionalProperties": false,
+        "properties": {
+          "tag": { "type": "string", "description": "Eyebrow label, e.g. Analysis, The asterisk, Notes from the booth" },
+          "heading": { "type": "string" },
+          "paragraphs": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      }
+    },
+    "quotes": {
+      "type": "array",
+      "description": "Pull quotes from the transcript.",
+      "items": {
+        "type": "object",
+        "required": ["agent", "text", "cite"],
+        "additionalProperties": false,
+        "properties": {
+          "agent": { "enum": ["agentA", "agentB"] },
+          "text": { "type": "string" },
+          "cite": { "type": "string", "description": "e.g. 'Turn 9, closing'" }
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import transcriptsData from '../../data/transcripts.json';
 import type { Transcript, AgentInfo } from '../../types/transcript';
+import { resolveAccent } from '../../lib/agentAccent';
 import { TranscriptCard } from './TranscriptCard';
 import { ImageModal } from '../shared/ImageModal';
 
@@ -49,6 +50,13 @@ export const LandingPage: React.FC = () => {
                     src={agent.avatar}
                     alt={agent.name}
                     className="landing__avatar"
+                    style={{
+                      borderColor: resolveAccent({
+                        modelId: agent.model,
+                        displayName: agent.name,
+                        slot: 'agentA',
+                      }).accent,
+                    }}
                     onClick={() => setModalImage({ src: agent.avatar!, alt: agent.name })}
                   />
                   <span className="landing__avatar-label">{agent.name}</span>

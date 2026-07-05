@@ -16,13 +16,31 @@
   --line: #37311f;
   --line-strong: #4b4430;
 
-  /* ---- Agent accents (positional: A = warm, B = cool) ---- */
+  /* ---- Agent accents (positional fallback: A = warm, B = cool) ---- */
   --agent-a: #e08a5f;
   --agent-b: #63b3a0;
   --agent-a-dim: rgba(224, 138, 95, 0.14);
   --agent-b-dim: rgba(99, 179, 160, 0.14);
   --agent-a-chip: rgba(224, 138, 95, 0.10);
   --agent-b-chip: rgba(99, 179, 160, 0.10);
+
+  /* ---- Model accent families (a model keeps its hue in every debate) ----
+     Claude/GPT alias the positional warm/cool tokens above, so they follow the
+     active theme automatically. Gemini/Kimi are declared per theme below. */
+  --accent-claude: var(--agent-a);
+  --accent-claude-dim: var(--agent-a-dim);
+  --accent-claude-chip: var(--agent-a-chip);
+  --accent-gpt: var(--agent-b);
+  --accent-gpt-dim: var(--agent-b-dim);
+  --accent-gpt-chip: var(--agent-b-chip);
+  /* Gemini/Google — dusty slate blue (dark) */
+  --accent-gemini: #7fa2cc;
+  --accent-gemini-dim: rgba(127, 162, 204, 0.14);
+  --accent-gemini-chip: rgba(127, 162, 204, 0.10);
+  /* Kimi/Moonshot — muted plum (dark) */
+  --accent-kimi: #b98fca;
+  --accent-kimi-dim: rgba(185, 143, 202, 0.14);
+  --accent-kimi-chip: rgba(185, 143, 202, 0.10);
 
   /* ---- Neutral (researcher / prompt) ---- */
   --neutral: var(--muted);
@@ -78,6 +96,15 @@
     --agent-a-chip: rgba(184, 92, 48, 0.08);
     --agent-b-chip: rgba(34, 120, 95, 0.08);
 
+    /* Gemini/Google — dusty slate blue (light) */
+    --accent-gemini: #3d6ea5;
+    --accent-gemini-dim: rgba(61, 110, 165, 0.10);
+    --accent-gemini-chip: rgba(61, 110, 165, 0.08);
+    /* Kimi/Moonshot — muted plum (light) */
+    --accent-kimi: #7c4d91;
+    --accent-kimi-dim: rgba(124, 77, 145, 0.10);
+    --accent-kimi-chip: rgba(124, 77, 145, 0.08);
+
     --neutral-dim: rgba(110, 101, 80, 0.08);
     --highlight-bg: rgba(184, 92, 48, 0.22);
     --wash: rgba(38, 32, 18, 0.03);
@@ -102,6 +129,12 @@
   --agent-b-dim: rgba(99, 179, 160, 0.14);
   --agent-a-chip: rgba(224, 138, 95, 0.10);
   --agent-b-chip: rgba(99, 179, 160, 0.10);
+  --accent-gemini: #7fa2cc;
+  --accent-gemini-dim: rgba(127, 162, 204, 0.14);
+  --accent-gemini-chip: rgba(127, 162, 204, 0.10);
+  --accent-kimi: #b98fca;
+  --accent-kimi-dim: rgba(185, 143, 202, 0.14);
+  --accent-kimi-chip: rgba(185, 143, 202, 0.10);
   --neutral-dim: rgba(162, 152, 128, 0.10);
   --highlight-bg: rgba(224, 138, 95, 0.28);
   --wash: rgba(234, 228, 212, 0.035);
@@ -123,6 +156,12 @@
   --agent-b-dim: rgba(34, 120, 95, 0.10);
   --agent-a-chip: rgba(184, 92, 48, 0.08);
   --agent-b-chip: rgba(34, 120, 95, 0.08);
+  --accent-gemini: #3d6ea5;
+  --accent-gemini-dim: rgba(61, 110, 165, 0.10);
+  --accent-gemini-chip: rgba(61, 110, 165, 0.08);
+  --accent-kimi: #7c4d91;
+  --accent-kimi-dim: rgba(124, 77, 145, 0.10);
+  --accent-kimi-chip: rgba(124, 77, 145, 0.08);
   --neutral-dim: rgba(110, 101, 80, 0.08);
   --highlight-bg: rgba(184, 92, 48, 0.22);
   --wash: rgba(38, 32, 18, 0.03);

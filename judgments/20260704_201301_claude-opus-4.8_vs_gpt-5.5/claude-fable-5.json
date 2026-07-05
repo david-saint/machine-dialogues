@@ -5,7 +5,7 @@
   "judge": {
     "name": "Claude Fable 5",
     "model": "claude-fable-5",
-    "thinking_level": "high",
+    "thinking_level": "xhigh",
     "judged_at": "2026-07-04"
   },
   "decision": {

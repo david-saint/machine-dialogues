@@ -9,8 +9,10 @@ interface MessageBubbleProps {
   agent: AgentInfo;
   isAgentA: boolean;
   isActive?: boolean;
+  isPlaying?: boolean;
   highlightPosition?: { charIndex: number; charLength: number } | null;
   index: number;
+  onPlayFromHere?: () => void;
 }
 
 const escapeHtml = (value: string): string =>
@@ -40,7 +42,7 @@ const buildHighlightedHtml = (
   return `${before}<mark class="entry__highlight">${highlighted}</mark>${after}`;
 };
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAgentA, isActive, highlightPosition, index }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAgentA, isActive, isPlaying, highlightPosition, index, onPlayFromHere }) => {
   const [showModal, setShowModal] = useState(false);
   const isResearcher = turn.turnNumber === 0;
 
@@ -117,6 +119,21 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
             )}
           </span>
         </div>
+
+        {/* The researcher's prompt is never narrated, so it gets no button. */}
+        {!isResearcher && onPlayFromHere && (
+          <button
+            className={`entry__play ${isActive ? 'entry__play--active' : ''}`}
+            onClick={onPlayFromHere}
+            aria-label={
+              isActive
+                ? (isPlaying ? 'Pause narration' : 'Resume narration')
+                : `Play narration from turn ${turn.turnNumber}`
+            }
+          >
+            {isActive ? (isPlaying ? '‖ Pause' : '▶ Resume') : '▶ Play from here'}
+          </button>
+        )}
       </div>
 
       {turn.thinking && (
@@ -252,6 +269,49 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
           font-family: var(--mono);
           font-size: 0.5625rem;
           color: var(--faint);
+        }
+
+        .entry__play {
+          margin-left: auto;
+          align-self: center;
+          flex-shrink: 0;
+          background: transparent;
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          color: var(--muted);
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 0.35rem 0.6rem;
+          cursor: pointer;
+          white-space: nowrap;
+          opacity: 0;
+          transition: opacity 150ms ease, background 150ms ease, color 150ms ease, border-color 150ms ease;
+        }
+
+        .entry:hover .entry__play,
+        .entry__play:focus-visible,
+        .entry__play--active {
+          opacity: 1;
+        }
+
+        .entry__play:hover {
+          background: var(--panel-2);
+          border-color: var(--line-strong);
+          color: var(--ink);
+        }
+
+        .entry__play--active {
+          border-color: var(--entry-accent);
+          color: var(--ink);
+        }
+
+        /* No hover on touch devices — keep the button discoverable. */
+        @media (hover: none) {
+          .entry__play {
+            opacity: 1;
+          }
         }
 
         .entry__thinking {

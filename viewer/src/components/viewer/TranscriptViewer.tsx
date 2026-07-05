@@ -18,7 +18,7 @@ export const TranscriptViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [transcript, setTranscript] = useState<Transcript | null>(null);
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
-  const { currentTurnIndex, highlightPosition, setCurrentTurnIndex, setPlaying } = usePlaybackStore();
+  const { currentTurnIndex, highlightPosition, isPlaying, setCurrentTurnIndex, setPlaying, setMuted } = usePlaybackStore();
 
   useEffect(() => {
     const found = (transcriptsData as Transcript[]).find(t => t.id === id);
@@ -74,6 +74,21 @@ export const TranscriptViewer: React.FC = () => {
 
   // Judgments are keyed by transcript filename (with .md extension).
   const judgments = (judgmentsData as JudgmentsByTranscript)[`${transcript.id}.md`] ?? [];
+
+  // Clicking a turn's play button jumps narration there; on the turn that is
+  // already current it toggles pause/resume instead. An explicit "play this
+  // turn" also unmutes — muted playback halts entirely, which would make the
+  // button appear dead.
+  const handlePlayFromTurn = (index: number) => {
+    if (index === currentTurnIndex) {
+      if (!isPlaying) setMuted(false);
+      setPlaying(!isPlaying);
+      return;
+    }
+    setMuted(false);
+    setCurrentTurnIndex(index);
+    setPlaying(true);
+  };
 
   return (
     <div className="viewer">
@@ -212,7 +227,9 @@ export const TranscriptViewer: React.FC = () => {
                 agent={slot === 'agentB' ? agentB : agentA}
                 isAgentA={isAgentA}
                 isActive={currentTurnIndex === index}
+                isPlaying={isPlaying}
                 highlightPosition={currentTurnIndex === index ? highlightPosition : null}
+                onPlayFromHere={() => handlePlayFromTurn(index)}
               />
             );
           })}

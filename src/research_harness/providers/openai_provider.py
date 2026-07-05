@@ -26,8 +26,13 @@ class OpenAIProvider(LLMProvider):
         )
 
         usage = response.usage
+        warnings = []
+        if response.choices[0].finish_reason == "length":
+            warnings.append(f"response truncated by max_tokens={self.max_tokens}")
+
         return ProviderResponse(
             content=response.choices[0].message.content,
             input_tokens=usage.prompt_tokens,
             output_tokens=usage.completion_tokens,
+            warnings=warnings,
         )

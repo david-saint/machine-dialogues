@@ -1,6 +1,6 @@
 import os
 from openai import OpenAI
-from .base import LLMProvider, ProviderResponse
+from .base import LLMProvider, ProviderResponse, collapse_exact_duplicate
 
 
 class OpenRouterProvider(LLMProvider):
@@ -42,9 +42,22 @@ class OpenRouterProvider(LLMProvider):
             reasoning = getattr(details, "reasoning_tokens", 0) or 0
             thinking_tokens = reasoning
 
+        choice = response.choices[0]
+        warnings = []
+        if choice.finish_reason == "length":
+            msg = f"response truncated by max_tokens={self.max_tokens}"
+            if thinking_tokens:
+                msg += f" (thinking used {thinking_tokens:,} of that budget)"
+            warnings.append(msg)
+
+        content, deduped = collapse_exact_duplicate(choice.message.content or "")
+        if deduped:
+            warnings.append("provider returned the response body twice; collapsed to one copy")
+
         return ProviderResponse(
-            content=response.choices[0].message.content or "",
+            content=content,
             input_tokens=usage.prompt_tokens,
             output_tokens=usage.completion_tokens - thinking_tokens,
             thinking_tokens=thinking_tokens,
+            warnings=warnings,
         )

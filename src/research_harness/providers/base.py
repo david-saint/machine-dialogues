@@ -8,6 +8,26 @@ class ProviderResponse:
     input_tokens: int
     output_tokens: int
     thinking_tokens: int = 0
+    warnings: list[str] = field(default_factory=list)
+
+
+def collapse_exact_duplicate(content: str) -> tuple[str, bool]:
+    """Collapse a response body that is the same text twice (`X\\n\\nX`).
+
+    OpenRouter has been observed returning a model's first turn with the full
+    text duplicated when normalizing reasoning-model output. Identical halves
+    carry no information, but they poison the opponent's history and the saved
+    transcript, so keep one copy and report that it happened.
+    """
+    stripped = content.strip()
+    for sep in ("\n\n", "\n"):
+        half, remainder = divmod(len(stripped) - len(sep), 2)
+        if remainder != 0 or half <= 0:
+            continue
+        first, mid, second = stripped[:half], stripped[half:half + len(sep)], stripped[half + len(sep):]
+        if mid == sep and first == second:
+            return first, True
+    return content, False
 
 
 class LLMProvider(ABC):

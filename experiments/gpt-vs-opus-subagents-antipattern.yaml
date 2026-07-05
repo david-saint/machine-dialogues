@@ -69,7 +69,7 @@ agent_b:
     4. List your 4 strongest concrete examples, plus 2 examples that weaken your side.
     5. Propose 3 specific design rules for when a team SHOULD reach for subagents versus staying single-agent.
   temperature: 1.0
-  max_tokens: 16384
+  max_tokens: 32768
   thinking_level: max
 
 turns: 10

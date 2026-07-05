@@ -4,9 +4,19 @@ interface ConversionMeterProps {
   score: number; // 0-100
   label: string;
   accent?: string; // Model accent of the agent whose position this tracks.
+  lowLabel?: string; // What 0 means on this experiment's scale.
+  midLabel?: string;
+  highLabel?: string; // What 100 means on this experiment's scale.
 }
 
-export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label, accent = 'var(--agent-b)' }) => {
+export const ConversionMeter: React.FC<ConversionMeterProps> = ({
+  score,
+  label,
+  accent = 'var(--agent-b)',
+  lowLabel = '0',
+  midLabel = 'Neutral',
+  highLabel = '100',
+}) => {
   return (
     <div className="meter">
       <div className="meter__head">
@@ -20,9 +30,9 @@ export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label, 
       </div>
 
       <div className="meter__labels">
-        <span>Anti-Functionalist</span>
-        <span>Neutral</span>
-        <span>Functionalist</span>
+        <span>{lowLabel}</span>
+        <span>{midLabel}</span>
+        <span>{highLabel}</span>
       </div>
 
       <style>{`

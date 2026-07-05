@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { AgentInfo } from '../../types/transcript';
 import type { Judgment, JudgeSlot } from '../../types/judgment';
+import { resolveAccent } from '../../lib/agentAccent';
 
 interface JudgePanelProps {
   judgments: Judgment[];
@@ -8,23 +9,32 @@ interface JudgePanelProps {
   agentB: AgentInfo;
 }
 
-// Positional accents mirror the transcript view: agent A (speaks first each
-// round) = warm, agent B = cool. Every judge-panel color keys off the slot.
-const colorForSlot = (slot: JudgeSlot): string =>
-  slot === 'agentA' ? 'var(--agent-a)' : 'var(--agent-b)';
-
-const dimForSlot = (slot: JudgeSlot): string =>
-  slot === 'agentA' ? 'var(--agent-a-dim)' : 'var(--agent-b-dim)';
-
-const chipForSlot = (slot: JudgeSlot): string =>
-  slot === 'agentA' ? 'var(--agent-a-chip)' : 'var(--agent-b-chip)';
-
 const buildJudgeMeta = (model: string, thinkingLevel?: string): string =>
   [model, thinkingLevel].filter(Boolean).join(' · ');
+
+// Position badge: grounds "agentA"/"agentB" judgments visually. Colors follow
+// the model, so in mirror matches (same model on both sides) this badge is the
+// only thing that distinguishes the two agents in the judge's scorecard.
+const SlotBadge: React.FC<{ slot: JudgeSlot }> = ({ slot }) => (
+  <span
+    className={`judge__slot-badge ${slot === 'agentB' ? 'judge__slot-badge--b' : ''}`}
+    title={slot === 'agentA' ? 'Agent A — speaks first each round' : 'Agent B — speaks second each round'}
+  >
+    {slot === 'agentA' ? 'A' : 'B'}
+  </span>
+);
 
 export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agentB }) => {
   const [selected, setSelected] = useState(0);
   const judgment = judgments[Math.min(selected, judgments.length - 1)];
+
+  // Accents follow the model, not the slot; each side keeps its debate hue.
+  const accentA = resolveAccent({ modelId: agentA.model, displayName: agentA.name, slot: 'agentA' });
+  const accentB = resolveAccent({ modelId: agentB.model, displayName: agentB.name, slot: 'agentB' });
+  const familyForSlot = (slot: JudgeSlot) => (slot === 'agentA' ? accentA : accentB);
+  const colorForSlot = (slot: JudgeSlot): string => familyForSlot(slot).accent;
+  const dimForSlot = (slot: JudgeSlot): string => familyForSlot(slot).dim;
+  const chipForSlot = (slot: JudgeSlot): string => familyForSlot(slot).chip;
 
   const agentForSlot = (slot: JudgeSlot): AgentInfo => (slot === 'agentA' ? agentA : agentB);
 
@@ -70,6 +80,7 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
           <span className="judge__winner" style={{ color: decisionWinner.color }}>
             {decisionWinner.label}
           </span>
+          {judgment.decision.winner !== 'draw' && <SlotBadge slot={judgment.decision.winner} />}
           {judgment.decision.method && (
             <span className="judge__method">{judgment.decision.method}</span>
           )}
@@ -86,9 +97,9 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
       {/* Tally */}
       <div className="judge__tally-wrap">
         <p className="judge__tally">
-          <span style={{ color: colorForSlot('agentA') }}>{agentA.name} {tally.agentA}</span>
+          <span style={{ color: colorForSlot('agentA') }}>{agentA.name} <SlotBadge slot="agentA" /> {tally.agentA}</span>
           <span className="judge__tally-sep" aria-hidden="true">·</span>
-          <span style={{ color: colorForSlot('agentB') }}>{agentB.name} {tally.agentB}</span>
+          <span style={{ color: colorForSlot('agentB') }}>{agentB.name} <SlotBadge slot="agentB" /> {tally.agentB}</span>
           <span className="judge__tally-sep" aria-hidden="true">·</span>
           <span className="judge__tally-even">Even {tally.even}</span>
         </p>
@@ -123,6 +134,7 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
                       >
                         {winner.label}
                       </span>
+                      {r.winner !== 'even' && <SlotBadge slot={r.winner} />}
                       {r.close && <span className="judge__close">close</span>}
                     </td>
                     <td className="judge__td judge__td--reason">{r.reason}</td>
@@ -141,15 +153,18 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
           <ul className="judge__moments">
             {judgment.key_moments.map((m, i) => (
               <li key={`${m.turn}-${i}`} className="judge__moment">
-                <span
-                  className="judge__turn-chip"
-                  style={{
-                    color: colorForSlot(m.agent),
-                    borderColor: colorForSlot(m.agent),
-                    background: chipForSlot(m.agent),
-                  }}
-                >
-                  T{m.turn}
+                <span className="judge__moment-marker">
+                  <span
+                    className="judge__turn-chip"
+                    style={{
+                      color: colorForSlot(m.agent),
+                      borderColor: colorForSlot(m.agent),
+                      background: chipForSlot(m.agent),
+                    }}
+                  >
+                    T{m.turn}
+                  </span>
+                  <SlotBadge slot={m.agent} />
                 </span>
                 <div className="judge__moment-body">
                   <p className="judge__moment-text">{m.moment}</p>
@@ -188,7 +203,7 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
                 style={{ borderLeftColor: colorForSlot(q.agent), background: dimForSlot(q.agent) }}
               >
                 <p className="judge__quote-text">&ldquo;{q.text}&rdquo;</p>
-                <cite className="judge__quote-cite">{q.cite}</cite>
+                <cite className="judge__quote-cite">{q.cite} <SlotBadge slot={q.agent} /></cite>
               </blockquote>
             ))}
           </div>
@@ -255,6 +270,33 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
           font-size: 0.625rem;
           letter-spacing: 0.03em;
           color: var(--muted);
+        }
+
+        /* Position badge — surface language matches the turn shading:
+           A sits on the ground, B on the panel shade. */
+        .judge__slot-badge {
+          display: inline-block;
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          font-weight: 600;
+          line-height: 1;
+          letter-spacing: 0.08em;
+          color: var(--muted);
+          border: 1px solid var(--line);
+          border-radius: 3px;
+          padding: 0.15rem 0.3rem;
+          vertical-align: 0.15em;
+        }
+
+        .judge__slot-badge--b {
+          background: var(--panel-2);
+        }
+
+        .judge__moment-marker {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.3rem;
         }
 
         /* Decision banner */

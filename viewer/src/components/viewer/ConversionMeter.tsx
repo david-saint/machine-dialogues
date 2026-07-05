@@ -3,9 +3,10 @@ import React from 'react';
 interface ConversionMeterProps {
   score: number; // 0-100
   label: string;
+  accent?: string; // Model accent of the agent whose position this tracks.
 }
 
-export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label }) => {
+export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label, accent = 'var(--agent-b)' }) => {
   return (
     <div className="meter">
       <div className="meter__head">
@@ -14,7 +15,7 @@ export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label }
       </div>
 
       <div className="meter__track">
-        <div className="meter__fill" style={{ width: `${score}%` }} />
+        <div className="meter__fill" style={{ width: `${score}%`, background: accent }} />
         <div className="meter__notch" style={{ left: '50%' }} />
       </div>
 

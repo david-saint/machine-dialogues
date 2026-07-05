@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { marked } from 'marked';
 import type { TranscriptTurn, AgentInfo } from '../../types/transcript';
+import { resolveAccent } from '../../lib/agentAccent';
 import { ImageModal } from '../shared/ImageModal';
 
 interface MessageBubbleProps {
@@ -46,8 +47,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
   const researcherAvatar = '/avatars/human-researcher.png';
   const displayAvatar = isResearcher ? researcherAvatar : agent.avatar;
   const displayName = isResearcher ? 'Researcher' : agent.name;
-  const accentColor = isResearcher ? 'var(--neutral)' : isAgentA ? 'var(--agent-a)' : 'var(--agent-b)';
-  const dimColor = isResearcher ? 'var(--neutral-dim)' : isAgentA ? 'var(--agent-a-dim)' : 'var(--agent-b-dim)';
+  // Color by MODEL (Claude warm, GPT teal, Gemini slate, Kimi plum); the
+  // second speaker is set apart by a shaded surface, not a different hue.
+  const family = resolveAccent({
+    modelId: agent.model,
+    displayName: agent.name,
+    slot: isAgentA ? 'agentA' : 'agentB',
+  });
+  const accentColor = isResearcher ? 'var(--neutral)' : family.accent;
+  const dimColor = isResearcher ? 'var(--neutral-dim)' : family.dim;
+  // The second speaker (agent B) sits on a subtle panel; agent A stays on the
+  // page ground. This keeps same-model debates unambiguous by position alone.
+  const isShaded = !isResearcher && !isAgentA;
 
   const htmlContent = useMemo(() => {
     if (isActive && highlightPosition) {
@@ -73,7 +84,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
 
   return (
     <article
-      className={`entry ${isResearcher ? 'entry--prompt' : ''} ${isActive ? 'entry--active' : ''}`}
+      className={`entry ${isResearcher ? 'entry--prompt' : ''} ${isShaded ? 'entry--shaded' : ''} ${isActive ? 'entry--active' : ''}`}
       data-turn={turn.turnNumber}
       data-index={index}
       style={
@@ -96,7 +107,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
 
         <div className="entry__attribution">
           <span className="entry__eyebrow">
-            {isResearcher ? 'The prompt' : `Turn ${String(turn.turnNumber).padStart(2, '0')}`}
+            {isResearcher ? 'The prompt' : `Turn ${String(turn.turnNumber).padStart(2, '0')} · ${isAgentA ? 'A' : 'B'}`}
           </span>
           <span className="entry__namerow">
             <span className="entry__agent" style={{ color: accentColor }}>{displayName}</span>
@@ -153,6 +164,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAge
           border-radius: 5px;
           padding: 1.5rem 1.5rem 1.25rem;
           margin-bottom: 0.5rem;
+        }
+
+        /* The second speaker sits on a quiet panel with hairline edges, so the
+           first/second distinction survives even when both share one model hue. */
+        .entry--shaded {
+          border: 1px solid var(--line);
+          border-radius: 5px;
+          background: var(--panel);
+          padding-left: 1.25rem;
+          padding-right: 1.25rem;
+          margin-top: 0.4rem;
+          margin-bottom: 0.4rem;
         }
 
         .entry--active {

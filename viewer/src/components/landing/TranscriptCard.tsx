@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Transcript } from '../../types/transcript';
+import { resolveAccent } from '../../lib/agentAccent';
 import { ImageModal } from '../shared/ImageModal';
 
 interface TranscriptCardProps {
@@ -13,6 +14,11 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
 
   const agentA = transcript.agentA || { name: 'Unknown', model: '' };
   const agentB = transcript.agentB || { name: 'Unknown', model: '' };
+
+  // Model-true hues; at card scale position stays hue-only (a shaded band per
+  // side would be noisy in a dense grid).
+  const colorA = resolveAccent({ modelId: agentA.model, displayName: agentA.name, slot: 'agentA' }).accent;
+  const colorB = resolveAccent({ modelId: agentB.model, displayName: agentB.name, slot: 'agentB' }).accent;
 
   const handleAvatarClick = (e: React.MouseEvent, src: string, alt: string) => {
     e.preventDefault();
@@ -33,11 +39,11 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
                 src={agentA.avatar}
                 alt={agentA.name}
                 className="tcard__avatar"
-                style={{ borderColor: 'var(--agent-a)' }}
+                style={{ borderColor: colorA }}
                 onClick={(e) => handleAvatarClick(e, agentA.avatar!, agentA.name)}
               />
             )}
-            <span className="tcard__agent" style={{ color: 'var(--agent-a)' }}>{agentA.name}</span>
+            <span className="tcard__agent" style={{ color: colorA }}>{agentA.name}</span>
           </div>
           <span className="tcard__vs">vs</span>
           <div className="tcard__agent-group">
@@ -46,11 +52,11 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
                 src={agentB.avatar}
                 alt={agentB.name}
                 className="tcard__avatar"
-                style={{ borderColor: 'var(--agent-b)' }}
+                style={{ borderColor: colorB }}
                 onClick={(e) => handleAvatarClick(e, agentB.avatar!, agentB.name)}
               />
             )}
-            <span className="tcard__agent" style={{ color: 'var(--agent-b)' }}>{agentB.name}</span>
+            <span className="tcard__agent" style={{ color: colorB }}>{agentB.name}</span>
           </div>
         </div>
 

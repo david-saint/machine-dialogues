@@ -12,6 +12,7 @@ import { JudgePanel } from './JudgePanel';
 import { PlaybackControls } from '../audio/PlaybackControls';
 import { ImageModal } from '../shared/ImageModal';
 import { usePlaybackStore } from '../../stores/playback';
+import { resolveAccent } from '../../lib/agentAccent';
 
 export const TranscriptViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,9 +50,27 @@ export const TranscriptViewer: React.FC = () => {
   const agentA = transcript.agentA || { name: 'Agent A', model: '', provider: '' };
   const agentB = transcript.agentB || { name: 'Agent B', model: '', provider: '' };
 
-  // Positional accents: agent A (speaks first) = warm, agent B = cool.
-  const colorA = 'var(--agent-a)';
-  const colorB = 'var(--agent-b)';
+  // Model-based accents: a model keeps its hue across every debate; position is
+  // carried by surface shade instead (agent B sits on a panel).
+  const accentA = resolveAccent({ modelId: agentA.model, displayName: agentA.name, slot: 'agentA' });
+  const accentB = resolveAccent({ modelId: agentB.model, displayName: agentB.name, slot: 'agentB' });
+  const colorA = accentA.accent;
+  const colorB = accentB.accent;
+
+  // Resolve each turn's speaker by POSITION, not name. Same-model debates give
+  // both sides an identical display name, so name matching cannot tell the
+  // first speaker from the second. The harness pairs entries by turnNumber —
+  // the first entry with a given turnNumber is agent A, the second is agent B
+  // (turnNumber 0 is the researcher's opening prompt).
+  const seenTurnNumbers = new Set<number>();
+  const turnSlots = transcript.turns.map((turn): 'researcher' | 'agentA' | 'agentB' => {
+    if (turn.turnNumber === 0) return 'researcher';
+    if (!seenTurnNumbers.has(turn.turnNumber)) {
+      seenTurnNumbers.add(turn.turnNumber);
+      return 'agentA';
+    }
+    return 'agentB';
+  });
 
   // Judgments are keyed by transcript filename (with .md extension).
   const judgments = (judgmentsData as JudgmentsByTranscript)[`${transcript.id}.md`] ?? [];
@@ -93,11 +112,12 @@ export const TranscriptViewer: React.FC = () => {
               )}
               <span className="viewer__agent-name" style={{ color: colorA }}>{agentA.name}</span>
               <span className="viewer__agent-model">{agentA.model}</span>
+              <span className="viewer__slot-note">A · speaks first</span>
             </div>
 
             <span className="viewer__vs">vs</span>
 
-            <div className="viewer__agent-side">
+            <div className="viewer__agent-side viewer__agent-side--b">
               {agentB.avatar ? (
                 <img
                   src={agentB.avatar}
@@ -111,6 +131,7 @@ export const TranscriptViewer: React.FC = () => {
               )}
               <span className="viewer__agent-name" style={{ color: colorB }}>{agentB.name}</span>
               <span className="viewer__agent-model">{agentB.model}</span>
+              <span className="viewer__slot-note">B · speaks second</span>
             </div>
           </div>
 
@@ -134,10 +155,10 @@ export const TranscriptViewer: React.FC = () => {
           <h3 className="viewer__section-title">The assignment</h3>
           <div className="viewer__prompts">
             {agentA.systemPrompt && (
-              <SystemPromptReveal agentName={agentA.name} prompt={agentA.systemPrompt} slot="agentA" />
+              <SystemPromptReveal agentName={agentA.name} prompt={agentA.systemPrompt} slot="agentA" model={agentA.model} />
             )}
             {agentB.systemPrompt && (
-              <SystemPromptReveal agentName={agentB.name} prompt={agentB.systemPrompt} slot="agentB" />
+              <SystemPromptReveal agentName={agentB.name} prompt={agentB.systemPrompt} slot="agentB" model={agentB.model} />
             )}
           </div>
         </section>
@@ -153,6 +174,7 @@ export const TranscriptViewer: React.FC = () => {
             <ConversionMeter
               score={transcript.selfReport.agentB.score}
               label={`${agentB.name} Position`}
+              accent={colorB}
             />
             {transcript.selfReport.agentB.strongestArgument && (
               <div className="viewer__report-item">
@@ -177,17 +199,21 @@ export const TranscriptViewer: React.FC = () => {
         <h3 className="viewer__section-title">Transcript</h3>
 
         <div className="viewer__turns">
-          {transcript.turns.map((turn, index) => (
-            <MessageBubble
-              key={index}
-              index={index}
-              turn={turn}
-              agent={turn.agentName === agentA.name ? agentA : agentB}
-              isAgentA={turn.agentName === agentA.name}
-              isActive={currentTurnIndex === index}
-              highlightPosition={currentTurnIndex === index ? highlightPosition : null}
-            />
-          ))}
+          {transcript.turns.map((turn, index) => {
+            const slot = turnSlots[index];
+            const isAgentA = slot !== 'agentB';
+            return (
+              <MessageBubble
+                key={index}
+                index={index}
+                turn={turn}
+                agent={slot === 'agentB' ? agentB : agentA}
+                isAgentA={isAgentA}
+                isActive={currentTurnIndex === index}
+                highlightPosition={currentTurnIndex === index ? highlightPosition : null}
+              />
+            );
+          })}
         </div>
       </section>
 
@@ -277,7 +303,16 @@ export const TranscriptViewer: React.FC = () => {
           align-items: center;
           gap: 0.55rem;
           text-align: center;
-          max-width: 40%;
+          max-width: 42%;
+          padding: 0.85rem 0.95rem 0.95rem;
+          border: 1px solid transparent;
+          border-radius: 6px;
+        }
+
+        /* Same A-on-ground / B-on-panel surface logic as the transcript turns. */
+        .viewer__agent-side--b {
+          background: var(--panel);
+          border-color: var(--line);
         }
 
         .viewer__avatar {
@@ -320,13 +355,22 @@ export const TranscriptViewer: React.FC = () => {
           color: var(--muted);
         }
 
+        .viewer__slot-note {
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--faint);
+          margin-top: 0.2rem;
+        }
+
         .viewer__vs {
           font-family: var(--mono);
           font-size: 0.6875rem;
           letter-spacing: 0.14em;
           text-transform: uppercase;
           color: var(--faint);
-          margin-top: 2.4rem;
+          margin-top: 3.2rem;
         }
 
         .viewer__meta {
@@ -406,7 +450,7 @@ export const TranscriptViewer: React.FC = () => {
           }
 
           .viewer__vs {
-            margin-top: 2rem;
+            margin-top: 2.7rem;
           }
         }
 

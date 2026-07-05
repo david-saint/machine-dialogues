@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import type { JudgeSlot } from '../../types/judgment';
+import type { AgentSlot } from '../../lib/agentAccent';
+import { resolveAccent } from '../../lib/agentAccent';
 
 interface SystemPromptRevealProps {
   agentName: string;
   prompt: string;
-  slot?: JudgeSlot;
+  slot?: AgentSlot;
+  model?: string;
 }
 
-export const SystemPromptReveal: React.FC<SystemPromptRevealProps> = ({ agentName, prompt, slot }) => {
+export const SystemPromptReveal: React.FC<SystemPromptRevealProps> = ({ agentName, prompt, slot, model }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!prompt) return null;
 
-  const accent = slot === 'agentB' ? 'var(--agent-b)' : 'var(--agent-a)';
+  // Accent by model so each side's prompt card carries that model's hue.
+  const accent = resolveAccent({ modelId: model, displayName: agentName, slot: slot ?? 'agentA' }).accent;
 
   return (
     <div className="classified" style={{ '--accent': accent } as React.CSSProperties}>

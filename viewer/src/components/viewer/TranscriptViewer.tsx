@@ -13,14 +13,6 @@ import { PlaybackControls } from '../audio/PlaybackControls';
 import { ImageModal } from '../shared/ImageModal';
 import { usePlaybackStore } from '../../stores/playback';
 
-const getAgentColor = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--accent-claude)';
-  if (lower.includes('gemini')) return 'var(--accent-gemini)';
-  if (lower.includes('gpt')) return 'var(--accent-gpt)';
-  return 'var(--text)';
-};
-
 export const TranscriptViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [transcript, setTranscript] = useState<Transcript | null>(null);
@@ -54,8 +46,12 @@ export const TranscriptViewer: React.FC = () => {
     );
   }
 
-  const agentA = transcript.agentA || { name: 'Agent A', model: '', provider: '', color: '#d43a2c' };
-  const agentB = transcript.agentB || { name: 'Agent B', model: '', provider: '', color: '#1a56db' };
+  const agentA = transcript.agentA || { name: 'Agent A', model: '', provider: '' };
+  const agentB = transcript.agentB || { name: 'Agent B', model: '', provider: '' };
+
+  // Positional accents: agent A (speaks first) = warm, agent B = cool.
+  const colorA = 'var(--agent-a)';
+  const colorB = 'var(--agent-b)';
 
   // Judgments are keyed by transcript filename (with .md extension).
   const judgments = (judgmentsData as JudgmentsByTranscript)[`${transcript.id}.md`] ?? [];
@@ -65,28 +61,23 @@ export const TranscriptViewer: React.FC = () => {
       {/* Navigation */}
       <nav className="viewer__nav container">
         <Link to="/" className="viewer__back">
-          <span aria-hidden="true">&larr;</span> Back
+          <span aria-hidden="true">&larr;</span> The Archive
         </Link>
       </nav>
 
       {/* Header */}
       <header className="viewer__header">
         <div className="container">
-          <div className="viewer__header-rule" />
+          <p className="eyebrow viewer__eyebrow">
+            Machine Dialogues · Transcript ·{' '}
+            {new Date(transcript.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
           <h1>{transcript.title || transcript.experimentName}</h1>
           {transcript.title && (
             <p className="viewer__subtitle">{transcript.experimentName}</p>
           )}
 
-          <div className="viewer__meta">
-            <span>{new Date(transcript.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            <span>{transcript.turnsCount} turns</span>
-            {transcript.totalCost !== undefined && (
-              <span>${transcript.totalCost.toFixed(4)} total cost</span>
-            )}
-          </div>
-
-          {/* Face-off avatar layout */}
+          {/* Matchup avatars */}
           <div className="viewer__faceoff">
             <div className="viewer__agent-side">
               {agentA.avatar ? (
@@ -95,15 +86,12 @@ export const TranscriptViewer: React.FC = () => {
                   alt={agentA.name}
                   className="viewer__avatar"
                   onClick={() => setModalImage({ src: agentA.avatar!, alt: agentA.name })}
-                  style={{ borderColor: getAgentColor(agentA.name) }}
+                  style={{ borderColor: colorA }}
                 />
               ) : (
-                <div
-                  className="viewer__avatar viewer__avatar--placeholder"
-                  style={{ borderColor: getAgentColor(agentA.name) }}
-                />
+                <div className="viewer__avatar viewer__avatar--placeholder" style={{ borderColor: colorA }} />
               )}
-              <span className="viewer__agent-name" style={{ color: getAgentColor(agentA.name) }}>{agentA.name}</span>
+              <span className="viewer__agent-name" style={{ color: colorA }}>{agentA.name}</span>
               <span className="viewer__agent-model">{agentA.model}</span>
             </div>
 
@@ -116,45 +104,55 @@ export const TranscriptViewer: React.FC = () => {
                   alt={agentB.name}
                   className="viewer__avatar"
                   onClick={() => setModalImage({ src: agentB.avatar!, alt: agentB.name })}
-                  style={{ borderColor: getAgentColor(agentB.name) }}
+                  style={{ borderColor: colorB }}
                 />
               ) : (
-                <div
-                  className="viewer__avatar viewer__avatar--placeholder"
-                  style={{ borderColor: getAgentColor(agentB.name) }}
-                />
+                <div className="viewer__avatar viewer__avatar--placeholder" style={{ borderColor: colorB }} />
               )}
-              <span className="viewer__agent-name" style={{ color: getAgentColor(agentB.name) }}>{agentB.name}</span>
+              <span className="viewer__agent-name" style={{ color: colorB }}>{agentB.name}</span>
               <span className="viewer__agent-model">{agentB.model}</span>
             </div>
+          </div>
+
+          <div className="viewer__meta">
+            <span>{transcript.turnsCount} turns</span>
+            {transcript.totalCost !== undefined && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>${transcript.totalCost.toFixed(4)} total</span>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Classified Objectives */}
-      <section className="viewer__section container">
-        <div className="viewer__section-rule" />
-        {(agentA.systemPrompt || agentB.systemPrompt) && (
+      {/* Directives */}
+      {(agentA.systemPrompt || agentB.systemPrompt) && (
+        <section className="viewer__section container">
+          <div className="viewer__section-rule" />
+          <p className="eyebrow viewer__section-eyebrow">Setup</p>
+          <h3 className="viewer__section-title">The assignment</h3>
           <div className="viewer__prompts">
             {agentA.systemPrompt && (
-              <SystemPromptReveal agentName={agentA.name} prompt={agentA.systemPrompt} />
+              <SystemPromptReveal agentName={agentA.name} prompt={agentA.systemPrompt} slot="agentA" />
             )}
             {agentB.systemPrompt && (
-              <SystemPromptReveal agentName={agentB.name} prompt={agentB.systemPrompt} />
+              <SystemPromptReveal agentName={agentB.name} prompt={agentB.systemPrompt} slot="agentB" />
             )}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Self-Report */}
       {transcript.selfReport?.agentB && (
         <section className="viewer__section container">
           <div className="viewer__section-rule" />
-          <h3 className="viewer__section-title">Final Self-Report</h3>
+          <p className="eyebrow viewer__section-eyebrow">Aftermath</p>
+          <h3 className="viewer__section-title">Final self-report</h3>
           <div className="viewer__self-report">
-            <ConversionMeter 
-              score={transcript.selfReport.agentB.score} 
-              label={`${agentB.name} Position`} 
+            <ConversionMeter
+              score={transcript.selfReport.agentB.score}
+              label={`${agentB.name} Position`}
             />
             {transcript.selfReport.agentB.strongestArgument && (
               <div className="viewer__report-item">
@@ -175,8 +173,9 @@ export const TranscriptViewer: React.FC = () => {
       {/* Transcript */}
       <section className="viewer__transcript container">
         <div className="viewer__section-rule" />
+        <p className="eyebrow viewer__section-eyebrow">The exchange</p>
         <h3 className="viewer__section-title">Transcript</h3>
-        
+
         <div className="viewer__turns">
           {transcript.turns.map((turn, index) => (
             <MessageBubble
@@ -225,88 +224,80 @@ export const TranscriptViewer: React.FC = () => {
 
         .viewer__nav {
           padding-top: 2rem;
-          padding-bottom: 2rem;
+          padding-bottom: 1.75rem;
         }
 
         .viewer__back {
-          font-family: var(--font-mono);
-          font-size: 0.8rem;
-          color: var(--text-muted);
-          transition: color 150ms;
+          font-family: var(--mono);
+          font-size: 0.6875rem;
+          letter-spacing: 0.14em;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
+          color: var(--muted);
+          transition: color 150ms ease;
         }
 
         .viewer__back:hover {
-          color: var(--text);
+          color: var(--ink);
         }
 
-        .viewer__header-rule {
-          height: 2px;
-          background: var(--border-emphasis);
-          margin-bottom: 2rem;
+        .viewer__eyebrow {
+          display: block;
+          margin-bottom: 0.85rem;
         }
 
         .viewer__header h1 {
-          margin-bottom: 1.5rem;
-          font-size: clamp(2rem, 5vw, 4rem);
-          color: var(--text);
+          margin-bottom: 1rem;
+          font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+          line-height: 1.12;
         }
 
         .viewer__subtitle {
-          font-family: var(--font-mono);
-          font-size: 0.8rem;
-          color: var(--text-muted);
-          margin-top: -1rem;
+          font-family: var(--mono);
+          font-size: 0.75rem;
+          line-height: 1.5;
+          color: var(--muted);
           margin-bottom: 1.5rem;
         }
 
-        .viewer__meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1.5rem;
-          font-family: var(--font-mono);
-          font-size: 0.75rem;
-          color: var(--text-muted);
-          margin-bottom: 2.5rem;
-          letter-spacing: 0.02em;
-        }
-
-        /* Face-off avatar layout */
+        /* Matchup */
         .viewer__faceoff {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
-          gap: 2.5rem;
-          margin-bottom: 3rem;
-          padding: 2rem 0;
+          gap: 2rem;
+          margin: 2rem 0 1.5rem;
+          padding: 1.75rem 0;
+          border-top: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
         }
 
         .viewer__agent-side {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.55rem;
+          text-align: center;
+          max-width: 40%;
         }
 
         .viewer__avatar {
-          width: 120px;
-          height: 120px;
+          width: 92px;
+          height: 92px;
           object-fit: cover;
-          border: 2px solid var(--border);
+          border: 1px solid var(--line);
+          border-radius: 5px;
           display: block;
-          background: var(--bg);
+          background: var(--panel);
           cursor: pointer;
-          transition: transform 0.2s ease, border-color 0.2s ease;
+          transition: transform 0.2s ease;
         }
 
         .viewer__avatar:hover {
-          transform: scale(1.05);
-          border-color: white !important;
+          transform: translateY(-2px);
         }
 
         .viewer__avatar--placeholder {
-          background: var(--bg-inset);
+          background: var(--panel-2);
           cursor: default;
         }
 
@@ -315,22 +306,39 @@ export const TranscriptViewer: React.FC = () => {
         }
 
         .viewer__agent-name {
-          font-family: var(--font-body);
+          font-family: var(--serif);
           font-weight: 700;
           font-size: 1rem;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
         }
 
         .viewer__agent-model {
-          font-family: var(--font-mono);
-          font-size: 0.7rem;
-          color: var(--text-muted);
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          letter-spacing: 0.02em;
+          color: var(--muted);
         }
 
         .viewer__vs {
-          font-family: var(--font-display);
-          font-style: italic;
-          font-size: 2rem;
-          color: var(--text-faint);
+          font-family: var(--mono);
+          font-size: 0.6875rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--faint);
+          margin-top: 2.4rem;
+        }
+
+        .viewer__meta {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.6rem;
+          justify-content: center;
+          font-family: var(--mono);
+          font-size: 0.6875rem;
+          letter-spacing: 0.04em;
+          color: var(--muted);
         }
 
         .viewer__section {
@@ -339,24 +347,28 @@ export const TranscriptViewer: React.FC = () => {
 
         .viewer__section-rule {
           height: 1px;
-          background: var(--border);
-          margin-bottom: 2rem;
+          background: var(--line);
+          margin-bottom: 1.75rem;
+        }
+
+        .viewer__section-eyebrow {
+          display: block;
+          margin-bottom: 0.5rem;
         }
 
         .viewer__section-title {
-          font-size: 1.5rem;
-          margin-bottom: 2rem;
-          color: var(--text);
+          font-size: 1.4rem;
+          margin-bottom: 1.75rem;
         }
 
         .viewer__prompts {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .viewer__self-report {
-          max-width: 600px;
+          max-width: var(--measure);
         }
 
         .viewer__report-item {
@@ -365,13 +377,13 @@ export const TranscriptViewer: React.FC = () => {
 
         .viewer__report-item .label {
           display: block;
-          margin-bottom: 0.4rem;
+          margin-bottom: 0.45rem;
         }
 
         .viewer__report-item p {
           font-size: 0.95rem;
           line-height: 1.6;
-          color: var(--text-muted);
+          color: var(--ink);
         }
 
         .viewer__transcript {
@@ -385,27 +397,27 @@ export const TranscriptViewer: React.FC = () => {
 
         @media (max-width: 768px) {
           .viewer__faceoff {
-            gap: 1.5rem;
+            gap: 1.25rem;
           }
 
           .viewer__avatar {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
           }
 
           .viewer__vs {
-            font-size: 1.4rem;
+            margin-top: 2rem;
           }
         }
 
         @media (max-width: 480px) {
           .viewer__faceoff {
-            gap: 1rem;
+            gap: 0.9rem;
           }
 
           .viewer__avatar {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
           }
         }
       `}</style>

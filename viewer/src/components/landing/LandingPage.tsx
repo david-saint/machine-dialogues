@@ -4,22 +4,6 @@ import type { Transcript, AgentInfo } from '../../types/transcript';
 import { TranscriptCard } from './TranscriptCard';
 import { ImageModal } from '../shared/ImageModal';
 
-const getAgentColor = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--accent-claude)';
-  if (lower.includes('gemini')) return 'var(--accent-gemini)';
-  if (lower.includes('gpt')) return 'var(--accent-gpt)';
-  return 'var(--text-faint)';
-};
-
-const getAgentGlow = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--glow-claude)';
-  if (lower.includes('gemini')) return 'var(--glow-gemini)';
-  if (lower.includes('gpt')) return 'var(--glow-gpt)';
-  return 'none';
-};
-
 export const LandingPage: React.FC = () => {
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
   const transcripts = transcriptsData as Transcript[];
@@ -50,19 +34,17 @@ export const LandingPage: React.FC = () => {
     <div className="landing">
       <header className="landing__hero">
         <div className="container">
-          <h1>Machine<br />Dialogues</h1>
+          <p className="eyebrow">Machine Dialogues · The Archive</p>
+          <h1 className="landing__title">Machine Dialogues</h1>
+          <p className="landing__lede">
+            A reading room of AI-to-AI disputes — structured philosophical and technical
+            debates, transcribed in full and settled by a judge&rsquo;s report.
+          </p>
 
           {uniqueAgents.length > 0 && (
             <div className="landing__avatars">
               {uniqueAgents.map((agent) => (
-                <div
-                  key={agent.name}
-                  className="landing__avatar-wrap"
-                  style={{
-                    '--agent-color': getAgentColor(agent.name),
-                    '--agent-glow': getAgentGlow(agent.name),
-                  } as React.CSSProperties}
-                >
+                <div key={agent.name} className="landing__avatar-wrap">
                   <img
                     src={agent.avatar}
                     alt={agent.name}
@@ -76,29 +58,34 @@ export const LandingPage: React.FC = () => {
           )}
 
           <div className="landing__hero-meta">
-            <p className="small-caps">High-fidelity analysis of AI-to-AI philosophical disputes</p>
             <span className="label">{transcripts.length} transcripts</span>
           </div>
         </div>
-        <div className="landing__hero-rule" />
+        <div className="container">
+          <div className="landing__hero-rule" />
+        </div>
       </header>
 
       {featured.length > 0 && (
         <section className="landing__featured container">
+          <p className="eyebrow landing__section-eyebrow">Featured</p>
           {featured.map((t) => (
             <TranscriptCard key={t.id} transcript={t} featured />
           ))}
         </section>
       )}
 
-      <section className="landing__grid container">
-        {rest.length > 0 ? (
-          rest.map((t) => (
-            <TranscriptCard key={t.id} transcript={t} />
-          ))
-        ) : transcripts.length === 0 ? (
-          <p className="landing__empty">No transcripts found. Run <code>npm run parse</code> to generate data.</p>
-        ) : null}
+      <section className="landing__section container">
+        <p className="eyebrow landing__section-eyebrow">All debates</p>
+        <div className="landing__grid">
+          {rest.length > 0 ? (
+            rest.map((t) => (
+              <TranscriptCard key={t.id} transcript={t} />
+            ))
+          ) : transcripts.length === 0 ? (
+            <p className="landing__empty">No transcripts found. Run <code>npm run parse</code> to generate data.</p>
+          ) : null}
+        </div>
       </section>
 
       <footer className="landing__footer container">
@@ -116,19 +103,34 @@ export const LandingPage: React.FC = () => {
 
       <style>{`
         .landing {
+          --container-max: 52rem;
           min-height: 100vh;
           display: flex;
           flex-direction: column;
         }
 
         .landing__hero {
-          padding-top: 6rem;
+          padding-top: 4.5rem;
           padding-bottom: 0;
         }
 
-        .landing__hero h1 {
-          line-height: 0.9;
-          letter-spacing: -0.04em;
+        .landing .eyebrow {
+          display: block;
+          margin-bottom: 0.85rem;
+        }
+
+        .landing__title {
+          font-size: clamp(2.6rem, 8vw, 4.5rem);
+          line-height: 1.02;
+          letter-spacing: -0.025em;
+          margin-bottom: 1.25rem;
+        }
+
+        .landing__lede {
+          font-size: 1.15rem;
+          line-height: 1.55;
+          color: var(--muted);
+          max-width: var(--measure);
           margin-bottom: 2.5rem;
         }
 
@@ -147,48 +149,42 @@ export const LandingPage: React.FC = () => {
         }
 
         .landing__avatar {
-          width: 64px;
-          height: 64px;
+          width: 56px;
+          height: 56px;
           object-fit: cover;
-          border: 1px solid var(--agent-color);
-          transition: box-shadow 150ms, transform 150ms;
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          transition: border-color 150ms ease, transform 150ms ease;
           display: block;
           cursor: pointer;
         }
 
         .landing__avatar:hover {
-          transform: scale(1.05);
-          border-color: white;
-        }
-
-        .landing__avatar-wrap:hover .landing__avatar {
-          box-shadow: var(--agent-glow);
+          transform: translateY(-2px);
+          border-color: var(--muted);
         }
 
         .landing__avatar-label {
-          font-family: var(--font-mono);
-          font-size: 0.6rem;
-          letter-spacing: 0.04em;
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
-          color: var(--text-faint);
+          color: var(--faint);
         }
 
         .landing__hero-meta {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          padding-bottom: 2rem;
-        }
-
-        .landing__hero-meta p {
-          font-size: 1.1rem;
-          color: var(--text-muted);
+          padding-bottom: 2.25rem;
         }
 
         .landing__hero-rule {
-          height: 2px;
-          background: var(--border-emphasis);
+          height: 1px;
+          background: var(--line);
           width: 100%;
+        }
+
+        .landing__section-eyebrow {
+          display: block;
+          margin-bottom: 1.25rem;
         }
 
         .landing__featured {
@@ -198,29 +194,30 @@ export const LandingPage: React.FC = () => {
           flex-direction: column;
         }
 
-        .landing__featured .tcard {
-          max-width: 600px;
+        .landing__section {
+          padding-top: 2.5rem;
+          padding-bottom: 5rem;
+          flex: 1;
         }
 
         .landing__grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-          padding-top: 2rem;
-          padding-bottom: 6rem;
-          flex: 1;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 0.9rem;
         }
 
         .landing__empty {
           grid-column: 1 / -1;
           text-align: center;
           padding: 4rem 0;
-          color: var(--text-muted);
+          color: var(--muted);
         }
 
         .landing__empty code {
-          background: rgba(255, 255, 255, 0.06);
-          padding: 0.15em 0.4em;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          font-family: var(--mono);
+          background: var(--panel-2);
+          padding: 0.12em 0.4em;
+          border-radius: 3px;
         }
 
         .landing__footer {
@@ -229,12 +226,12 @@ export const LandingPage: React.FC = () => {
 
         .landing__footer-rule {
           height: 1px;
-          background: var(--border);
+          background: var(--line);
           margin-bottom: 1rem;
         }
 
         .landing__footer .label {
-          color: var(--text-faint);
+          color: var(--faint);
         }
 
         @media (max-width: 768px) {
@@ -244,11 +241,6 @@ export const LandingPage: React.FC = () => {
 
           .landing__avatars {
             gap: 1rem;
-          }
-
-          .landing__avatar {
-            width: 48px;
-            height: 48px;
           }
 
           .landing__grid {

@@ -57,8 +57,8 @@ export const ImageModal: React.FC<ImageModalProps> = ({ src, alt, onClose }) => 
           max-width: 100%;
           max-height: 90vh;
           object-fit: contain;
-          border: 1px solid var(--border);
-          box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+          border: 1px solid var(--line);
+          border-radius: 6px;
         }
 
         .modal-close {
@@ -77,7 +77,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ src, alt, onClose }) => 
 
         .modal-close:hover {
           transform: scale(1.1);
-          color: var(--accent-claude);
+          color: var(--agent-a);
         }
 
         @media (max-width: 768px) {

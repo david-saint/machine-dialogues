@@ -1,25 +1,29 @@
 import React, { useState } from 'react';
+import type { JudgeSlot } from '../../types/judgment';
 
 interface SystemPromptRevealProps {
   agentName: string;
   prompt: string;
+  slot?: JudgeSlot;
 }
 
-export const SystemPromptReveal: React.FC<SystemPromptRevealProps> = ({ agentName, prompt }) => {
+export const SystemPromptReveal: React.FC<SystemPromptRevealProps> = ({ agentName, prompt, slot }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!prompt) return null;
 
+  const accent = slot === 'agentB' ? 'var(--agent-b)' : 'var(--agent-a)';
+
   return (
-    <div className="classified">
+    <div className="classified" style={{ '--accent': accent } as React.CSSProperties}>
       <button
         className="classified__header"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
-        <span className="classified__badge">[CLASSIFIED]</span>
-        <span className="classified__name">{agentName}</span>
-        <span className="classified__toggle">{isOpen ? '\u2212' : '+'}</span>
+        <span className="classified__badge">System prompt</span>
+        <span className="classified__name" style={{ color: accent }}>{agentName}</span>
+        <span className="classified__toggle" aria-hidden="true">{isOpen ? '−' : '+'}</span>
       </button>
 
       {isOpen && (
@@ -30,61 +34,68 @@ export const SystemPromptReveal: React.FC<SystemPromptRevealProps> = ({ agentNam
 
       <style>{`
         .classified {
-          border: 1px solid var(--border);
+          border: 1px solid var(--line);
+          border-radius: 5px;
+          overflow: hidden;
         }
 
         .classified__header {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.85rem;
           width: 100%;
-          padding: 0.75rem 1rem;
-          background: var(--bg-raised);
-          color: var(--text);
+          padding: 0.8rem 1rem;
+          background: var(--panel);
+          color: var(--ink);
           border: none;
+          border-left: 3px solid var(--accent);
           cursor: pointer;
-          font-family: var(--font-mono);
-          font-size: 0.75rem;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
           text-align: left;
-          transition: background 150ms;
+          transition: background 150ms ease;
         }
 
         .classified__header:hover {
-          background: #1a1a1f;
+          background: var(--panel-2);
         }
 
         .classified__badge {
-          font-weight: 700;
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--muted);
           flex-shrink: 0;
-          color: var(--text-muted);
         }
 
         .classified__name {
           flex: 1;
+          font-family: var(--serif);
+          font-weight: 700;
+          font-size: 0.95rem;
+          letter-spacing: -0.01em;
         }
 
         .classified__toggle {
+          font-family: var(--mono);
           font-size: 1.1rem;
           line-height: 1;
           flex-shrink: 0;
-          color: var(--text-muted);
+          color: var(--muted);
         }
 
         .classified__body {
-          padding: 1.25rem 1.5rem;
-          background: var(--bg-inset);
-          border-top: 1px solid var(--border);
+          padding: 1.15rem 1.25rem;
+          background: var(--panel-2);
+          border-top: 1px solid var(--line);
         }
 
         .classified__text {
           white-space: pre-wrap;
           word-break: break-word;
-          font-family: var(--font-mono);
-          font-size: 0.8rem;
+          font-family: var(--mono);
+          font-size: 0.78rem;
           line-height: 1.65;
-          color: var(--text-muted);
+          color: var(--muted);
         }
       `}</style>
     </div>

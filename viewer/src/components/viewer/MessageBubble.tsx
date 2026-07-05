@@ -39,40 +39,15 @@ const buildHighlightedHtml = (
   return `${before}<mark class="entry__highlight">${highlighted}</mark>${after}`;
 };
 
-const getAgentColor = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--accent-claude)';
-  if (lower.includes('gemini')) return 'var(--accent-gemini)';
-  if (lower.includes('gpt')) return 'var(--accent-gpt)';
-  return 'var(--text)';
-};
-
-const getAgentGlow = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--glow-claude)';
-  if (lower.includes('gemini')) return 'var(--glow-gemini)';
-  if (lower.includes('gpt')) return 'var(--glow-gpt)';
-  return 'none';
-};
-
-const getAgentTint = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'rgba(212, 165, 116, 0.04)';
-  if (lower.includes('gemini')) return 'rgba(126, 184, 218, 0.04)';
-  if (lower.includes('gpt')) return 'rgba(58, 191, 122, 0.04)';
-  return 'transparent';
-};
-
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isActive, highlightPosition, index }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAgentA, isActive, highlightPosition, index }) => {
   const [showModal, setShowModal] = useState(false);
   const isResearcher = turn.turnNumber === 0;
-  
+
   const researcherAvatar = '/avatars/human-researcher.png';
   const displayAvatar = isResearcher ? researcherAvatar : agent.avatar;
   const displayName = isResearcher ? 'Researcher' : agent.name;
-  const accentColor = isResearcher ? '#d1d1d1' : getAgentColor(agent.name);
-  const displayGlow = isResearcher ? '0 0 15px rgba(209, 209, 209, 0.3)' : getAgentGlow(agent.name);
-  const displayTint = isResearcher ? 'rgba(209, 209, 209, 0.04)' : getAgentTint(agent.name);
+  const accentColor = isResearcher ? 'var(--neutral)' : isAgentA ? 'var(--agent-a)' : 'var(--agent-b)';
+  const dimColor = isResearcher ? 'var(--neutral-dim)' : isAgentA ? 'var(--agent-a-dim)' : 'var(--agent-b-dim)';
 
   const htmlContent = useMemo(() => {
     if (isActive && highlightPosition) {
@@ -96,59 +71,52 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
     }
   }, [turn.thinking]);
 
-
   return (
     <article
-      className={`entry ${isActive ? 'entry--active' : ''}`}
+      className={`entry ${isResearcher ? 'entry--prompt' : ''} ${isActive ? 'entry--active' : ''}`}
       data-turn={turn.turnNumber}
       data-index={index}
-      style={isActive ? {
-        background: displayTint,
-        borderLeft: `3px solid ${accentColor}`,
-        scrollMarginTop: '100px',
-      } : undefined}
+      style={
+        {
+          '--entry-accent': accentColor,
+          ...(isActive ? { background: dimColor } : {}),
+        } as React.CSSProperties
+      }
     >
-      <div className="entry__border" style={{ background: accentColor }} />
-      
       <div className="entry__head">
-        {!isResearcher && (
-          <span className="entry__number" style={{ color: accentColor }}>
-            {String(turn.turnNumber).padStart(2, '0')}
-          </span>
-        )}
-
         {displayAvatar && (
           <img
             src={displayAvatar}
             alt={displayName}
-            className={`entry__avatar ${isActive ? 'entry__avatar--active' : ''}`}
+            className="entry__avatar"
             onClick={() => setShowModal(true)}
-            style={{
-              borderColor: accentColor,
-              ...(isActive ? { boxShadow: displayGlow, animation: 'avatar-breathe 3s ease-in-out infinite' } : {}),
-            }}
+            style={{ borderColor: accentColor }}
           />
         )}
 
         <div className="entry__attribution">
-          <span className="entry__agent" style={{ color: accentColor }}>{displayName}</span>
-          {!isResearcher && <span className="entry__model">{agent.model}</span>}
-          {turn.timestamp && (
-            <span className="entry__time">{new Date(turn.timestamp).toLocaleTimeString()}</span>
-          )}
+          <span className="entry__eyebrow">
+            {isResearcher ? 'The prompt' : `Turn ${String(turn.turnNumber).padStart(2, '0')}`}
+          </span>
+          <span className="entry__namerow">
+            <span className="entry__agent" style={{ color: accentColor }}>{displayName}</span>
+            {!isResearcher && agent.model && <span className="entry__model">{agent.model}</span>}
+            {turn.timestamp && (
+              <span className="entry__time">{new Date(turn.timestamp).toLocaleTimeString()}</span>
+            )}
+          </span>
         </div>
       </div>
 
       {turn.thinking && (
         <details className="entry__thinking">
           <summary className="entry__thinking-summary">
-            <span className="entry__thinking-icon">🧠</span>
+            <span className="entry__thinking-caret" aria-hidden="true" />
             <span>Thinking</span>
           </summary>
           <div
             className="entry__thinking-content prose"
             dangerouslySetInnerHTML={{ __html: thinkingHtml }}
-            style={{ borderLeftColor: accentColor }}
           />
         </details>
       )}
@@ -169,104 +137,116 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
       <style>{`
         .entry {
           position: relative;
-          padding: 2rem 0 2rem 0;
-          border-left: 3px solid transparent;
+          padding: 1.75rem 0 1.75rem;
+          border-top: 1px solid var(--line);
         }
 
-        .entry__border {
-          height: 2px;
-          width: 100%;
-          margin-bottom: 1.5rem;
+        .entry:first-child {
+          border-top: none;
+        }
+
+        /* The researcher's opening prompt reads as a set-apart panel. */
+        .entry--prompt {
+          border-top: none;
+          background: var(--panel);
+          border: 1px solid var(--line);
+          border-radius: 5px;
+          padding: 1.5rem 1.5rem 1.25rem;
+          margin-bottom: 0.5rem;
         }
 
         .entry--active {
+          border-radius: 5px;
+          border-top-color: transparent;
           margin-left: calc(var(--gutter) * -1);
           margin-right: calc(var(--gutter) * -1);
           padding-left: var(--gutter);
           padding-right: var(--gutter);
+          scroll-margin-top: 90px;
+          box-shadow: inset 3px 0 0 var(--entry-accent);
         }
 
         .entry__head {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          margin-bottom: 1.25rem;
-        }
-
-        .entry__number {
-          font-family: var(--font-display);
-          font-style: italic;
-          font-size: 2.5rem;
-          line-height: 1;
-          letter-spacing: -0.03em;
-          flex-shrink: 0;
+          gap: 0.85rem;
+          margin-bottom: 1.1rem;
         }
 
         .entry__avatar {
           width: 40px;
           height: 40px;
           object-fit: cover;
-          border: 1px solid var(--border);
+          border: 1px solid var(--line);
+          border-radius: 4px;
           flex-shrink: 0;
           display: block;
-          background: var(--bg);
+          background: var(--panel);
           cursor: pointer;
-          transition: transform 0.2s ease, border-color 0.2s ease;
+          transition: transform 0.15s ease;
         }
 
         .entry__avatar:hover {
-          transform: scale(1.1);
-          border-color: white !important;
-          z-index: 10;
-        }
-
-        .entry__avatar--active {
-          border-width: 2px;
+          transform: translateY(-1px);
         }
 
         .entry__attribution {
           display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          min-width: 0;
+        }
+
+        .entry__eyebrow {
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--muted);
+        }
+
+        .entry__namerow {
+          display: flex;
           align-items: baseline;
-          gap: 0.75rem;
+          gap: 0.65rem;
           flex-wrap: wrap;
         }
 
         .entry__agent {
-          font-family: var(--font-body);
+          font-family: var(--serif);
           font-weight: 700;
-          font-size: 0.95rem;
+          font-size: 1.05rem;
+          letter-spacing: -0.01em;
         }
 
         .entry__model {
-          font-family: var(--font-mono);
-          font-size: 0.7rem;
-          color: var(--text-muted);
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          color: var(--muted);
         }
 
         .entry__time {
-          font-family: var(--font-mono);
-          font-size: 0.65rem;
-          color: var(--text-faint);
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          color: var(--faint);
         }
 
         .entry__thinking {
-          margin-bottom: 1.25rem;
-          padding-left: 4rem;
+          margin-bottom: 1.1rem;
         }
 
         .entry__thinking-summary {
           display: flex;
           align-items: center;
-          gap: 0.4rem;
+          gap: 0.5rem;
           cursor: pointer;
           user-select: none;
-          font-size: 0.72rem;
-          font-family: var(--font-mono);
-          color: var(--text-muted);
-          letter-spacing: 0.05em;
+          font-size: 0.625rem;
+          font-family: var(--mono);
+          color: var(--muted);
+          letter-spacing: 0.14em;
           text-transform: uppercase;
           list-style: none;
-          outline: none;
           padding: 0.25rem 0;
           transition: color 0.15s ease;
         }
@@ -276,27 +256,35 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
         }
 
         .entry__thinking-summary:hover {
-          color: var(--text);
+          color: var(--ink);
         }
 
-        .entry__thinking-icon {
-          font-size: 0.85rem;
-          opacity: 0.6;
+        .entry__thinking-caret {
+          width: 0;
+          height: 0;
+          border-left: 4px solid currentColor;
+          border-top: 3px solid transparent;
+          border-bottom: 3px solid transparent;
+          transition: transform 0.15s ease;
+        }
+
+        .entry__thinking[open] .entry__thinking-caret {
+          transform: rotate(90deg);
         }
 
         .entry__thinking[open] .entry__thinking-summary {
-          color: var(--text);
-          margin-bottom: 0.75rem;
+          color: var(--ink);
+          margin-bottom: 0.65rem;
         }
 
         .entry__thinking-content {
-          font-size: 0.82rem;
+          font-size: 0.9rem;
           font-style: italic;
-          line-height: 1.65;
-          color: var(--text-muted);
-          padding: 0.75rem 1rem;
-          border-left: 2px solid currentColor;
-          background: rgba(255, 255, 255, 0.02);
+          line-height: 1.6;
+          color: var(--muted);
+          padding: 0.8rem 1rem;
+          border-left: 3px solid var(--entry-accent);
+          background: var(--panel-2);
           border-radius: 0 4px 4px 0;
         }
 
@@ -304,31 +292,27 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ turn, agent, isAct
         .entry__thinking-content p:last-child  { margin-bottom: 0; }
 
         .entry__content {
-          padding-left: 4rem;
-          font-size: 0.95rem;
+          font-size: 1.0625rem;
           line-height: 1.7;
-          color: var(--text);
+          color: var(--ink);
+        }
+
+        .entry--prompt .entry__content {
+          font-size: 1rem;
+          color: var(--muted);
         }
 
         .entry__highlight {
-          background: rgba(212, 165, 116, 0.25);
+          background: var(--highlight-bg);
           color: inherit;
-          padding: 0.08rem 0.1rem;
+          border-radius: 2px;
+          padding: 0.05rem 0.05rem;
         }
 
         @media (max-width: 768px) {
-          .entry__number {
-            font-size: 1.8rem;
-          }
-
           .entry__avatar {
-            width: 32px;
-            height: 32px;
-          }
-
-          .entry__content {
-            padding-left: 0;
-            margin-top: 0.5rem;
+            width: 34px;
+            height: 34px;
           }
 
           .entry--active {

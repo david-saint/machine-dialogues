@@ -1,5 +1,6 @@
 import { AudioCache, buildAudioCacheKey } from '../cache';
 import { GEMINI_VOICES } from '../defaults';
+import { chunkSpeakableText, toSpeakableText } from '../speakable';
 import type {
   GeminiVoiceConfig,
   SpeakerContext,
@@ -29,8 +30,17 @@ export class GeminiProvider implements TTSProvider {
   readonly id = 'gemini' as const;
 
   private readonly cache: AudioCache;
-  private currentAudio: HTMLAudioElement | null = null;
-  private currentObjectUrl: string | null = null;
+  // One reused element: Safari is likelier to allow chained chunk playback on
+  // an element that already played from a user gesture.
+  private audio: HTMLAudioElement | null = null;
+  private objectUrl: string | null = null;
+  // Bumped by every speak()/stop() so in-flight synthesis loops from a
+  // superseded utterance notice they are stale and bail before playing.
+  private generation = 0;
+  private playbackRate = 1;
+  private paused = false;
+  private resumeGate: (() => void) | null = null;
+  private settlePlayback: (() => void) | null = null;
 
   constructor(cache: AudioCache) {
     this.cache = cache;
@@ -41,57 +51,106 @@ export class GeminiProvider implements TTSProvider {
       throw new Error('GeminiProvider received non-gemini config');
     }
     const config: GeminiVoiceConfig = request.config;
-    if (!request.apiKey) {
+    const apiKey = request.apiKey;
+    if (!apiKey) {
       throw new Error('Gemini API key is required');
     }
 
-    events.onLoadingChange?.(true);
+    const generation = ++this.generation;
+    this.paused = false;
+    this.releaseResumeGate();
+    this.haltAudio();
+    this.playbackRate = request.speed;
 
-    const prompt = buildDebatePrompt(config.styleInstruction, request.text, request.context);
-    const cacheKey = await buildAudioCacheKey(this.id, `${config.model}:${config.voiceName}`, prompt);
-    let blob = await this.cache.get(cacheKey);
-
-    if (!blob) {
-      const response = await fetch(
-        `${GEMINI_API_BASE}/models/${config.model}:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': request.apiKey,
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              responseModalities: ['AUDIO'],
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName: config.voiceName },
-                },
-              },
-            },
-          }),
-        },
-      );
-
-      const payload = (await response.json().catch(() => null)) as GeminiGenerateContentResponse | null;
-
-      if (!response.ok) {
-        const detail = payload?.error?.message ?? `status ${response.status}`;
-        throw new Error(`Gemini TTS request failed (${detail})`);
-      }
-
-      const inlineData = payload?.candidates?.[0]?.content?.parts?.find((part) => part.inlineData?.data)?.inlineData;
-      if (!inlineData?.data) {
-        throw new Error('Gemini TTS response contained no audio');
-      }
-
-      blob = pcmBase64ToWavBlob(inlineData.data, parseSampleRate(inlineData.mimeType));
-      await this.cache.set(cacheKey, blob);
+    const text = toSpeakableText(request.text);
+    if (!text) {
+      events.onStart?.();
+      events.onEnd?.();
+      return;
     }
 
-    events.onLoadingChange?.(false);
-    await this.playBlob(blob, request.speed, events);
+    const chunks = chunkSpeakableText(text);
+    const prompts = chunks.map((chunk, index) =>
+      buildDebatePrompt(config.styleInstruction, chunk, request.context, index > 0),
+    );
+
+    // Synthesize one chunk ahead of playback so inter-chunk gaps stay short.
+    const synthesize = (index: number) => {
+      const promise = this.fetchChunkAudio(prompts[index], config, apiKey);
+      promise.catch(() => {}); // silence unhandled rejection if we bail before awaiting
+      return promise;
+    };
+
+    try {
+      let pending = synthesize(0);
+      for (let index = 0; index < chunks.length; index += 1) {
+        events.onLoadingChange?.(true);
+        const blob = await pending;
+        if (generation !== this.generation) return;
+        if (index + 1 < chunks.length) {
+          pending = synthesize(index + 1);
+        }
+        events.onLoadingChange?.(false);
+
+        await this.waitWhilePaused();
+        if (generation !== this.generation) return;
+
+        if (index === 0) {
+          events.onStart?.();
+        }
+        await this.playBlob(blob, events);
+        if (generation !== this.generation) return;
+      }
+      events.onEnd?.();
+    } finally {
+      events.onLoadingChange?.(false);
+    }
+  }
+
+  private async fetchChunkAudio(prompt: string, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
+    const cacheKey = await buildAudioCacheKey(this.id, `${config.model}:${config.voiceName}`, prompt);
+    const cached = await this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const response = await fetch(
+      `${GEMINI_API_BASE}/models/${config.model}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ['AUDIO'],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: config.voiceName },
+              },
+            },
+          },
+        }),
+      },
+    );
+
+    const payload = (await response.json().catch(() => null)) as GeminiGenerateContentResponse | null;
+
+    if (!response.ok) {
+      const detail = payload?.error?.message ?? `status ${response.status}`;
+      throw new Error(`Gemini TTS request failed (${detail})`);
+    }
+
+    const inlineData = payload?.candidates?.[0]?.content?.parts?.find((part) => part.inlineData?.data)?.inlineData;
+    if (!inlineData?.data) {
+      throw new Error('Gemini TTS response contained no audio');
+    }
+
+    const blob = pcmBase64ToWavBlob(inlineData.data, parseSampleRate(inlineData.mimeType));
+    await this.cache.set(cacheKey, blob);
+    return blob;
   }
 
   async checkAvailability(opts?: { apiKey?: string }): Promise<boolean> {
@@ -114,54 +173,83 @@ export class GeminiProvider implements TTSProvider {
   }
 
   stop(): void {
-    if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
-      this.currentAudio = null;
-    }
-    if (this.currentObjectUrl) {
-      URL.revokeObjectURL(this.currentObjectUrl);
-      this.currentObjectUrl = null;
-    }
+    this.generation += 1;
+    this.paused = false;
+    this.releaseResumeGate();
+    this.haltAudio();
   }
 
   pause(): void {
-    this.currentAudio?.pause();
+    this.paused = true;
+    this.audio?.pause();
   }
 
   resume(): void {
-    if (this.currentAudio) {
-      void this.currentAudio.play();
+    this.paused = false;
+    this.releaseResumeGate();
+    if (this.audio && this.objectUrl && !this.audio.ended) {
+      void this.audio.play();
     }
   }
 
   setPlaybackRate(rate: number): void {
-    if (this.currentAudio) {
-      this.currentAudio.playbackRate = rate;
+    this.playbackRate = rate;
+    if (this.audio) {
+      this.audio.playbackRate = rate;
     }
   }
 
-  private async playBlob(blob: Blob, playbackRate: number, events: TTSEvents = {}): Promise<void> {
-    this.stop();
-    this.currentObjectUrl = URL.createObjectURL(blob);
-    const audio = new Audio(this.currentObjectUrl);
-    audio.playbackRate = playbackRate;
-    this.currentAudio = audio;
+  private async waitWhilePaused(): Promise<void> {
+    while (this.paused) {
+      await new Promise<void>((resolve) => {
+        this.resumeGate = resolve;
+      });
+    }
+  }
 
-    events.onStart?.();
+  private releaseResumeGate(): void {
+    const release = this.resumeGate;
+    this.resumeGate = null;
+    release?.();
+  }
 
-    await new Promise<void>((resolve, reject) => {
+  private haltAudio(): void {
+    this.audio?.pause();
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
+    // Settle any pending playback promise (without onEnd) so callers awaiting
+    // a stopped utterance are not left hanging forever.
+    const settle = this.settlePlayback;
+    this.settlePlayback = null;
+    settle?.();
+  }
+
+  private playBlob(blob: Blob, events: TTSEvents): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.haltAudio();
+      const audio = this.audio ?? new Audio();
+      this.audio = audio;
+
+      this.settlePlayback = resolve;
       audio.onended = () => {
-        events.onEnd?.();
+        this.settlePlayback = null;
         resolve();
       };
       audio.onerror = () => {
+        this.settlePlayback = null;
         const error = new Error('Gemini audio playback failed');
         events.onError?.(error);
         reject(error);
       };
 
+      this.objectUrl = URL.createObjectURL(blob);
+      audio.src = this.objectUrl;
+      audio.playbackRate = this.playbackRate;
+
       void audio.play().catch((error) => {
+        this.settlePlayback = null;
         const e = error instanceof Error ? error : new Error('Gemini audio playback failed');
         events.onError?.(e);
         reject(e);
@@ -177,6 +265,7 @@ export const buildDebatePrompt = (
   styleInstruction: string,
   text: string,
   context?: SpeakerContext,
+  isContinuation = false,
 ): string => {
   const instruction = styleInstruction
     .replaceAll('{speaker}', context?.speakerName ?? 'a debater')
@@ -187,11 +276,14 @@ export const buildDebatePrompt = (
   if (!instruction) {
     return text;
   }
+  const continuation = isContinuation
+    ? ' You are already mid-speech: this passage continues the same turn, so keep the same voice and pacing and do not add any introduction or greeting.'
+    : '';
   return [
     "Synthesize speech for one debater's turn in a live debate. Read aloud ONLY the text under TRANSCRIPT.",
     '',
     "### DIRECTOR'S NOTES",
-    `${instruction}.`,
+    `${instruction}.${continuation}`,
     '',
     '#### TRANSCRIPT',
     text,

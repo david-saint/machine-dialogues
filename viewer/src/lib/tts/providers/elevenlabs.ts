@@ -27,6 +27,10 @@ export class ElevenLabsProvider implements TTSProvider {
   private readonly cache: AudioCache;
   private currentAudio: HTMLAudioElement | null = null;
   private currentObjectUrl: string | null = null;
+  // Bumped by every speak()/stop() so a stale in-flight fetch doesn't start
+  // playing after the user stopped or skipped to another turn.
+  private generation = 0;
+  private settlePlayback: (() => void) | null = null;
 
   constructor(cache: AudioCache) {
     this.cache = cache;
@@ -41,42 +45,50 @@ export class ElevenLabsProvider implements TTSProvider {
       throw new Error('ElevenLabs API key is required');
     }
 
+    const generation = ++this.generation;
     events.onLoadingChange?.(true);
 
-    const cacheKey = await buildAudioCacheKey(this.id, config.voiceId, request.text);
-    let blob = await this.cache.get(cacheKey);
-    let timestamps: WordTimestamp[] = [];
+    try {
+      const cacheKey = await buildAudioCacheKey(this.id, config.voiceId, request.text);
+      let blob = await this.cache.get(cacheKey);
+      let timestamps: WordTimestamp[] = [];
 
-    if (!blob) {
-      const response = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${config.voiceId}/with-timestamps`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'xi-api-key': request.apiKey,
+      if (!blob) {
+        const response = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${config.voiceId}/with-timestamps`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'xi-api-key': request.apiKey,
+            },
+            body: JSON.stringify({
+              text: request.text,
+              model_id: config.modelId,
+              voice_settings: config.voiceSettings,
+              output_format: 'mp3_44100_128',
+            }),
           },
-          body: JSON.stringify({
-            text: request.text,
-            model_id: config.modelId,
-            voice_settings: config.voiceSettings,
-            output_format: 'mp3_44100_128',
-          }),
-        },
-      );
+        );
 
-      if (!response.ok) {
-        throw new Error(`ElevenLabs request failed (${response.status})`);
+        if (!response.ok) {
+          throw new Error(`ElevenLabs request failed (${response.status})`);
+        }
+
+        const payload = (await response.json()) as ElevenLabsTimestampResponse;
+        blob = this.base64ToBlob(payload.audio_base64, 'audio/mpeg');
+        timestamps = this.buildWordTimestamps(payload.alignment, request.text);
+        await this.cache.set(cacheKey, blob);
       }
 
-      const payload = (await response.json()) as ElevenLabsTimestampResponse;
-      blob = this.base64ToBlob(payload.audio_base64, 'audio/mpeg');
-      timestamps = this.buildWordTimestamps(payload.alignment, request.text);
-      await this.cache.set(cacheKey, blob);
+      if (generation !== this.generation) {
+        return;
+      }
+      events.onLoadingChange?.(false);
+      await this.playBlob(blob, request.speed, events, timestamps);
+    } finally {
+      events.onLoadingChange?.(false);
     }
-
-    events.onLoadingChange?.(false);
-    await this.playBlob(blob, request.speed, events, timestamps);
   }
 
   async checkAvailability(opts?: { apiKey?: string }): Promise<boolean> {
@@ -116,6 +128,7 @@ export class ElevenLabsProvider implements TTSProvider {
   }
 
   stop(): void {
+    this.generation += 1;
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -125,6 +138,11 @@ export class ElevenLabsProvider implements TTSProvider {
       URL.revokeObjectURL(this.currentObjectUrl);
       this.currentObjectUrl = null;
     }
+    // Settle any pending playback promise (without onEnd) so callers awaiting
+    // a stopped utterance are not left hanging forever.
+    const settle = this.settlePlayback;
+    this.settlePlayback = null;
+    settle?.();
   }
 
   pause(): void {
@@ -164,17 +182,21 @@ export class ElevenLabsProvider implements TTSProvider {
     events?.onStart?.();
 
     await new Promise<void>((resolve, reject) => {
+      this.settlePlayback = resolve;
       audio.onended = () => {
+        this.settlePlayback = null;
         events?.onEnd?.();
         resolve();
       };
       audio.onerror = () => {
+        this.settlePlayback = null;
         const error = new Error('ElevenLabs audio playback failed');
         events?.onError?.(error);
         reject(error);
       };
 
       void audio.play().catch((error) => {
+        this.settlePlayback = null;
         const e = error instanceof Error ? error : new Error('ElevenLabs audio playback failed');
         events?.onError?.(e);
         reject(e);

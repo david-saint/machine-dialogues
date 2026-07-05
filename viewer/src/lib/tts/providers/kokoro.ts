@@ -7,6 +7,10 @@ export class KokoroProvider implements TTSProvider {
   private readonly cache: AudioCache;
   private currentAudio: HTMLAudioElement | null = null;
   private currentObjectUrl: string | null = null;
+  // Bumped by every speak()/stop() so a stale in-flight fetch doesn't start
+  // playing after the user stopped or skipped to another turn.
+  private generation = 0;
+  private settlePlayback: (() => void) | null = null;
 
   constructor(cache: AudioCache) {
     this.cache = cache;
@@ -21,35 +25,43 @@ export class KokoroProvider implements TTSProvider {
       throw new Error('Kokoro server URL is required');
     }
 
+    const generation = ++this.generation;
     events.onLoadingChange?.(true);
 
-    const cacheKey = await buildAudioCacheKey(this.id, config.voiceId, request.text);
-    let blob = await this.cache.get(cacheKey);
+    try {
+      const cacheKey = await buildAudioCacheKey(this.id, config.voiceId, request.text);
+      let blob = await this.cache.get(cacheKey);
 
-    if (!blob) {
-      const response = await fetch(`${request.serverUrl.replace(/\/$/, '')}/v1/audio/speech`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: config.model,
-          input: request.text,
-          voice: config.voiceId,
-          response_format: config.responseFormat,
-        }),
-      });
+      if (!blob) {
+        const response = await fetch(`${request.serverUrl.replace(/\/$/, '')}/v1/audio/speech`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: config.model,
+            input: request.text,
+            voice: config.voiceId,
+            response_format: config.responseFormat,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Kokoro request failed (${response.status})`);
+        if (!response.ok) {
+          throw new Error(`Kokoro request failed (${response.status})`);
+        }
+
+        blob = await response.blob();
+        await this.cache.set(cacheKey, blob);
       }
 
-      blob = await response.blob();
-      await this.cache.set(cacheKey, blob);
+      if (generation !== this.generation) {
+        return;
+      }
+      events.onLoadingChange?.(false);
+      await this.playBlob(blob, request.speed, events);
+    } finally {
+      events.onLoadingChange?.(false);
     }
-
-    events.onLoadingChange?.(false);
-    await this.playBlob(blob, request.speed, events);
   }
 
   async checkAvailability(opts?: { serverUrl?: string }): Promise<boolean> {
@@ -74,6 +86,7 @@ export class KokoroProvider implements TTSProvider {
   }
 
   stop(): void {
+    this.generation += 1;
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -83,6 +96,11 @@ export class KokoroProvider implements TTSProvider {
       URL.revokeObjectURL(this.currentObjectUrl);
       this.currentObjectUrl = null;
     }
+    // Settle any pending playback promise (without onEnd) so callers awaiting
+    // a stopped utterance are not left hanging forever.
+    const settle = this.settlePlayback;
+    this.settlePlayback = null;
+    settle?.();
   }
 
   pause(): void {
@@ -111,17 +129,21 @@ export class KokoroProvider implements TTSProvider {
     events.onStart?.();
 
     await new Promise<void>((resolve, reject) => {
+      this.settlePlayback = resolve;
       audio.onended = () => {
+        this.settlePlayback = null;
         events.onEnd?.();
         resolve();
       };
       audio.onerror = () => {
+        this.settlePlayback = null;
         const error = new Error('Kokoro audio playback failed');
         events.onError?.(error);
         reject(error);
       };
 
       void audio.play().catch((error) => {
+        this.settlePlayback = null;
         const e = error instanceof Error ? error : new Error('Kokoro audio playback failed');
         events.onError?.(e);
         reject(e);

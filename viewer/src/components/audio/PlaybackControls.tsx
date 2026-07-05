@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Settings2 } from 'lucide-react';
 import type { AgentKey } from '../../lib/tts/types';
 import { usePlaybackStore } from '../../stores/playback';
@@ -24,8 +24,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
     prevTurn,
     setMuted,
   } = usePlaybackStore();
-  const { speakTurn, stop, setPlaybackRate, provider } = useTTS();
+  const { speakTurn, stop, pause, resume, setPlaybackRate, provider } = useTTS();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // The turn whose utterance is live right now, and whether it is paused.
+  // Kept in a ref so pausing/resuming doesn't restart the utterance.
+  const utteranceRef = useRef<{ index: number; paused: boolean } | null>(null);
+  const speedRef = useRef(speed);
 
   const providerLabel = useMemo(() => {
     if (provider === 'webspeech') return 'Web Speech';
@@ -34,37 +38,89 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
     return 'ElevenLabs';
   }, [provider]);
 
-  const getAgentKeyForTurn = (turnAgentName: string): AgentKey =>
-    turnAgentName === transcript.agentA?.name ? 'agentA' : 'agentB';
+  const getAgentKeyForTurn = useCallback(
+    (turnAgentName: string): AgentKey =>
+      turnAgentName === transcript.agentA?.name ? 'agentA' : 'agentB',
+    [transcript.agentA?.name],
+  );
 
   useEffect(() => {
-    if (isPlaying && currentTurnIndex >= 0 && currentTurnIndex < transcript.turns.length) {
-      const turn = transcript.turns[currentTurnIndex];
+    const active = utteranceRef.current;
 
-      if (!isMuted) {
-        const agentKey = getAgentKeyForTurn(turn.agentName);
-        const opponent = agentKey === 'agentA' ? transcript.agentB : transcript.agentA;
-        void speakTurn({
-          turn,
-          speed,
-          agentKey,
-          speakerName: turn.agentName,
-          opponentName: opponent?.name,
-          onEnd: () => {
-            if (currentTurnIndex < transcript.turns.length - 1) {
-              nextTurn();
-            } else {
-              setPlaying(false);
-            }
-          },
-        });
+    if (!isPlaying) {
+      // Pause keeps the utterance alive so pressing play resumes mid-sentence
+      // instead of restarting the whole turn.
+      if (active && !active.paused) {
+        active.paused = true;
+        pause();
       }
-    } else if (!isPlaying) {
+      return;
+    }
+
+    if (isMuted) {
+      if (active) {
+        utteranceRef.current = null;
+        stop();
+      }
+      return;
+    }
+
+    if (currentTurnIndex < 0 || currentTurnIndex >= transcript.turns.length) {
+      return;
+    }
+
+    if (active?.index === currentTurnIndex) {
+      if (active.paused) {
+        active.paused = false;
+        resume();
+      }
+      return;
+    }
+
+    if (active) {
+      utteranceRef.current = null;
       stop();
     }
-  }, [isMuted, isPlaying, currentTurnIndex, nextTurn, setPlaying, speakTurn, speed, stop, transcript.turns]);
+
+    const turn = transcript.turns[currentTurnIndex];
+    const agentKey = getAgentKeyForTurn(turn.agentName);
+    const opponent = agentKey === 'agentA' ? transcript.agentB : transcript.agentA;
+    const utterance = { index: currentTurnIndex, paused: false };
+    utteranceRef.current = utterance;
+    void speakTurn({
+      turn,
+      speed: speedRef.current,
+      agentKey,
+      speakerName: turn.agentName,
+      opponentName: opponent?.name,
+      onEnd: () => {
+        if (utteranceRef.current !== utterance) {
+          return;
+        }
+        utteranceRef.current = null;
+        if (currentTurnIndex < transcript.turns.length - 1) {
+          nextTurn();
+        } else {
+          setPlaying(false);
+        }
+      },
+    });
+  }, [
+    isMuted,
+    isPlaying,
+    currentTurnIndex,
+    getAgentKeyForTurn,
+    nextTurn,
+    pause,
+    resume,
+    setPlaying,
+    speakTurn,
+    stop,
+    transcript,
+  ]);
 
   useEffect(() => {
+    speedRef.current = speed;
     setPlaybackRate(speed);
   }, [setPlaybackRate, speed]);
 
@@ -110,10 +166,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
           <button
             className="playbar__btn playbar__btn--play"
             onClick={togglePlay}
-            disabled={isLoading}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
-            {isLoading ? '...' : isPlaying ? '\u2016' : '\u25B6'}
+            {isLoading && isPlaying ? '...' : isPlaying ? '\u2016' : '\u25B6'}
           </button>
           <button
             className="playbar__btn"

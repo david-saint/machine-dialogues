@@ -10,14 +10,11 @@ export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label }
     <div className="meter">
       <div className="meter__head">
         <span className="label">{label}</span>
-        <span className="meter__value">{score}/100</span>
+        <span className="meter__value">{score}<span className="meter__value-max">/100</span></span>
       </div>
 
       <div className="meter__track">
-        <div
-          className="meter__fill"
-          style={{ width: `${score}%` }}
-        />
+        <div className="meter__fill" style={{ width: `${score}%` }} />
         <div className="meter__notch" style={{ left: '50%' }} />
       </div>
 
@@ -36,37 +33,44 @@ export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label }
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.7rem;
         }
 
         .meter__value {
-          font-family: var(--font-display);
-          font-style: italic;
-          font-size: 1.8rem;
+          font-family: var(--mono);
+          font-variant-numeric: tabular-nums;
+          font-size: 1.5rem;
+          font-weight: 500;
           line-height: 1;
-          letter-spacing: -0.02em;
-          color: var(--text);
+          color: var(--ink);
+        }
+
+        .meter__value-max {
+          font-size: 0.75rem;
+          color: var(--muted);
         }
 
         .meter__track {
-          height: 10px;
-          border: 2px solid var(--border-emphasis);
+          height: 8px;
+          border: 1px solid var(--line);
+          border-radius: 4px;
           position: relative;
-          background: var(--bg-inset);
+          background: var(--panel-2);
+          overflow: hidden;
         }
 
         .meter__fill {
           height: 100%;
-          background: var(--accent-claude);
+          background: var(--agent-b);
           transition: width 600ms cubic-bezier(0.33, 1, 0.68, 1);
         }
 
         .meter__notch {
           position: absolute;
-          top: -6px;
-          bottom: -6px;
-          width: 2px;
-          background: var(--text-faint);
+          top: -3px;
+          bottom: -3px;
+          width: 1px;
+          background: var(--faint);
           transform: translateX(-50%);
         }
 
@@ -74,11 +78,11 @@ export const ConversionMeter: React.FC<ConversionMeterProps> = ({ score, label }
           display: flex;
           justify-content: space-between;
           margin-top: 0.5rem;
-          font-family: var(--font-mono);
-          font-size: 0.6rem;
+          font-family: var(--mono);
+          font-size: 0.5625rem;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
-          color: var(--text-faint);
+          letter-spacing: 0.08em;
+          color: var(--faint);
         }
       `}</style>
     </div>

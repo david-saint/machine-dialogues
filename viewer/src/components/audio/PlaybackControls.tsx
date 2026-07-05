@@ -195,7 +195,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
             onClick={togglePlay}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
-            {isLoading && isPlaying ? '...' : isPlaying ? '\u2016' : '\u25B6'}
+            {isLoading && isPlaying ? '...' : isPlaying ? '‖' : '▶'}
           </button>
           <button
             className="playbar__btn"
@@ -245,129 +245,141 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
           left: 0;
           right: 0;
           z-index: 100;
-          background: var(--bg-raised);
-          border-top: 1px solid var(--border-emphasis);
+          background: var(--panel);
+          border-top: 1px solid var(--line);
         }
 
         .playbar__inner {
           max-width: var(--container-max);
           margin: 0 auto;
-          padding: 0.6rem var(--gutter);
+          padding: 0.55rem var(--gutter);
           display: flex;
           align-items: center;
-          gap: 2rem;
+          gap: 1.5rem;
         }
 
         .playbar__info {
           flex: 1;
-          min-width: 100px;
+          min-width: 90px;
         }
 
         .playbar__status {
-          font-family: var(--font-mono);
-          font-size: 0.65rem;
+          font-family: var(--mono);
+          font-size: 0.625rem;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
-          color: var(--text-muted);
+          letter-spacing: 0.12em;
+          color: var(--muted);
           display: block;
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.3rem;
         }
 
         .playbar__progress {
-          height: 3px;
-          background: rgba(255, 255, 255, 0.08);
+          height: 2px;
+          background: var(--line);
         }
 
         .playbar__progress-fill {
           height: 100%;
-          background: var(--text-muted);
+          background: var(--muted);
           transition: width 300ms ease;
         }
 
         .playbar__transport {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.4rem;
         }
 
         .playbar__btn {
-          background: none;
-          border: 1px solid var(--border);
-          color: var(--text-muted);
-          font-family: var(--font-mono);
+          background: transparent;
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          color: var(--muted);
+          font-family: var(--mono);
           font-size: 0.75rem;
-          padding: 0.35rem 0.65rem;
+          padding: 0.35rem 0.6rem;
           cursor: pointer;
-          transition: background 150ms, color 150ms;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
           line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .playbar__btn:hover:not(:disabled) {
-          background: var(--border-emphasis);
-          color: var(--text);
+          background: var(--panel-2);
+          border-color: var(--line-strong);
+          color: var(--ink);
         }
 
         .playbar__btn:disabled {
-          opacity: 0.25;
+          opacity: 0.3;
           cursor: not-allowed;
         }
 
         .playbar__btn--play {
-          font-size: 0.9rem;
-          padding: 0.35rem 0.85rem;
+          font-size: 0.85rem;
+          padding: 0.35rem 0.8rem;
+          color: var(--ink);
         }
 
         .playbar__btn--mute {
-          font-size: 0.6rem;
-          letter-spacing: 0.06em;
+          font-size: 0.5625rem;
+          letter-spacing: 0.1em;
         }
 
         .playbar__controls {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.85rem;
         }
 
         .playbar__provider-badge {
-          font-family: var(--font-mono);
-          font-size: 0.6rem;
-          letter-spacing: 0.06em;
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
-          color: var(--text-muted);
-          border: 1px solid var(--border);
+          color: var(--muted);
+          border: 1px solid var(--line);
+          border-radius: 3px;
           padding: 0.28rem 0.42rem;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--panel-2);
         }
 
         .playbar__speed {
           display: flex;
-          gap: 0;
         }
 
         .playbar__speed-btn {
-          background: none;
-          border: 1px solid var(--border);
+          background: transparent;
+          border: 1px solid var(--line);
           border-left: none;
-          color: var(--text-muted);
-          font-family: var(--font-mono);
-          font-size: 0.6rem;
-          padding: 0.3rem 0.5rem;
+          color: var(--muted);
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          padding: 0.32rem 0.5rem;
           cursor: pointer;
-          transition: background 150ms, color 150ms;
+          transition: background 150ms ease, color 150ms ease;
         }
 
         .playbar__speed-btn:first-child {
-          border-left: 1px solid var(--border);
+          border-left: 1px solid var(--line);
+          border-radius: 4px 0 0 4px;
+        }
+
+        .playbar__speed-btn:last-child {
+          border-radius: 0 4px 4px 0;
         }
 
         .playbar__speed-btn--active {
-          background: var(--text);
+          background: var(--ink);
           color: var(--bg);
-          border-color: var(--text);
+          border-color: var(--ink);
         }
 
         .playbar__speed-btn:hover:not(.playbar__speed-btn--active) {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--panel-2);
+          color: var(--ink);
         }
 
         @media (max-width: 600px) {

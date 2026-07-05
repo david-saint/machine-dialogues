@@ -106,8 +106,8 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
           position: fixed;
           inset: 0;
           z-index: 180;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(8px);
+          background: rgba(11, 9, 6, 0.6);
+          backdrop-filter: blur(6px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -118,9 +118,10 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
           width: min(860px, 100%);
           max-height: min(90vh, 860px);
           overflow: auto;
-          background: var(--bg-raised);
-          border: 1px solid var(--border);
-          padding: 1.1rem;
+          background: var(--panel);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 1.25rem;
         }
 
         .tts-head {
@@ -128,65 +129,71 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
           align-items: flex-start;
           justify-content: space-between;
           gap: 1rem;
-          margin-bottom: 1rem;
+          margin-bottom: 1.25rem;
         }
 
         .tts-head h3 {
-          color: var(--text);
+          color: var(--ink);
+          font-size: 1.3rem;
         }
 
         .tts-kicker {
-          font-family: var(--font-mono);
+          font-family: var(--mono);
           text-transform: uppercase;
-          font-size: 0.62rem;
-          letter-spacing: 0.05em;
-          color: var(--text-muted);
-          margin-bottom: 0.25rem;
+          font-size: 0.625rem;
+          letter-spacing: 0.14em;
+          color: var(--muted);
+          margin-bottom: 0.35rem;
         }
 
         .tts-close {
           background: none;
-          border: 1px solid var(--border);
-          color: var(--text-muted);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          color: var(--muted);
           width: 30px;
           height: 30px;
           display: grid;
           place-items: center;
           cursor: pointer;
-          transition: color 150ms, border-color 150ms;
+          transition: color 150ms ease, border-color 150ms ease;
         }
 
         .tts-close:hover {
-          color: var(--text);
-          border-color: var(--border-emphasis);
+          color: var(--ink);
+          border-color: var(--line-strong);
         }
 
         .tts-provider-picker {
           display: flex;
           gap: 0.5rem;
-          margin-bottom: 1rem;
+          margin-bottom: 1.25rem;
           flex-wrap: wrap;
         }
 
         .tts-pill {
           background: transparent;
-          border: 1px solid var(--border);
-          color: var(--text-muted);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          color: var(--muted);
           padding: 0.4rem 0.8rem;
-          font-family: var(--font-mono);
-          font-size: 0.65rem;
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           cursor: pointer;
-          transition: background 150ms, color 150ms;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
         }
 
         .tts-pill:hover:not(.tts-pill--active) {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--panel-2);
+          color: var(--ink);
         }
 
         .tts-pill--active {
-          background: var(--text);
+          background: var(--ink);
           color: var(--bg);
+          border-color: var(--ink);
         }
 
         .provider-grid {
@@ -196,12 +203,13 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         }
 
         .provider-card {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid var(--border);
-          padding: 0.75rem;
+          background: var(--panel-2);
+          border: 1px solid var(--line);
+          border-radius: 6px;
+          padding: 0.9rem;
           display: flex;
           flex-direction: column;
-          gap: 0.55rem;
+          gap: 0.6rem;
         }
 
         .provider-card--full {
@@ -209,18 +217,18 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         }
 
         .provider-title {
-          font-family: var(--font-mono);
-          font-size: 0.66rem;
+          font-family: var(--mono);
+          font-size: 0.625rem;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-muted);
+          letter-spacing: 0.12em;
+          color: var(--muted);
         }
 
         .provider-meta,
         .provider-status {
-          font-family: var(--font-mono);
-          font-size: 0.7rem;
-          color: var(--text-muted);
+          font-family: var(--mono);
+          font-size: 0.6875rem;
+          color: var(--muted);
         }
 
         .provider-actions {
@@ -232,21 +240,29 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         .provider-card label {
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
-          font-family: var(--font-mono);
-          font-size: 0.67rem;
-          color: var(--text-muted);
+          gap: 0.3rem;
+          font-family: var(--mono);
+          font-size: 0.6875rem;
+          color: var(--muted);
         }
 
         .provider-card input,
         .provider-card select,
         .provider-card textarea {
-          border: 1px solid var(--border);
-          background: var(--bg-inset);
-          color: var(--text);
-          font-family: var(--font-mono);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          background: var(--bg);
+          color: var(--ink);
+          font-family: var(--mono);
           font-size: 0.72rem;
-          padding: 0.36rem 0.5rem;
+          padding: 0.4rem 0.5rem;
+        }
+
+        .provider-card input:focus-visible,
+        .provider-card select:focus-visible,
+        .provider-card textarea:focus-visible {
+          outline: 2px solid var(--agent-a);
+          outline-offset: 1px;
         }
 
         .provider-card textarea {
@@ -255,20 +271,22 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         }
 
         .provider-card button {
-          border: 1px solid var(--border);
+          border: 1px solid var(--line);
+          border-radius: 4px;
           background: transparent;
-          color: var(--text-muted);
-          font-family: var(--font-mono);
+          color: var(--muted);
+          font-family: var(--mono);
           font-size: 0.72rem;
-          padding: 0.36rem 0.5rem;
+          padding: 0.4rem 0.65rem;
           width: fit-content;
           cursor: pointer;
-          transition: background 150ms, color 150ms;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
         }
 
         .provider-card button:hover:not(:disabled) {
-          background: var(--border-emphasis);
-          color: var(--text);
+          background: var(--panel);
+          border-color: var(--line-strong);
+          color: var(--ink);
         }
 
         .provider-card button:disabled {
@@ -279,8 +297,9 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
         .provider-card input[type="range"] {
           background: transparent;
           border: none;
+          border-radius: 0;
           padding: 0;
-          accent-color: var(--text-muted);
+          accent-color: var(--agent-a);
         }
 
         @media (max-width: 768px) {

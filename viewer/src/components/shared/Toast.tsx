@@ -54,10 +54,11 @@ export const Toast: React.FC = () => {
         .toast-item {
           color: #fff;
           border: 1px solid rgba(255, 255, 255, 0.15);
-          font-family: var(--font-mono);
+          border-radius: 5px;
+          font-family: var(--mono);
           font-size: 0.72rem;
           letter-spacing: 0.02em;
-          padding: 0.55rem 0.6rem;
+          padding: 0.6rem 0.7rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -67,11 +68,12 @@ export const Toast: React.FC = () => {
         .toast-close {
           background: transparent;
           border: 1px solid rgba(255, 255, 255, 0.25);
+          border-radius: 3px;
           color: inherit;
-          font-family: var(--font-mono);
+          font-family: var(--mono);
           font-size: 0.62rem;
           line-height: 1;
-          padding: 0.2rem 0.35rem;
+          padding: 0.2rem 0.4rem;
           cursor: pointer;
         }
 

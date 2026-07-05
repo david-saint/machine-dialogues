@@ -8,20 +8,11 @@ interface TranscriptCardProps {
   featured?: boolean;
 }
 
-const getAgentColor = (name: string): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('claude')) return 'var(--accent-claude)';
-  if (lower.includes('gemini')) return 'var(--accent-gemini)';
-  if (lower.includes('gpt')) return 'var(--accent-gpt)';
-  return 'var(--text-faint)';
-};
-
 export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, featured }) => {
   const [modalImage, setModalImage] = useState<{ src: string; alt: string } | null>(null);
 
   const agentA = transcript.agentA || { name: 'Unknown', model: '' };
   const agentB = transcript.agentB || { name: 'Unknown', model: '' };
-  const accentColor = getAgentColor(agentA.name);
 
   const handleAvatarClick = (e: React.MouseEvent, src: string, alt: string) => {
     e.preventDefault();
@@ -34,91 +25,78 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
       <Link
         to={`/transcript/${transcript.id}`}
         className={`tcard${featured ? ' tcard--featured' : ''}`}
-        style={{ '--card-accent': accentColor } as React.CSSProperties}
       >
-        <div className="tcard__stripe" style={{ background: featured ? `linear-gradient(90deg, ${accentColor}, var(--text), ${accentColor})` : accentColor }} />
-        
-        <div className="tcard__body">
-          {featured && <span className="tcard__featured-badge">Featured</span>}
-          <div className="tcard__matchup">
-            <div className="tcard__agent-group">
-              {agentA.avatar && (
-                <img 
-                  src={agentA.avatar} 
-                  alt={agentA.name} 
-                  className="tcard__avatar" 
-                  onClick={(e) => handleAvatarClick(e, agentA.avatar!, agentA.name)}
-                />
-              )}
-              <span className="tcard__agent" style={{ color: getAgentColor(agentA.name) }}>{agentA.name}</span>
-            </div>
-            <span className="tcard__vs">vs</span>
-            <div className="tcard__agent-group">
-              {agentB.avatar && (
-                <img 
-                  src={agentB.avatar} 
-                  alt={agentB.name} 
-                  className="tcard__avatar" 
-                  onClick={(e) => handleAvatarClick(e, agentB.avatar!, agentB.name)}
-                />
-              )}
-              <span className="tcard__agent" style={{ color: getAgentColor(agentB.name) }}>{agentB.name}</span>
-            </div>
+        <div className="tcard__matchup">
+          <div className="tcard__agent-group">
+            {agentA.avatar && (
+              <img
+                src={agentA.avatar}
+                alt={agentA.name}
+                className="tcard__avatar"
+                style={{ borderColor: 'var(--agent-a)' }}
+                onClick={(e) => handleAvatarClick(e, agentA.avatar!, agentA.name)}
+              />
+            )}
+            <span className="tcard__agent" style={{ color: 'var(--agent-a)' }}>{agentA.name}</span>
           </div>
+          <span className="tcard__vs">vs</span>
+          <div className="tcard__agent-group">
+            {agentB.avatar && (
+              <img
+                src={agentB.avatar}
+                alt={agentB.name}
+                className="tcard__avatar"
+                style={{ borderColor: 'var(--agent-b)' }}
+                onClick={(e) => handleAvatarClick(e, agentB.avatar!, agentB.name)}
+              />
+            )}
+            <span className="tcard__agent" style={{ color: 'var(--agent-b)' }}>{agentB.name}</span>
+          </div>
+        </div>
 
-          <p className="tcard__experiment">{transcript.title || transcript.experimentName}</p>
-          {transcript.title && (
-            <p className="tcard__subtitle">{transcript.experimentName}</p>
-          )}
+        <p className="tcard__experiment">{transcript.title || transcript.experimentName}</p>
+        {transcript.title && (
+          <p className="tcard__subtitle">{transcript.experimentName}</p>
+        )}
 
-          <div className="tcard__meta">
-            <span>{new Date(transcript.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            <span>{transcript.turnsCount} turns</span>
-            {transcript.totalCost !== undefined && (
+        <div className="tcard__meta">
+          <span>{new Date(transcript.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <span aria-hidden="true">·</span>
+          <span>{transcript.turnsCount} turns</span>
+          {transcript.totalCost !== undefined && (
+            <>
+              <span aria-hidden="true">·</span>
               <span>${transcript.totalCost.toFixed(2)}</span>
-            )}
-            {transcript.evaluation && (
-              <span className="tcard__eval-badge">Evaluated</span>
-            )}
-          </div>
+            </>
+          )}
+          {transcript.evaluation && (
+            <span className="tcard__eval-badge">Evaluated</span>
+          )}
         </div>
 
         <style>{`
           .tcard {
-            display: block;
-            border: 1px solid var(--border);
-            border-top: none;
-            background: var(--bg-raised);
-            transition: border-color 150ms, background 150ms;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            background: var(--panel);
+            padding: 1.15rem 1.25rem 1.2rem;
+            transition: border-color 150ms ease, background 150ms ease;
             text-decoration: none;
-            color: var(--text);
-          }
-
-          .tcard:first-child {
-            border-top: 1px solid var(--border);
-          }
-
-          .tcard__stripe {
-            height: 4px;
-            width: 100%;
+            color: var(--ink);
           }
 
           .tcard:hover {
-            border-color: var(--card-accent);
-            background: var(--bg-inset);
-          }
-
-          .tcard__body {
-            padding: 1.25rem 1.5rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            border-color: var(--line-strong);
+            background: var(--panel-2);
           }
 
           .tcard__matchup {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.55rem;
             flex-wrap: wrap;
           }
 
@@ -129,113 +107,94 @@ export const TranscriptCard: React.FC<TranscriptCardProps> = ({ transcript, feat
           }
 
           .tcard__avatar {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             object-fit: cover;
-            border: 1px solid var(--border);
+            border: 1px solid var(--line);
+            border-radius: 4px;
             flex-shrink: 0;
             cursor: pointer;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            transition: transform 0.15s ease;
           }
 
           .tcard__avatar:hover {
-            transform: scale(1.15);
-            border-color: white;
-            z-index: 10;
+            transform: translateY(-1px);
           }
 
           .tcard__agent {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            font-weight: 400;
+            font-family: var(--mono);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
           }
 
           .tcard__vs {
-            font-family: var(--font-display);
-            font-style: italic;
-            font-size: 0.9rem;
-            color: var(--text-faint);
+            font-family: var(--mono);
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--faint);
           }
 
           .tcard__experiment {
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            font-weight: 600;
-            line-height: 1.3;
+            font-family: var(--serif);
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+            text-wrap: balance;
+            color: var(--ink);
           }
 
           .tcard__subtitle {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: -0.4rem;
+            font-family: var(--mono);
+            font-size: 0.6875rem;
+            line-height: 1.5;
+            color: var(--muted);
+            margin-top: -0.25rem;
           }
 
           .tcard__meta {
             display: flex;
-            gap: 1rem;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--text-muted);
+            align-items: center;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            font-family: var(--mono);
+            font-size: 0.6875rem;
+            color: var(--muted);
             letter-spacing: 0.02em;
+            margin-top: auto;
           }
 
           .tcard__eval-badge {
-            border: 1px solid var(--text-faint);
-            padding: 0 0.4em;
-            font-size: 0.65rem;
+            margin-left: 0.15rem;
+            border: 1px solid var(--line);
+            border-radius: 3px;
+            padding: 0.05em 0.45em;
+            font-size: 0.5625rem;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            color: var(--muted);
           }
 
-          /* ---- Featured card ---- */
+          /* ---- Featured ---- */
 
           .tcard--featured {
-            border-color: var(--border-emphasis);
-            background: var(--bg-inset);
-            position: relative;
-          }
-
-          .tcard--featured .tcard__stripe {
-            height: 6px;
-          }
-
-          .tcard--featured:hover {
-            border-color: var(--text-muted);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.04);
+            background: var(--panel);
+            padding: 1.4rem 1.5rem 1.5rem;
           }
 
           .tcard--featured .tcard__avatar {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
           }
 
           .tcard--featured .tcard__agent {
-            font-size: 1rem;
-          }
-
-          .tcard--featured .tcard__vs {
-            font-size: 1.1rem;
+            font-size: 0.9375rem;
           }
 
           .tcard--featured .tcard__experiment {
-            font-size: 1.15rem;
-            font-family: var(--font-display);
-            font-style: italic;
-            font-weight: 400;
-          }
-
-          .tcard__featured-badge {
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border-emphasis);
-            padding: 0.15em 0.6em;
-            align-self: flex-start;
+            font-size: 1.5rem;
           }
         `}</style>
       </Link>

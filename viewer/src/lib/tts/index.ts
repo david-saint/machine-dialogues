@@ -105,6 +105,33 @@ export class TTSOrchestrator {
     }
   }
 
+  // Fire-and-forget cache warming for an upcoming turn on the selected
+  // provider. No fallback and no events: if it fails, speak() will just
+  // synthesize on demand as usual.
+  prefetch(args: SpeakArgs): void {
+    const selectedProvider: TTSProvider = this.providers.get(args.settings.provider) ?? webSpeechProvider;
+    if (!selectedProvider.prefetch) {
+      return;
+    }
+    const config = getProviderVoiceConfig(args.settings.provider, args.agent, {
+      webspeech: args.settings.webspeech,
+      kokoro: args.settings.kokoro,
+      elevenlabs: args.settings.elevenlabs,
+      gemini: args.settings.gemini,
+    });
+    void selectedProvider
+      .prefetch({
+        text: args.text,
+        speed: args.speed,
+        agent: args.agent,
+        config,
+        apiKey: args.settings.provider === 'gemini' ? args.settings.geminiApiKey : args.settings.elevenLabsApiKey,
+        serverUrl: args.settings.kokoroServerUrl,
+        context: args.context,
+      })
+      .catch(() => {});
+  }
+
   stop(): void {
     this.activeProvider.stop();
     webSpeechProvider.stop();

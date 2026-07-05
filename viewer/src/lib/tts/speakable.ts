@@ -46,8 +46,10 @@ export const toSpeakableText = (markdown: string): string => {
 
 // Gemini TTS has a small input window and synthesizes a whole request before
 // returning, so long debate turns must be split into chunks that are safe to
-// send and quick enough that playback starts promptly.
-const MAX_CHUNK_CHARS = 2600;
+// send and quick enough that playback starts promptly. Chunks are also kept
+// short because delivery drifts (breathy, over-dramatic) as a single
+// synthesis runs long.
+const MAX_CHUNK_CHARS = 1400;
 
 export const chunkSpeakableText = (text: string, maxChars = MAX_CHUNK_CHARS): string[] => {
   // First break oversized paragraphs down to pieces that fit on their own.

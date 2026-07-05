@@ -8,7 +8,7 @@ import {
   DEFAULT_KOKORO_SERVER_URL,
   DEFAULT_PROVIDER,
   DEFAULT_WEBSPEECH_CONFIG,
-  LEGACY_GEMINI_STYLE_INSTRUCTION,
+  LEGACY_GEMINI_STYLE_INSTRUCTIONS,
 } from '../lib/tts/defaults';
 import type {
   AgentKey,
@@ -131,13 +131,13 @@ export const useTTSSettingsStore = create<TTSSettingsState>()(
     }),
     {
       name: 'tts-settings-v1',
-      version: 1,
+      version: 2,
       migrate: (persisted) => {
         const state = persisted as Partial<TTSSettingsState>;
         if (state.gemini) {
           for (const agent of ['agentA', 'agentB'] as AgentKey[]) {
             const config = state.gemini[agent];
-            if (config?.styleInstruction === LEGACY_GEMINI_STYLE_INSTRUCTION) {
+            if (config && LEGACY_GEMINI_STYLE_INSTRUCTIONS.includes(config.styleInstruction)) {
               config.styleInstruction = DEFAULT_GEMINI_STYLE_INSTRUCTION;
             }
           }

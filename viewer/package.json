@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "parse": "tsx scripts/parse-transcripts.ts",
+    "parse": "tsx scripts/parse-transcripts.ts && tsx scripts/parse-judgments.ts",
+    "parse:transcripts": "tsx scripts/parse-transcripts.ts",
+    "parse:judgments": "tsx scripts/parse-judgments.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },

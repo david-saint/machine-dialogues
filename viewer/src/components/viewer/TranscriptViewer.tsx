@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import transcriptsData from '../../data/transcripts.json';
+import judgmentsData from '../../data/judgments.json';
 import type { Transcript } from '../../types/transcript';
+import type { JudgmentsByTranscript } from '../../types/judgment';
 import { MessageBubble } from './MessageBubble';
 import { SystemPromptReveal } from './SystemPromptReveal';
 import { ConversionMeter } from './ConversionMeter';
 import { EvaluationSummary } from './EvaluationSummary';
+import { JudgePanel } from './JudgePanel';
 import { PlaybackControls } from '../audio/PlaybackControls';
 import { ImageModal } from '../shared/ImageModal';
 import { usePlaybackStore } from '../../stores/playback';
@@ -53,6 +56,9 @@ export const TranscriptViewer: React.FC = () => {
 
   const agentA = transcript.agentA || { name: 'Agent A', model: '', provider: '', color: '#d43a2c' };
   const agentB = transcript.agentB || { name: 'Agent B', model: '', provider: '', color: '#1a56db' };
+
+  // Judgments are keyed by transcript filename (with .md extension).
+  const judgments = (judgmentsData as JudgmentsByTranscript)[`${transcript.id}.md`] ?? [];
 
   return (
     <div className="viewer">
@@ -185,6 +191,14 @@ export const TranscriptViewer: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* Judge's Report */}
+      {judgments.length > 0 && (
+        <section className="viewer__section container">
+          <div className="viewer__section-rule" />
+          <JudgePanel judgments={judgments} agentA={agentA} agentB={agentB} />
+        </section>
+      )}
 
       {/* Evaluation */}
       {transcript.evaluation && (

@@ -86,20 +86,28 @@ export const GEMINI_VOICES: Array<{ id: string; name: string }> = [
   { id: 'Sulafat', name: 'Sulafat — Warm' },
 ];
 
-// Kept for the settings-store migration: users who still have this persisted
-// get upgraded to the calmer default below.
-export const LEGACY_GEMINI_STYLE_INSTRUCTION =
+// Kept for the settings-store migration: users who still have one of these
+// persisted get upgraded to the current default below.
+export const LEGACY_GEMINI_STYLE_INSTRUCTIONS = [
   'You are {speaker}, locked in a heated live debate against {opponent}. ' +
-  'Deliver the following argument exactly as written, as a real debater would — impassioned and insistent, ' +
-  'with rising intensity on key points, sharp rhetorical emphasis, and the urgency of someone who must win ' +
-  'over the room right now';
-
-export const DEFAULT_GEMINI_STYLE_INSTRUCTION =
+    'Deliver the following argument exactly as written, as a real debater would — impassioned and insistent, ' +
+    'with rising intensity on key points, sharp rhetorical emphasis, and the urgency of someone who must win ' +
+    'over the room right now',
   'You are {speaker}, in a live debate against {opponent}. Speak with the calm, measured confidence ' +
-  'of a seasoned debater: composed, conversational, deliberate pacing, letting quiet conviction carry ' +
-  'the argument. Keep the delivery even and natural throughout, and reserve genuine passion for the one ' +
-  'or two moments where the point truly hinges — a brief rise in intensity, then settle back to composure. ' +
-  'Never theatrical, never breathless';
+    'of a seasoned debater: composed, conversational, deliberate pacing, letting quiet conviction carry ' +
+    'the argument. Keep the delivery even and natural throughout, and reserve genuine passion for the one ' +
+    'or two moments where the point truly hinges — a brief rise in intensity, then settle back to composure. ' +
+    'Never theatrical, never breathless',
+];
+
+// Long syntheses tend to drift toward breathy, over-dramatic delivery, so the
+// direction pins the register flat instead of inviting any rise in intensity.
+export const DEFAULT_GEMINI_STYLE_INSTRUCTION =
+  'You are {speaker}, in a live debate against {opponent}. Read the argument in a plain, natural, ' +
+  'conversational voice, like a seasoned podcast host explaining a point to one listener. Keep volume, ' +
+  'pitch, and energy completely steady from the first sentence to the last — the final paragraph must ' +
+  'sound exactly like the first. Never whisper, never turn breathy, never build dramatic intensity, and ' +
+  'do not add theatrical emphasis to individual words; let the words themselves carry the argument';
 
 export const DEFAULT_GEMINI_CONFIG: Record<AgentKey, GeminiVoiceConfig> = {
   agentA: {

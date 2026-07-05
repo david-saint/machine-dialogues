@@ -15,6 +15,13 @@ type SpeakTurnArgs = {
   onEnd?: () => void;
 };
 
+type PrefetchTurnArgs = {
+  turn: TranscriptTurn;
+  agentKey: AgentKey;
+  speakerName?: string;
+  opponentName?: string;
+};
+
 const PROVIDER_LABELS: Record<string, string> = {
   webspeech: 'Web Speech',
   kokoro: 'Kokoro',
@@ -86,6 +93,16 @@ export const useTTS = () => {
     );
   }, [pushToast, setHighlightPosition, setLoading, settings]);
 
+  const prefetchTurn = useCallback(({ turn, agentKey, speakerName, opponentName }: PrefetchTurnArgs) => {
+    ttsOrchestrator.prefetch({
+      text: turn.content,
+      speed: 1,
+      agent: agentKey,
+      settings,
+      context: { speakerName: speakerName ?? turn.agentName, opponentName },
+    });
+  }, [settings]);
+
   const stop = useCallback(() => {
     setLoading(false);
     setHighlightPosition(null);
@@ -105,6 +122,7 @@ export const useTTS = () => {
   const api = useMemo(() => ({
     provider,
     speakTurn,
+    prefetchTurn,
     stop,
     pause,
     resume,
@@ -121,6 +139,7 @@ export const useTTS = () => {
     getCacheSizeBytes,
     getElevenLabsVoices,
     pause,
+    prefetchTurn,
     provider,
     resume,
     setPlaybackRate,

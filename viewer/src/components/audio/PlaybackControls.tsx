@@ -24,7 +24,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
     prevTurn,
     setMuted,
   } = usePlaybackStore();
-  const { speakTurn, stop, pause, resume, setPlaybackRate, provider } = useTTS();
+  const { speakTurn, prefetchTurn, stop, pause, resume, setPlaybackRate, provider } = useTTS();
   const [settingsOpen, setSettingsOpen] = useState(false);
   // The turn whose utterance is live right now, and whether it is paused.
   // Kept in a ref so pausing/resuming doesn't restart the utterance.
@@ -69,6 +69,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
       return;
     }
 
+    // The INITIAL entry (turn 0) is the researcher's prompt, not a debater's
+    // turn — skip it in narration.
+    if (transcript.turns[currentTurnIndex].turnNumber === 0) {
+      if (currentTurnIndex < transcript.turns.length - 1) {
+        nextTurn();
+      } else {
+        setPlaying(false);
+      }
+      return;
+    }
+
     if (active?.index === currentTurnIndex) {
       if (active.paused) {
         active.paused = false;
@@ -105,6 +116,21 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
         }
       },
     });
+
+    // Warm the next turn's opening audio while this turn plays, so the
+    // conversation flows across turn boundaries without a synthesis wait.
+    const nextIndex = currentTurnIndex + 1;
+    if (nextIndex < transcript.turns.length) {
+      const upcoming = transcript.turns[nextIndex];
+      const upcomingKey = getAgentKeyForTurn(upcoming.agentName);
+      const upcomingOpponent = upcomingKey === 'agentA' ? transcript.agentB : transcript.agentA;
+      prefetchTurn({
+        turn: upcoming,
+        agentKey: upcomingKey,
+        speakerName: upcoming.agentName,
+        opponentName: upcomingOpponent?.name,
+      });
+    }
   }, [
     isMuted,
     isPlaying,
@@ -112,6 +138,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
     getAgentKeyForTurn,
     nextTurn,
     pause,
+    prefetchTurn,
     resume,
     setPlaying,
     speakTurn,

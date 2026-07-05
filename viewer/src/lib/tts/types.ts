@@ -88,6 +88,8 @@ export type TTSProviderVoice = {
 export interface TTSProvider {
   readonly id: TTSProviderId;
   speak(request: TTSRequest, events?: TTSEvents): Promise<void>;
+  /** Warm caches for an upcoming request without touching playback state. */
+  prefetch?(request: TTSRequest): Promise<void>;
   stop(): void;
   pause(): void;
   resume(): void;

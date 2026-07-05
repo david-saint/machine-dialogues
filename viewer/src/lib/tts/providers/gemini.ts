@@ -12,6 +12,11 @@ import type {
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
+// How far synthesis runs ahead of playback within a turn, and how many chunks
+// of the *next* turn prefetch() warms while the current turn is playing.
+const PIPELINE_AHEAD = 2;
+const PREFETCH_NEXT_TURN_CHUNKS = 2;
+
 type GeminiGenerateContentResponse = {
   candidates?: Array<{
     content?: {
@@ -41,6 +46,9 @@ export class GeminiProvider implements TTSProvider {
   private paused = false;
   private resumeGate: (() => void) | null = null;
   private settlePlayback: (() => void) | null = null;
+  // Dedupes concurrent synthesis of the same chunk (playback pipeline vs
+  // next-turn prefetch racing on the same prompt).
+  private readonly inflight = new Map<string, Promise<Blob>>();
 
   constructor(cache: AudioCache) {
     this.cache = cache;
@@ -62,34 +70,32 @@ export class GeminiProvider implements TTSProvider {
     this.haltAudio();
     this.playbackRate = request.speed;
 
-    const text = toSpeakableText(request.text);
-    if (!text) {
+    const prompts = buildChunkPrompts(request.text, config, request.context);
+    if (prompts.length === 0) {
       events.onStart?.();
       events.onEnd?.();
       return;
     }
 
-    const chunks = chunkSpeakableText(text);
-    const prompts = chunks.map((chunk, index) =>
-      buildDebatePrompt(config.styleInstruction, chunk, request.context, index > 0),
-    );
-
-    // Synthesize one chunk ahead of playback so inter-chunk gaps stay short.
-    const synthesize = (index: number) => {
-      const promise = this.fetchChunkAudio(prompts[index], config, apiKey);
-      promise.catch(() => {}); // silence unhandled rejection if we bail before awaiting
-      return promise;
+    // Synthesis runs PIPELINE_AHEAD chunks ahead of playback so chunk
+    // boundaries stay gapless.
+    const pending = new Map<number, Promise<Blob>>();
+    const queueSynthesis = (index: number) => {
+      if (index < prompts.length && !pending.has(index)) {
+        const promise = this.fetchChunkAudio(prompts[index], config, apiKey);
+        promise.catch(() => {}); // silence unhandled rejection if we bail before awaiting
+        pending.set(index, promise);
+      }
     };
 
     try {
-      let pending = synthesize(0);
-      for (let index = 0; index < chunks.length; index += 1) {
-        events.onLoadingChange?.(true);
-        const blob = await pending;
-        if (generation !== this.generation) return;
-        if (index + 1 < chunks.length) {
-          pending = synthesize(index + 1);
+      for (let index = 0; index < prompts.length; index += 1) {
+        for (let ahead = 0; ahead <= PIPELINE_AHEAD; ahead += 1) {
+          queueSynthesis(index + ahead);
         }
+        events.onLoadingChange?.(true);
+        const blob = await pending.get(index)!;
+        if (generation !== this.generation) return;
         events.onLoadingChange?.(false);
 
         await this.waitWhilePaused();
@@ -107,8 +113,45 @@ export class GeminiProvider implements TTSProvider {
     }
   }
 
+  // Warm the audio cache for an upcoming request without touching playback
+  // state. There is no explicit queue to invalidate: cache keys embed the
+  // model, voice, and full prompt (style instruction included), so changed
+  // settings simply produce different keys and stale entries are never played.
+  async prefetch(request: TTSRequest): Promise<void> {
+    if (request.config.provider !== 'gemini') {
+      return;
+    }
+    const config: GeminiVoiceConfig = request.config;
+    const apiKey = request.apiKey;
+    if (!apiKey) {
+      return;
+    }
+
+    const prompts = buildChunkPrompts(request.text, config, request.context).slice(0, PREFETCH_NEXT_TURN_CHUNKS);
+    await Promise.all(
+      prompts.map((prompt) => this.fetchChunkAudio(prompt, config, apiKey).catch(() => {})),
+    );
+  }
+
   private async fetchChunkAudio(prompt: string, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
     const cacheKey = await buildAudioCacheKey(this.id, `${config.model}:${config.voiceName}`, prompt);
+    const inflight = this.inflight.get(cacheKey);
+    if (inflight) {
+      return inflight;
+    }
+    const promise = this.fetchChunkAudioUncached(cacheKey, prompt, config, apiKey).finally(() => {
+      this.inflight.delete(cacheKey);
+    });
+    this.inflight.set(cacheKey, promise);
+    return promise;
+  }
+
+  private async fetchChunkAudioUncached(
+    cacheKey: string,
+    prompt: string,
+    config: GeminiVoiceConfig,
+    apiKey: string,
+  ): Promise<Blob> {
     const cached = await this.cache.get(cacheKey);
     if (cached) {
       return cached;
@@ -258,6 +301,20 @@ export class GeminiProvider implements TTSProvider {
   }
 }
 
+const buildChunkPrompts = (
+  rawText: string,
+  config: GeminiVoiceConfig,
+  context?: SpeakerContext,
+): string[] => {
+  const text = toSpeakableText(rawText);
+  if (!text) {
+    return [];
+  }
+  return chunkSpeakableText(text).map((chunk, index) =>
+    buildDebatePrompt(config.styleInstruction, chunk, context, index > 0),
+  );
+};
+
 // Vague prompts can make the model read the style direction aloud; the docs'
 // mitigation is a synthesis preamble plus an explicit label marking where the
 // spoken transcript begins.
@@ -277,7 +334,7 @@ export const buildDebatePrompt = (
     return text;
   }
   const continuation = isContinuation
-    ? ' You are already mid-speech: this passage continues the same turn, so keep the same voice and pacing and do not add any introduction or greeting.'
+    ? ' You are already mid-speech: this passage continues the same turn, so keep exactly the same voice, volume, energy, and pacing as the passage before it, and do not add any introduction or greeting.'
     : '';
   return [
     "Synthesize speech for one debater's turn in a live debate. Read aloud ONLY the text under TRANSCRIPT.",

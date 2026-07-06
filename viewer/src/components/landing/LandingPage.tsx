@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import transcriptsData from '../../data/transcripts.json';
 import type { Transcript, AgentInfo } from '../../types/transcript';
 import { resolveAccent } from '../../lib/agentAccent';
@@ -67,6 +68,8 @@ export const LandingPage: React.FC = () => {
 
           <div className="landing__hero-meta">
             <span className="label">{transcripts.length} transcripts</span>
+            <span className="label landing__meta-sep" aria-hidden="true">·</span>
+            <Link className="label landing__meta-link" to="/analysis">Judge bias analysis →</Link>
           </div>
         </div>
         <div className="container">
@@ -182,6 +185,23 @@ export const LandingPage: React.FC = () => {
 
         .landing__hero-meta {
           padding-bottom: 2.25rem;
+          display: flex;
+          gap: 0.6rem;
+          align-items: baseline;
+        }
+
+        .landing__meta-sep {
+          color: var(--faint);
+        }
+
+        .landing__meta-link {
+          text-decoration: none;
+          color: var(--muted);
+          transition: color 150ms ease;
+        }
+
+        .landing__meta-link:hover {
+          color: var(--ink);
         }
 
         .landing__hero-rule {

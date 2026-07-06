@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { AgentInfo } from '../../types/transcript';
-import type { Judgment, JudgeSlot } from '../../types/judgment';
+import type { DecisionWinner, Judgment, JudgeSlot } from '../../types/judgment';
 import { resolveAccent } from '../../lib/agentAccent';
 
 interface JudgePanelProps {
@@ -38,14 +38,19 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
 
   const agentForSlot = (slot: JudgeSlot): AgentInfo => (slot === 'agentA' ? agentA : agentB);
 
-  const decisionWinner =
-    judgment.decision.winner === 'draw'
-      ? { label: 'Draw', color: 'var(--muted)', border: 'var(--line-strong)' }
+  const verdictFor = (winner: DecisionWinner) =>
+    winner === 'draw'
+      ? { label: 'Draw', color: 'var(--muted)', border: 'var(--line-strong)', slot: null }
       : {
-          label: agentForSlot(judgment.decision.winner).name,
-          color: colorForSlot(judgment.decision.winner),
-          border: colorForSlot(judgment.decision.winner),
+          label: agentForSlot(winner).name,
+          color: colorForSlot(winner),
+          border: colorForSlot(winner),
+          slot: winner,
         };
+
+  const resolution = verdictFor(judgment.decision.resolution_winner);
+  const craft = verdictFor(judgment.decision.craft_winner);
+  const splitDecision = judgment.decision.resolution_winner !== judgment.decision.craft_winner;
 
   const { tally } = judgment;
 
@@ -73,18 +78,37 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
         ))}
       </div>
 
-      {/* Decision banner */}
-      <div className="judge__decision" style={{ borderLeftColor: decisionWinner.border }}>
-        <span className="eyebrow">Decision</span>
-        <p className="judge__verdict">
-          <span className="judge__winner" style={{ color: decisionWinner.color }}>
-            {decisionWinner.label}
-          </span>
-          {judgment.decision.winner !== 'draw' && <SlotBadge slot={judgment.decision.winner} />}
-          {judgment.decision.method && (
-            <span className="judge__method">{judgment.decision.method}</span>
-          )}
-        </p>
+      {/* Decision banner — two verdicts, never blended: the question and the debate. */}
+      <div className="judge__decision" style={{ borderLeftColor: resolution.border }}>
+        <div className="judge__decision-head">
+          <span className="eyebrow">Decision</span>
+          {splitDecision && <span className="judge__split-chip">Split decision</span>}
+        </div>
+        <div className="judge__verdicts">
+          <div className="judge__verdict-cell">
+            <span className="judge__verdict-label">Resolution &mdash; who&rsquo;s right</span>
+            <p className="judge__verdict">
+              <span className="judge__winner" style={{ color: resolution.color }}>
+                {resolution.label}
+              </span>
+              {resolution.slot && <SlotBadge slot={resolution.slot} />}
+            </p>
+            <p className="judge__verdict-reason">{judgment.decision.resolution_reason}</p>
+          </div>
+          <div className="judge__verdict-cell">
+            <span className="judge__verdict-label">Craft &mdash; who argued better</span>
+            <p className="judge__verdict">
+              <span className="judge__winner" style={{ color: craft.color }}>
+                {craft.label}
+              </span>
+              {craft.slot && <SlotBadge slot={craft.slot} />}
+              {judgment.decision.method && (
+                <span className="judge__method">{judgment.decision.method}</span>
+              )}
+            </p>
+            <p className="judge__verdict-reason">{judgment.decision.craft_reason}</p>
+          </div>
+        </div>
         <p className="judge__summary">{judgment.decision.summary}</p>
         {judgment.decision.caveat && (
           <p className="judge__caveat">
@@ -309,9 +333,52 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
           background: var(--panel);
         }
 
-        .judge__decision .eyebrow {
+        .judge__decision-head {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+        }
+
+        .judge__split-chip {
+          font-family: var(--mono);
+          font-size: 0.5625rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--muted);
+          border: 1px solid var(--line-strong);
+          border-radius: 3px;
+          padding: 0.2rem 0.45rem;
+          white-space: nowrap;
+        }
+
+        .judge__verdicts {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.25rem 1.75rem;
+          margin-bottom: 1.1rem;
+        }
+
+        .judge__verdict-cell {
+          min-width: 0;
+        }
+
+        .judge__verdict-cell + .judge__verdict-cell {
+          border-left: 1px solid var(--line);
+          padding-left: 1.75rem;
+        }
+
+        .judge__verdict-label {
           display: block;
-          margin-bottom: 0.5rem;
+          font-family: var(--mono);
+          font-size: 0.625rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: var(--muted);
+          margin-bottom: 0.45rem;
         }
 
         .judge__verdict {
@@ -319,14 +386,21 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
           align-items: baseline;
           flex-wrap: wrap;
           gap: 0.4rem 0.85rem;
-          margin-bottom: 0.7rem;
+          margin-bottom: 0.55rem;
+          max-width: none;
+        }
+
+        .judge__verdict-reason {
+          font-size: 0.9rem;
+          line-height: 1.55;
+          color: var(--muted);
           max-width: none;
         }
 
         .judge__winner {
           font-family: var(--serif);
           font-weight: 700;
-          font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+          font-size: clamp(1.25rem, 3vw, 1.6rem);
           line-height: 1.1;
           letter-spacing: -0.02em;
         }
@@ -613,6 +687,18 @@ export const JudgePanel: React.FC<JudgePanelProps> = ({ judgments, agentA, agent
         @media (max-width: 768px) {
           .judge__decision {
             padding: 1.2rem;
+          }
+
+          .judge__verdicts {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+          }
+
+          .judge__verdict-cell + .judge__verdict-cell {
+            border-left: none;
+            border-top: 1px solid var(--line);
+            padding-left: 0;
+            padding-top: 1.25rem;
           }
 
           .judge__moment {

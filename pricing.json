@@ -126,5 +126,17 @@
   "anthropic/claude-fable-5": {
     "input": 10.0,
     "output": 50.0
+  },
+  "moonshotai/kimi-k2.6": {
+    "input": 0.66,
+    "output": 3.41
+  },
+  "deepseek/deepseek-v4-pro": {
+    "input": 0.435,
+    "output": 0.87
+  },
+  "x-ai/grok-4.3": {
+    "input": 1.25,
+    "output": 2.5
   }
 }

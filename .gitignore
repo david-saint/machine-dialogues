@@ -18,6 +18,7 @@ ENV/
 dist/
 build/
 *.whl
+temp/
 
 # Node.js
 node_modules/

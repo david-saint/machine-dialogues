@@ -1,6 +1,20 @@
 import os
+import time
+
+import openai
 from openai import OpenAI
+
+from ..formatter import console
 from .base import LLMProvider, ProviderResponse, collapse_exact_duplicate
+
+# Long max-effort generations (e.g. gpt-5.5-pro at reasoning effort "max") run
+# ~5 minutes; the SDK's default timeout cuts them off mid-flight.
+REQUEST_TIMEOUT = 900.0
+TRANSIENT_ATTEMPTS = 6
+
+
+class OpenRouterTransientError(RuntimeError):
+    """Raised when OpenRouter keeps failing transiently after all retries."""
 
 
 class OpenRouterProvider(LLMProvider):
@@ -12,6 +26,39 @@ class OpenRouterProvider(LLMProvider):
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
+            timeout=REQUEST_TIMEOUT,
+        )
+
+    def _create_with_retry(self, kwargs):
+        """Call chat.completions.create, retrying OpenRouter's transient failures.
+
+        On long generations OpenRouter intermittently fails in ways that bill
+        $0: 5xx errors, network drops, HTTP-200 bodies carrying only
+        {"error": ...}, and parsed responses with choices=None. Those are safe
+        to retry; anything else (4xx, auth, insufficient credit) propagates
+        immediately.
+        """
+        last = None
+        for attempt in range(TRANSIENT_ATTEMPTS):
+            if attempt:
+                delay = 8 + 4 * (attempt - 1)
+                console.print(
+                    f"[dim]openrouter transient failure "
+                    f"({attempt}/{TRANSIENT_ATTEMPTS - 1} retries): {last}; "
+                    f"retrying in {delay}s[/dim]"
+                )
+                time.sleep(delay)
+            try:
+                response = self.client.chat.completions.create(**kwargs)
+            except (openai.APIConnectionError, openai.InternalServerError) as e:
+                last = f"{type(e).__name__}: {e}"
+                continue
+            if response.choices:
+                return response
+            error = getattr(response, "error", None)
+            last = f"error body: {error}" if error else "response had no choices"
+        raise OpenRouterTransientError(
+            f"OpenRouter still failing after {TRANSIENT_ATTEMPTS} attempts: {last}"
         )
 
     def send(self, messages: list[dict]) -> ProviderResponse:
@@ -33,7 +80,7 @@ class OpenRouterProvider(LLMProvider):
         elif self.thinking_level:
             kwargs["extra_body"] = {"reasoning": {"effort": self.thinking_level}}
 
-        response = self.client.chat.completions.create(**kwargs)
+        response = self._create_with_retry(kwargs)
 
         usage = response.usage
         thinking_tokens = 0
@@ -50,7 +97,8 @@ class OpenRouterProvider(LLMProvider):
                 msg += f" (thinking used {thinking_tokens:,} of that budget)"
             warnings.append(msg)
 
-        content, deduped = collapse_exact_duplicate(choice.message.content or "")
+        raw_content = (choice.message.content if choice.message else "") or ""
+        content, deduped = collapse_exact_duplicate(raw_content)
         if deduped:
             warnings.append("provider returned the response body twice; collapsed to one copy")
 

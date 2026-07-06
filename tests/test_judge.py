@@ -87,10 +87,17 @@ def _valid_judgment(rounds_winners=("agentA", "agentB", "even"), tally=None):
         for i, w in enumerate(rounds_winners)
     ]
     obj = {
-        "schema_version": 1,
+        "schema_version": 2,
         "transcript": "t.md",
         "judge": {"name": "Judge", "model": "m", "judged_at": "2026-07-05"},
-        "decision": {"winner": "agentA", "method": "wins on points", "summary": "A edged it."},
+        "decision": {
+            "resolution_winner": "agentA",
+            "resolution_reason": "A's position held up on the merits.",
+            "craft_winner": "agentB",
+            "craft_reason": "B rebutted more sharply.",
+            "method": "wins on points",
+            "summary": "A edged the question; B argued it better.",
+        },
         "rounds": rounds,
         "tally": tally if tally is not None else {"agentA": 1, "agentB": 1, "even": 1},
     }
@@ -149,11 +156,31 @@ class TestValidation:
         errors = validate_judgment(obj)
         assert any("rounds[0].winner" in e for e in errors)
 
-    def test_bad_decision_winner_enum(self):
+    def test_bad_resolution_winner_enum(self):
         obj = _valid_judgment()
-        obj["decision"]["winner"] = "even"  # 'even' is not valid for decision
+        obj["decision"]["resolution_winner"] = "even"  # 'even' is not valid for decision
         errors = validate_judgment(obj)
-        assert any("decision.winner" in e for e in errors)
+        assert any("decision.resolution_winner" in e for e in errors)
+
+    def test_bad_craft_winner_enum(self):
+        obj = _valid_judgment()
+        obj["decision"]["craft_winner"] = "even"
+        errors = validate_judgment(obj)
+        assert any("decision.craft_winner" in e for e in errors)
+
+    def test_missing_reasons_rejected(self):
+        obj = _valid_judgment()
+        del obj["decision"]["resolution_reason"]
+        del obj["decision"]["craft_reason"]
+        errors = validate_judgment(obj)
+        assert any("decision.resolution_reason" in e for e in errors)
+        assert any("decision.craft_reason" in e for e in errors)
+
+    def test_legacy_single_winner_rejected(self):
+        obj = _valid_judgment()
+        obj["decision"]["winner"] = "agentA"  # v1 field must be called out by name
+        errors = validate_judgment(obj)
+        assert any("decision.winner no longer exists" in e for e in errors)
 
     def test_empty_rounds_rejected(self):
         obj = _valid_judgment()
@@ -339,7 +366,7 @@ class TestRunJudge:
         }
         # Tally recomputed from rounds.
         assert data["tally"] == {"agentA": 1, "agentB": 1, "even": 0}
-        assert data["schema_version"] == 1
+        assert data["schema_version"] == 2
 
     def test_defaults_judge_name_to_model(self, tmp_path, monkeypatch):
         model_json = json.dumps(_valid_judgment(rounds_winners=("agentA",)))

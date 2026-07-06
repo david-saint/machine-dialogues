@@ -1,0 +1,155 @@
+{
+  "schema_version": 2,
+  "transcript": "20260705_114732_gpt-5.5_vs_claude-opus-4.8.md",
+  "title": "Subagents Are an Antipattern? (GPT-5.5 vs Opus 4.8, sides swapped)",
+  "judge": {
+    "name": "Grok 4.3",
+    "model": "x-ai/grok-4.3",
+    "judged_at": "2026-07-06",
+    "family": "xai"
+  },
+  "decision": {
+    "resolution_winner": "agentA",
+    "resolution_reason": "The position that subagents are generally an antipattern holds on the merits: context fragmentation, lossy semantic handoffs, and reliability degradation are fundamental architectural costs that outweigh benefits except in narrow read-mostly breadth cases. Concrete production examples (AutoGPT drift patterns, SWE-bench structured pipelines, AP R patch overfitting) demonstrate that single-controller evidence-ledgers with bounded transforms deliver comparable or superior results with lower coordination and audit overhead.",
+    "craft_winner": "agentA",
+    "craft_reason": "AgentA maintained tighter evidence discipline, produced more novel substantive arguments per turn without definitional slippage, and delivered cleaner rebuttals that forced concessions rather than redefinitions; AgentB repeatedly attempted to collapse bounded transforms into \"subagents,\" diluting focus.",
+    "method": "wins on points",
+    "summary": "Resolution and craft both favor agentA. The merits verdict recognizes that while isolated counter-examples (Anthropic research system) exist, they do not overturn the default: subagents remain high-cost and high-risk for the majority of agent workflows. Craft and resolution converge rather than diverge.",
+    "caveat": "Close call on a few early rounds; AgentB's capacity-ceiling argument remains the strongest isolated point against the proposition."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA opened with three precise mechanisms (information-destroying boundaries, distributed-systems primitives, hallucination surface expansion) anchored in AutoGPT and AutoGen; AgentB's response relied heavily on straw-man long-context and redefinition of Agentless."
+    },
+    {
+      "round": 2,
+      "winner": "agentA",
+      "close": true,
+      "reason": "AgentA landed a strong rebuttal on security laundering and economics; AgentB's latency-max argument was acknowledged but weakened by the reliability math introduced."
+    },
+    {
+      "round": 3,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA cleanly clarified the pipeline-vs-subagent distinction and introduced parallel evidence extraction without agency; AgentB's attempt to equate any LLM call with subagents was rebutted."
+    },
+    {
+      "round": 4,
+      "winner": "even",
+      "close": true,
+      "reason": "AgentA conceded narrow counter-examples while AgentB accepted the read/write fork and best-of-N oracle risk; both advanced distinct new points without clear dominance."
+    },
+    {
+      "round": 5,
+      "winner": "agentA",
+      "close": true,
+      "reason": "AgentA introduced ontology drift and compliance exposure with concrete mechanisms; AgentB's four-eyes and model-heterogeneity points overlapped heavily with prior rebuttals."
+    },
+    {
+      "round": 6,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA's capacity-ceiling and TOCTOU arguments plus scheduler nondeterminism were decisive; AgentB's testing-pyramid response was already anticipated and neutralized."
+    },
+    {
+      "round": 7,
+      "winner": "agentB",
+      "close": true,
+      "reason": "AgentB's anchoring-elimination and four-eyes legal-control arguments were the strongest isolated rebuttals of the debate; AgentA's redefinition of single-agent was partially effective."
+    },
+    {
+      "round": 8,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA's vocabulary clarification and god-prompt maintenance cost landed cleanly; AgentB's RAPTOR/GraphRAG move was already neutralized in earlier turns."
+    },
+    {
+      "round": 9,
+      "winner": "even",
+      "close": true,
+      "reason": "Both delivered required closing elements with discipline; mutual concessions on coverage gaps and weak-oracle amplification kept the round balanced."
+    },
+    {
+      "round": 10,
+      "winner": "even",
+      "close": false,
+      "reason": "Brief acknowledgments with no new substance; round is formally even."
+    }
+  ],
+  "tally": {
+    "agentA": 6,
+    "agentB": 1,
+    "even": 3,
+    "note": "a points win, not a knockout"
+  },
+  "key_moments": [
+    {
+      "turn": 1,
+      "agent": "agentA",
+      "moment": "Introduced RPC-over-vibes and information-destroying compression boundary with AutoGPT example"
+    },
+    {
+      "turn": 4,
+      "agent": "agentA",
+      "moment": "Explicit ex-ante definition of subagent that AgentB accepted as including flagship counter-examples"
+    },
+    {
+      "turn": 7,
+      "agent": "agentB",
+      "moment": "Anchoring elimination + four-eyes legal-control argument"
+    },
+    {
+      "turn": 9,
+      "agent": "agentA",
+      "moment": "Closing list of four examples plus three design rules"
+    },
+    {
+      "turn": 9,
+      "agent": "agentB",
+      "moment": "Closing concession on weak-oracle risk and coverage hiding"
+    }
+  ],
+  "analysis": [
+    {
+      "tag": "Analysis",
+      "heading": "How agentA won",
+      "paragraphs": [
+        "AgentA maintained a disciplined boundary around \"delegated task ownership\" versus \"bounded transforms,\" repeatedly forcing AgentB onto definitional ground. Concrete citations (Qi et al., LangGraph controls, ChatDev failure modes, AutoGPT drift) were deployed at high density and were almost never directly rebutted with competing data. The reliability-math and ontology-drift arguments were novel and withstood counter-attacks."
+      ]
+    },
+    {
+      "tag": "Analysis",
+      "heading": "Where agentB scored",
+      "paragraphs": [
+        "AgentB's strongest moments were the capacity-ceiling point and the anchoring-elimination mechanism. The Anthropic research system and CaMeL citations were the only production-scale evidence that genuinely cut against the proposition. AgentB forced acknowledgment that resettable scoped contexts are useful primitives."
+      ]
+    },
+    {
+      "tag": "Notes from the booth",
+      "heading": "Notes from the booth",
+      "paragraphs": [
+        "Both agents respected the pacing rules and produced six-plus distinct arguments. AgentA executed the required closing elements with greater economy and concreteness; AgentB's closing leaned more on prior exchanges. The debate quality was high throughout."
+      ]
+    }
+  ],
+  "quotes": [
+    {
+      "agent": "agentA",
+      "text": "Subagents fragment semantic authority. They create private local world models, prune evidence before the global frame is stable, and hand back compressed judgments that the parent cannot fully audit.",
+      "cite": "Turn 9, closing"
+    },
+    {
+      "agent": "agentB",
+      "text": "The choice was never lossless-vs-lossy. It was inspectable loss at a governable boundary vs. invisible loss you cannot log, replay, fixture, or fence.",
+      "cite": "Turn 9, closing"
+    },
+    {
+      "agent": "agentA",
+      "text": "A subagent boundary is an information-destroying compression boundary.",
+      "cite": "Turn 1"
+    }
+  ]
+}

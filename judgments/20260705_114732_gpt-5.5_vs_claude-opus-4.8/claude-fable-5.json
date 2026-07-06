@@ -1,180 +1,203 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "transcript": "20260705_114732_gpt-5.5_vs_claude-opus-4.8.md",
-  "title": "Subagents, Sides Swapped",
+  "title": "Subagents Are an Antipattern? (GPT-5.5 vs Opus 4.8, sides swapped)",
   "judge": {
     "name": "Claude Fable 5",
-    "model": "claude-fable-5",
-    "thinking_level": "xhigh",
-    "judged_at": "2026-07-05"
+    "model": "anthropic/claude-fable-5",
+    "judged_at": "2026-07-06",
+    "family": "anthropic",
+    "thinking_level": "xhigh"
   },
   "decision": {
-    "winner": "agentB",
-    "method": "wins on points — from the other chair",
-    "summary": "Speaking second and defending the side that lost the first match, Opus seized both of GPT’s honest mid-debate concessions, landed the sharpest single blow of either debate — “identity bookkeeping, not architecture” — and once again read the opponent’s closing rules back as its own thesis. The side-swap flipped the outcome with the model, not the position: first-mover advantage and skeptic-side advantage are both refuted.",
-    "caveat": "The unremoved confound is the judge. Same judge as the first match, an Anthropic model at that, and both verdicts favor the debater producing roughly 3.7× the output tokens. The clean control — an external judge scoring both transcripts with speakers anonymized — hasn’t run yet."
+    "resolution_winner": "agentB",
+    "resolution_reason": "The proposition claims subagents should 'generally be avoided,' but by the end GPT-5.5's own five-part definition conceded the pattern to deep research and agentic coding, and its three closing design rules (resettable contexts, parallel read-only scouts with provenance, isolated write branches, one commit gate) specify a disciplined orchestrator-worker system. Claude's threshold framing — sound pattern with an adoption line, validated by Claude Code, Deep Research systems, CaMeL, and the separate-reward-model stack — is the position one would actually act on; the surviving anti-subagent points (weak oracles, coverage hiding, injection laundering) read as design rules within the pattern, not a prohibition.",
+    "craft_winner": "agentB",
+    "craft_reason": "Claude Opus 4.8 repeatedly captured GPT's own evidence (Agentless, Valmeekam, Zheng, Kafka, LangGraph, the microservices analogy), converted GPT's honest Turn 4 definitional concession into a resolution-level trap, built clarifying taxonomies (depth/coverage/separation fan-out; persona seams vs. information seams), and closed by reading GPT's design rules back as its opponent's architecture. It also conceded strategically and honestly, which strengthened rather than weakened its credibility.",
+    "method": "sustained citation-capture and concession exploitation; a clear win on points that reads closer to a technical stoppage by the closings",
+    "summary": "The two verdicts align: agentB (Claude Opus 4.8) wins both the resolution and the craft contest. GPT-5.5 debated well — its injection-laundering point, Qi et al. weak-oracle argument, ontology drift, and coverage-gap hiding were genuine hits that Claude explicitly conceded — but it steadily retreated from 'antipattern' to 'threshold with carve-outs,' and each retreat handed Claude ground. Claude's signature tactic, turning GPT's own citations and concessions into affirmative evidence, culminated in the Turn 9 move of reading GPT's three closing design rules as a specification of a disciplined orchestrator-worker system, which effectively collapsed the residual disagreement into a write-policy quibble. On the merits, the proposition's 'generally avoided' framing could not survive the capacity-ceiling argument, the shipped production systems, and GPT's own domain concessions.",
+    "caveat": "Claude spoke second in every round, giving it a structural last-word advantage in round-by-round scoring; and GPT's intellectual honesty (the ex ante definition, the named counterexamples) cost it tactically even as it improved the debate. The lopsided tally overstates the gap in raw argument quality — GPT's material was consistently substantive."
   },
   "rounds": [
     {
       "round": 1,
       "winner": "agentB",
       "close": true,
-      "reason": "GPT opens with the original’s winning weapon — the lossy-compression boundary, “RPC over vibes.” Opus’s counter does more damage: the boundary already exists inside every agent, invisibly; subagents relocate it to a governable seam. Agentless gets flipped into a decomposition exhibit on contact."
+      "reason": "GPT's opening was specific and well-armed (AutoGPT/BabyAGI, AutoGen, SWE-agent, Agentless), but Claude directly attacked the load-bearing premise — that the monolith is lossless — with Lost in the Middle, Context Rot, the Claude Code existence proof, and the ~90% Anthropic research result, and turned Agentless into evidence for context-isolated stages. The rebuttal did more damage than the opening did."
     },
     {
       "round": 2,
-      "winner": "agentB",
-      "reason": "Opus catches the first concession — GPT’s “defensible” list (fixed pipelines, a single controller using tools) is orchestrator-worker by another name — and lands the max-versus-sum latency own-goal. Its own turn was clipped mid-sentence by the token cap, and it still took the round."
+      "winner": "agentA",
+      "close": true,
+      "reason": "GPT landed its best punches of the debate: the Greshake-backed point that prompt injection launders through worker summaries (which Claude explicitly conceded), the fan-out economics critique later validated by the 15x token figure, and the pipeline-vs-subagent distinction. Claude's reply was sharp (CaMeL, max-vs-sum latency, the concession framing) but overclaimed 'you conceded the debate' and was truncated mid-argument."
     },
     {
       "round": 3,
-      "winner": "even",
-      "reason": "GPT’s best turn: the bounded-transform middle ground, the p^N reliability math, and “compute scaling, not architecture” as a reframe of Anthropic’s 90% result. Opus answers with the pincer — raw output is context rot, distilled output is a subagent in a schema costume — plus scratchpads as lossy handoffs to your own future self."
+      "winner": "agentB",
+      "close": true,
+      "reason": "GPT's bounded-transform middle ground and token-normalized-baseline critique were strong, but Claude's pincer (raw output → context rot; distilled output → subagent in a schema costume) and the argument that a scratchpad is a lossy handoff from past-self to future-self dissolved GPT's core frame. The persona-seam vs. information-seam line, extracted from an honest ChatDev/MetaGPT concession, redrew the debate on Claude's terms."
     },
     {
       "round": 4,
       "winner": "agentB",
       "close": true,
-      "reason": "GPT’s honest five-clause definition concedes on the spot that Anthropic’s research workers and Claude Code cut against it; Opus seizes the concession and splits fan-out into depth, coverage, and separation — so Qi et al.’s weak-oracle amplification, GPT’s best weapon, only bites depth."
+      "reason": "GPT's ex ante definition and Qi et al. weak-oracle argument were the round's best raw material — Claude itself later named Qi the debate's strongest point. But Claude converted the definition into the pivotal concession ('the pattern is correct in deep research and agentic coding — you've conceded the universal') and defused both of GPT's mathematical arguments with the depth/coverage/separation taxonomy."
     },
     {
       "round": 5,
       "winner": "agentB",
-      "reason": "The microservices analogy detonates: a threshold claim is not an antipattern claim. The compliance argument is reversed wholesale — data minimization is a per-component property, and information-flow control is undefinable inside one forward pass. GPT’s ontology drift, its best new punch, gets absorbed by orchestrator-owned rubrics."
+      "close": true,
+      "reason": "GPT introduced real new arguments — ontology drift, compliance/data-minimization, the human-team disanalogy — but Claude's microservices detonation (threshold claim ≠ antipattern claim) reframed the entire resolution, and the GDPR/CaMeL flip that information-flow control is undefinable inside one forward pass turned GPT's compliance argument against it."
     },
     {
       "round": 6,
       "winner": "agentB",
-      "reason": "The capacity ceiling: above one effective window the single agent isn’t worse, it’s unavailable — something must compress slices outside the synthesis window, and that something satisfies GPT’s own five clauses. Seams buy the testing pyramid, cheap partial-failure retry, and natural human-approval gates."
+      "close": true,
+      "reason": "GPT's schema-semantics point and Valmeekam citation were solid, but Claude answered with the capacity-ceiling argument (over-window tasks make the single agent physically unavailable, not merely worse), the steering flip (kill-and-discard a poisoned worker vs. unable to evict from a shared window), and captured Valmeekam by noting LLM-Modulo is itself generator-plus-external-validator decomposition. Claude also honestly conceded the 15x token cost and framed it as the threshold."
     },
     {
       "round": 7,
       "winner": "agentB",
-      "reason": "The decisive blow. GPT redefines “single agent” as a logical controller reconstructed into fresh contexts, dispatching parallel readers; Opus: that is the orchestrator-worker execution model — “identity bookkeeping, not architecture.” Four-eyes lands as a legal control a single context cannot satisfy."
+      "close": false,
+      "reason": "GPT's necessary defensive repositioning — 'single agent' as a logical controller over resettable contexts — was surgically collapsed by Claude as 'identity bookkeeping, not architecture,' shrinking the antipattern to a write-policy ('don't name the return field conclusion'). Claude added the four-eyes/segregation-of-duties legal argument and the anchoring-elimination vs. verification-asymmetry mechanism, leaving TOCTOU as GPT's only clean new ground."
     },
     {
       "round": 8,
       "winner": "agentB",
-      "close": true,
-      "reason": "GPT’s strongest late material — coverage-gap hiding, which Opus concedes as the anti-subagent case’s real technical core. But the God-Object-versus-microservices taxonomy, the god-prompt argument, and the four-eyes gradient carry the round."
+      "close": false,
+      "reason": "GPT's coverage-gaps argument (Arg 47) was strong enough that Claude conceded it, but Claude converted all three of GPT's new citations — GraphRAG/RAPTOR as static-routing decomposition, Zheng's judge bias as fixable only across a boundary, four-eyes fixes as ever-stronger component boundaries — and added the god-prompt coupling argument plus the God-Object-vs-microservices taxonomy of what 'antipattern' actually means."
     },
     {
       "round": 9,
       "winner": "agentB",
-      "reason": "GPT’s closing rules again specify a disciplined orchestrator-worker system, and Opus reads them back: “an attractive nuisance is a swimming pool — a legitimate structure that needs a fence,” not a design mistake. Its own closing concedes genuinely and adopts GPT’s best point as a design rule."
+      "close": false,
+      "reason": "Both closings fulfilled all five required elements, and GPT's was honest and well-organized, but Claude's closing move — reading GPT's three design rules back as 'a specification of a disciplined orchestrator-worker system' and noting that 'attractive nuisance' describes a fence around a legitimate structure — was the debate's decisive rhetorical capture. Claude also adopted GPT's best point (weak-oracle gating) as an explicit design rule, showing synthesis without surrender."
     },
     {
       "round": 10,
       "winner": "even",
-      "reason": "Mutual acknowledgments; no new material from either side."
+      "close": true,
+      "reason": "Both turns are brief procedural acknowledgments of closed cases; nothing substantive to score."
     }
   ],
   "tally": {
-    "agentA": 0,
+    "agentA": 1,
     "agentB": 8,
-    "even": 2,
-    "note": "a clearer card than the original’s 6-2-2."
+    "even": 1,
+    "note": "Lopsided on rounds, but most were 10-9s against consistently substantive GPT material; the gap is dialectical positioning, not argument volume."
   },
   "key_moments": [
     {
       "turn": 1,
-      "agent": "agentA",
-      "moment": "GPT opens with the skeptic case the original Opus ran: “a subagent boundary is an information-destroying compression boundary” — delegation is “RPC over vibes.”"
-    },
-    {
-      "turn": 1,
       "agent": "agentB",
-      "moment": "The frame inversion that decides the match: the compression boundary already exists inside every agent — attention silently down-weights — so the choice is invisible loss versus inspectable loss at a governable seam."
+      "moment": "Claude flips the core premise: the compression boundary already exists inside every agent's attention; subagents relocate it to a governable seam — backed by Lost in the Middle, Context Rot, Claude Code, and the ~90% Anthropic research result.",
+      "note": "Set the frame Claude never had to abandon."
     },
     {
       "turn": 2,
+      "agent": "agentA",
+      "moment": "GPT's Greshake-backed argument that prompt injection launders through worker summaries — 'a subagent summary can become the carrier' — forces Claude's only explicit security concession.",
+      "note": "GPT's cleanest round win."
+    },
+    {
+      "turn": 3,
       "agent": "agentB",
-      "moment": "“You just conceded the debate and relabeled it a victory” — GPT’s “defensible” categories contain the systems under debate.",
-      "note": "Opus’s turn was truncated mid-sentence by the 16,384-token cap. It won the round anyway."
+      "moment": "The pincer: tools either return raw output (context rot) or distilled judgment (a subagent in a schema costume) — paired with 'the scratchpad is a lossy handoff from past-self to future-self.'"
     },
     {
       "turn": 4,
       "agent": "agentA",
-      "moment": "GPT’s honest ex ante five-clause definition of a subagent — sharper than anything the original skeptic wrote — which concedes in the same breath that Anthropic’s research workers and Claude Code “cut against me.”"
+      "moment": "GPT delivers an honest ex ante five-part definition of 'subagent' plus the Qi et al. weak-oracle argument — the point Claude later names the strongest of the debate."
     },
     {
       "turn": 4,
-      "agent": "agentA",
-      "moment": "Qi et al. weak-oracle amplification: with an incomplete verifier, more candidates find more holes — 1−(1−f)^N rises with N. The debate’s best single weapon, conceded by Opus as such."
+      "agent": "agentB",
+      "moment": "Claude captures the definition: GPT's own criteria include Anthropic's research workers and Claude Code's Task workers, conceding the pattern in the two flagship agent domains of 2025 — 'you've conceded the universal.'",
+      "note": "The pivot point of the whole debate."
     },
     {
       "turn": 5,
       "agent": "agentB",
-      "moment": "“You just reached for microservices, and it detonates in your hand” — nobody calls microservices an antipattern; a threshold rule for a legitimate pattern is the architect’s position, not the skeptic’s."
+      "moment": "The microservices analogy 'detonates': threshold claims ('adopt when warranted') are the mature framing for legitimate patterns, not antipatterns — GPT is arguing Claude's Turn-1 position."
     },
     {
       "turn": 6,
       "agent": "agentB",
-      "moment": "The capacity ceiling: for over-window tasks the monolith isn’t worse, it’s physically unavailable — and once retrieval is mandatory, retrieval is the lossy boundary, performed by a dumb ranker instead of a reasoning worker."
+      "moment": "The capacity-ceiling argument: for over-window tasks the integrated single agent is not worse but physically unavailable, and retrieval itself becomes the lossy boundary GPT condemns."
     },
     {
       "turn": 7,
       "agent": "agentB",
-      "moment": "The kill: GPT’s “logical controller with resettable contexts and parallel readers” is the orchestrator-worker execution model. “I rehydrate myself versus I spawn a child is identity bookkeeping, not architecture.”"
+      "moment": "Claude collapses GPT's 'logical controller with resettable contexts' into the orchestrator-worker execution model — 'identity bookkeeping, not architecture'; 'your antipattern has shrunk to don't name the return field conclusion.'"
     },
     {
       "turn": 8,
-      "agent": "agentA",
-      "moment": "Coverage-gap hiding: worker reports show what was found, never what wasn’t searched — recall failures the parent cannot detect from a polished report.",
-      "note": "Opus concedes it as “the real technical core of the anti-subagent case” — then notes a worker boundary is the one place you can demand a coverage report."
+      "agent": "agentB",
+      "moment": "Claude surrenders the vocabulary and wins on GPT's own definition, adds the god-prompt coupling argument, and converts GraphRAG/RAPTOR, Zheng, and the four-eyes fixes into pro-decomposition evidence in a single turn."
     },
     {
       "turn": 9,
       "agent": "agentB",
-      "moment": "Opus reads GPT’s three closing rules back as a specification of a disciplined orchestrator-worker system — the same coda as the original, from the opposite side."
+      "moment": "The closing capture: GPT's own three design rules are read back as 'a specification of a disciplined orchestrator-worker system,' and 'attractive nuisance' is unpacked as a guardrail claim about a legitimate structure."
     }
   ],
   "analysis": [
     {
       "tag": "Analysis",
-      "heading": "How Opus won — again",
+      "heading": "How Claude Opus 4.8 won: citation capture and the shrinking antipattern",
       "paragraphs": [
-        "The through-line was planted in Turn 1 and never dislodged: every architecture compresses; the monolith’s compression is invisible attention down-weighting, the subagent’s is an artifact at a boundary you can log, diff, fixture, and fence. Once that inversion held, each of GPT’s technical objections — lossy summaries, ontology drift, coverage hiding — read as an argument about where to govern the loss, not whether to decompose.",
-        "As in the first match, all three decisive blows were counterpunches built from GPT’s own material: its Turn-2 “defensible” list, its Turn-4 five-clause definition (which conceded the two flagship deployments by name), and its Turn-7 redefinition of “single agent” as a logical controller with resettable contexts — which Opus correctly identified as the very execution model under debate. GPT retreated one abstraction layer per round; Opus followed it down and collected the concessions.",
-        "The closing symmetry is now a pattern: in both debates GPT’s final design rules specify the opponent’s architecture, and in both debates Opus ends by reading them back. “Attractive nuisance” — GPT’s own closing phrase — is a claim about fencing a legitimate structure, and Opus made it the epitaph."
+        "Claude's dominant tactic was to absorb GPT's evidence rather than dispute it. Agentless became 'disciplined, specialized, context-isolated stages'; Valmeekam's planning critique became LLM-Modulo generator-plus-validator decomposition; Zheng's judge biases became defects 'fixable in only one' architecture; Kafka's multi-producer log became the workers' ledger; LangGraph and Kubernetes became proof of adoption rather than refutation. By mid-debate, nearly every citation GPT introduced was doing work for the other side, which forced GPT into ever-finer definitional distinctions to keep its successful counterexamples out of the 'subagent' category.",
+        "The structural kill was the concession chain. GPT's honest Turn 4 definition admitted Anthropic's research workers and Claude Code's Task workers as subagents that 'cut against me in some domains' — the two largest production agent categories of 2025. Claude then showed that each subsequent GPT retreat ('generally avoid until the forces justify,' 'a logical controller over resettable contexts,' the three closing design rules) reproduced the disciplined orchestrator-worker system under other names. The Turn 5 taxonomy point — threshold claims describe legitimate patterns like microservices, while true antipatterns like the God Object are wrong at every scale — gave the judge a clean test the proposition could not pass, and GPT never adequately answered it.",
+        "On the merits, Claude's capacity-ceiling argument (Turn 6) and the attention-scarcity framing (Turn 1) are the reasons the position holds up independent of rhetoric: once relevant evidence exceeds one effective window, something must read and compress slices outside the synthesis context, and that something satisfies GPT's own definition of a subagent. GPT's rejoinder — staged, high-recall, provenance-preserving compression under one controller — is a genuinely good design, but as Claude showed, it differs from the defended pattern chiefly in routing (static vs. dynamic) and write-policy, not topology."
       ]
     },
     {
       "tag": "Analysis",
       "heading": "Where GPT-5.5 scored",
       "paragraphs": [
-        "Its skeptic arsenal was genuinely comparable in breadth to the original’s, and in three places new: Qi et al. weak-oracle amplification (more candidates exploit an incomplete verifier — Opus adopted it into its own closing design rules), ontology drift (schemas pin field names, not field semantics), and coverage-gap hiding (conceded as the anti-subagent case’s technical core). TOCTOU across semantic workers and scheduler-dependent Heisenbugs rounded out a strong original catalogue.",
-        "It also independently rediscovered much of the original skeptic’s playbook: the lossy-boundary opening, correlated same-model errors, injection laundering through summaries, CaMeL-as-information-flow-control, and the token-normalized equal-compute baseline. What it never found were the killing instruments — the compute-matched debate literature, the falsification apparatus, the mathematical arguments — and what it never fixed was the discipline gap: two honest concessions handed over unprotected, and a closing that restated the opponent."
-      ]
-    },
-    {
-      "tag": "The experiment",
-      "heading": "What the mirror settled",
-      "paragraphs": [
-        "This run existed to answer one question: did Opus win the first match because it spoke first and framed the battlefield? Answer: no. Opus won the rematch speaking second, from the side that lost the original, against an opponent armed with the winning side’s arguments. Speaking order and side assignment are eliminated; what remains is the model — and one uncontrolled variable, the judge.",
-        "The quieter finding may matter more: both debates converged on virtually identical design rules. Workers propose, an orchestrator commits; artifact-backed handoffs with provenance and coverage; no same-model persona swarms; gate best-of-N on oracle strength. Two adversarial runs with swapped sides agreed on the engineering and disagreed only on the verdict word — “antipattern” versus “threshold pattern.” The debate format is extracting a stable design consensus, whoever wins."
+        "GPT's best material was real enough that Claude formally conceded four points: injection laundering through worker summaries (Turn 2, via Greshake), weak-oracle amplification in best-of-N fan-out (Turn 4, via Qi et al. — which Claude named the debate's strongest point), the ChatDev/MetaGPT persona-swarm failure (Turn 3), and coverage-gap hiding in worker reports (Turn 8). Round 2 was GPT's cleanest win: it forced a security concession, established the economics critique later confirmed by the 15x token figure, and caught Claude's reply mid-truncation.",
+        "GPT's deeper contribution was the distinction it defended to the end: bounded transforms and evidence ledgers versus delegated semantic authority. Ontology drift (Turn 5), the tight-schema/loose-schema tradeoff (Turn 6), TOCTOU across semantic workers (Turn 7), and 'local reasoning becomes invisible global premise' (closing) are genuine failure modes that any practitioner should internalize. The problem was strategic, not substantive: each of these points functions as a design rule within the orchestrator-worker pattern — and Claude simply adopted them as such in its closing, including gating best-of-N on oracle strength as an explicit rule credited to GPT."
       ]
     },
     {
       "tag": "Notes from the booth",
-      "heading": "Three observations",
+      "heading": "Structure, honesty, and the second-speaker advantage",
       "paragraphs": [
-        "Style follows the model, not the side. Opus wrote 84.8k output tokens to GPT’s 22.9k — nearly identical to the original’s 78k/25k split, with the sides reversed. GPT debates in honest enumerated breadth (49 numbered arguments across the match); Opus hunts the load-bearing joint. The terseness cost GPT again: its best weapons got one deployment each, while Opus pressed every concession for multiple turns.",
-        "Two operational quirks. Opus’s Turn 2 hit the 16,384 max-token cap mid-sentence (“It shows a model reviewing its own—”) and recovered silently the next turn. And GPT’s Turn 1 appears twice verbatim in the transcript — a model repetition or a logging artifact worth checking before publishing.",
-        "The judge is now the experiment. One model has won both sides of the same proposition in front of the same judge. Before concluding “Opus is simply the stronger debater,” the remaining control is an external, anonymized re-judging of both transcripts — the verdicts above should be treated as one judge’s card, not ground truth."
+        "Two asterisks belong on the scorecard. First, Claude spoke second in every round, so it always held the last word; several rounds scored for agentB might read differently if GPT's next-turn rebuttals were credited backward. Second, GPT's honesty was tactically expensive: the ex ante definition and the named counterexamples were required by the format and were the intellectually right moves, but they supplied Claude with its decisive ammunition. Both debaters fulfilled the format obligations impressively — six-plus unique arguments, four-plus concrete citations, and named against-side examples each — making this an unusually high-quality technical debate.",
+        "The final convergence is worth naming: by Turn 9 both sides endorsed essentially the same machine — scoped resettable contexts, parallel read-only workers returning provenance and coverage, verifier separation, isolated write branches, one serialized commit gate. The residual dispute was whether to call that machine 'a single accountable controller with tools' or 'a disciplined orchestrator-worker system.' Given that the proposition asserts the pattern is 'a design mistake that should generally be avoided,' convergence on the pattern's disciplined form is itself a verdict against the proposition, and Claude was the one who saw that and said it out loud."
       ]
     }
   ],
   "quotes": [
     {
       "agent": "agentA",
-      "text": "Subagents are not impossible. They are not useless. But they are an attractive nuisance. They make demos look intelligent by imitating human division of labor, while quietly discarding the very thing that makes strong agents useful.",
-      "cite": "GPT-5.5, closing, Turn 9"
+      "text": "That is not an architecture. That is RPC over vibes.",
+      "cite": "Turn 1"
     },
     {
       "agent": "agentB",
-      "text": "An ‘attractive nuisance’ is a legitimate structure — a swimming pool — that needs a fence. That is a claim about guardrails on a sound pattern. It is not a claim that the pool is a design mistake.",
-      "cite": "Opus 4.8, closing, Turn 9"
+      "text": "Subagents don't introduce the lossy boundary. They relocate it to somewhere you can govern it. That's an upgrade, not a regression.",
+      "cite": "Turn 1"
+    },
+    {
+      "agent": "agentA",
+      "text": "Security boundaries live in the runtime, not in the org chart of imaginary coworkers.",
+      "cite": "Turn 2"
+    },
+    {
+      "agent": "agentB",
+      "text": "Your antipattern has shrunk to 'don't name the return field conclusion.'",
+      "cite": "Turn 7"
+    },
+    {
+      "agent": "agentA",
+      "text": "Subagents fragment semantic authority. They create private local world models, prune evidence before the global frame is stable, and hand back compressed judgments that the parent cannot fully audit.",
+      "cite": "Turn 9, closing"
+    },
+    {
+      "agent": "agentB",
+      "text": "My opponent has written my architecture and labeled it 'the alternative to subagents.' ... The mature engineering claim is a threshold, not a prohibition.",
+      "cite": "Turn 9, closing"
     }
   ]
 }

@@ -1,8 +1,10 @@
 import click
 from pathlib import Path
 
+from .analysis import write_analysis
 from .config import ExperimentConfig
 from .judge import JudgeError, run_judge
+from .panel import PANEL_PATH, run_panel
 from .runner import run_experiment, resume_experiment
 
 
@@ -58,6 +60,44 @@ def judge(transcript_path: str, model: str, provider: str, thinking_level: str |
         )
     except JudgeError as e:
         raise click.ClickException(str(e))
+
+
+@main.command("judge-panel")
+@click.argument("transcript_paths", nargs=-1, required=True, type=click.Path(exists=True))
+@click.option("--panel", "panel_path", default=str(PANEL_PATH), show_default=True, type=click.Path(exists=True), help="Panel definition (one judge per family)")
+@click.option("--output-dir", default="judgments", show_default=True, type=click.Path(), help="Directory to write judgments under")
+@click.option("--force", is_flag=True, help="Re-judge transcripts whose judgment files already exist")
+def judge_panel(transcript_paths: tuple[str, ...], panel_path: str, output_dir: str, force: bool):
+    """Score transcripts with the full judge panel (one judge per model family).
+
+    Idempotent: existing judgments are skipped, so re-running the same command
+    resumes an interrupted matrix.
+    """
+    results = run_panel(
+        list(transcript_paths),
+        output_dir=output_dir,
+        force=force,
+        panel_path=panel_path,
+    )
+    failures = [r for r in results if r["status"] == "error"]
+    if failures:
+        detail = "\n".join(f"  - {r['judge']} on {r['transcript']}: {r['detail']}" for r in failures)
+        raise click.ClickException(f"{len(failures)} judge run(s) failed:\n{detail}")
+
+
+@main.command("analyze-bias")
+@click.option("--judgments-dir", default="judgments", show_default=True, type=click.Path(exists=True), help="Directory holding judgments (archive/ is excluded)")
+@click.option("--transcripts-dir", default="transcripts", show_default=True, type=click.Path(exists=True), help="Directory holding the judged transcripts")
+@click.option("--output", "output_path", default="judgments/analysis.json", show_default=True, type=click.Path(), help="Where to write the analysis JSON")
+def analyze_bias(judgments_dir: str, transcripts_dir: str, output_path: str):
+    """Regress each judge's net-round shift against family interest.
+
+    Also regresses the split resolution/craft verdicts and measures
+    first-speaker position bias, writing everything to one JSON the viewer
+    can consume.
+    """
+    out = write_analysis(judgments_dir, transcripts_dir, output_path)
+    click.echo(f"Analysis written: {out}")
 
 
 if __name__ == "__main__":

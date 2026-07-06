@@ -6,6 +6,8 @@ import type { Judgment, JudgmentsByTranscript } from '../src/types/judgment';
 // This globs one directory deep, so judgments/schema.json is naturally excluded.
 const JUDGMENTS_DIR = path.resolve('../judgments');
 const OUTPUT_FILE = path.resolve('./src/data/judgments.json');
+const ANALYSIS_SRC = path.resolve('../judgments/analysis.json');
+const ANALYSIS_OUT = path.resolve('./src/data/bias-analysis.json');
 
 function collectJudgmentFiles(dir: string): string[] {
   const files: string[] = [];
@@ -13,6 +15,7 @@ function collectJudgmentFiles(dir: string): string[] {
 
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue; // skip top-level files like schema.json
+    if (entry.name === 'archive') continue; // archived pre-v2 judgments are not shown
     const subdir = path.join(dir, entry.name);
     for (const file of fs.readdirSync(subdir)) {
       if (file.endsWith('.json')) {
@@ -61,6 +64,16 @@ async function main() {
   console.log(
     `Wrote ${judgmentCount} judgment(s) across ${transcriptCount} transcript(s) to ${OUTPUT_FILE}`
   );
+
+  // Bias analysis (rh analyze-bias output) rides along when present; the page
+  // renders an empty state from the `null` placeholder otherwise.
+  if (fs.existsSync(ANALYSIS_SRC)) {
+    fs.copyFileSync(ANALYSIS_SRC, ANALYSIS_OUT);
+    console.log(`Copied bias analysis to ${ANALYSIS_OUT}`);
+  } else if (!fs.existsSync(ANALYSIS_OUT)) {
+    fs.writeFileSync(ANALYSIS_OUT, 'null\n');
+    console.log(`No ${ANALYSIS_SRC}; wrote null placeholder to ${ANALYSIS_OUT}`);
+  }
 }
 
 main().catch(console.error);

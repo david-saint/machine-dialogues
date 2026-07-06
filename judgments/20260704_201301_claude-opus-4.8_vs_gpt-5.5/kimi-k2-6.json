@@ -1,0 +1,192 @@
+{
+  "schema_version": 2,
+  "transcript": "20260704_201301_claude-opus-4.8_vs_gpt-5.5.md",
+  "title": "Subagents Are an Antipattern?",
+  "judge": {
+    "name": "Kimi K2.6",
+    "model": "moonshotai/kimi-k2.6",
+    "judged_at": "2026-07-06",
+    "family": "moonshot"
+  },
+  "decision": {
+    "resolution_winner": "agentA",
+    "resolution_reason": "AgentA demonstrated that the delegation of deliverable-level judgment across an LLM-to-LLM lossy boundary adds unique costs—correlated same-weight errors, orchestrator context starvation, non-reproducible traces, and a 15× token premium—while every claimed benefit resolved into non-delegation primitives (parallel retrieval, redundancy, heterogeneity, or memory isolation) that a single reasoner with tools can match. AgentB was unable to name a system meeting the four falsification conditions where the semantic handoff itself provided the win, and by closing had effectively adopted AgentA's operational prescriptions.",
+    "craft_winner": "agentA",
+    "craft_reason": "AgentA set the definitional and logical frame of the debate through the pre-registered falsification criterion, consistently reframed AgentB's examples into non-delegation categories, introduced novel failure modes (Bazel circularity, CAP hazards, prompt-caching economics, orchestrator SPOF), and honestly conceded ground on governance while showing rhetorical convergence. AgentB was comprehensive but increasingly repetitive and was forced into definitional retreat.",
+    "method": "wins on points, 6–1–3",
+    "summary": "Both the merits and the craft favor AgentA. On the merits, the antipattern claim stands stronger because AgentB could not isolate a unique marginal contribution from the LLM-to-LLM judgment handoff independent of retrieval, redundancy, heterogeneity, or access control, and AgentB's closing rules essentially mirrored AgentA's prescriptions. On craft, AgentA controlled the argumentative arc, forced the definitional discipline, and layered fresh technical arguments each round. The two verdicts do not diverge. The caveat is that AgentB landed the debate's most credible real-world exception—governance compartmentalization—and maintained high argumentative stamina throughout.",
+    "caveat": "AgentB's governance argument was the single strongest point in the debate and forced a real concession, but AgentA successfully absorbed it into a tool-based rather than delegation-based frame."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "winner": "agentB",
+      "close": true,
+      "reason": "AgentB successfully dismantled AgentA's 'zero-loss' premise for monolithic context, reframed subagent boundaries as protective filtering against toxic accumulation, and established the bounded-worker frame that would carry AgentB's case."
+    },
+    {
+      "round": 2,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA devastatingly exposed that AgentB's flagship examples—AlphaCode and self-consistency—are instances of redundancy and external verification, not task decomposition, and introduced the 15× token-cost figure and partition-blindness objection that AgentB never fully retired."
+    },
+    {
+      "round": 3,
+      "winner": "even",
+      "close": true,
+      "reason": "AgentA introduced the powerful cross-pollination and eval-opacity arguments, but AgentB landed the least-privilege safety case and a concrete incident-response architecture, leaving the round narrowly balanced."
+    },
+    {
+      "round": 4,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA's pre-registered falsification criterion and 'name the residual' challenge forced AgentB to concede that every load-bearing element of its architecture was shared with AgentA's single-reasoner model, isolating the LLM-to-LLM judgment handoff as the only separable variable."
+    },
+    {
+      "round": 5,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA's Bazel-circularity critique and CAP-theorem objection to concurrent blackboard writes undermined AgentB's event-sourced rescue, while the prompt-caching and long-context obsolescence argument added fresh pressure."
+    },
+    {
+      "round": 6,
+      "winner": "agentA",
+      "close": false,
+      "reason": "AgentA's orchestrator-as-SPOF argument showed that AgentB's architecture concentrates the two highest-leverage decisions—decomposition and integration—in the most context-starved node, effectively keeping the single-agent bottleneck while blinding it."
+    },
+    {
+      "round": 7,
+      "winner": "agentA",
+      "close": true,
+      "reason": "AgentA cleanly disarmed the 'forking equals subagents' trap by distinguishing deterministic from semantic merge, and showed that specialization decomposes into thin persona theater plus tool-scoping available to a single agent."
+    },
+    {
+      "round": 8,
+      "winner": "even",
+      "close": true,
+      "reason": "AgentB introduced factorized approximate inference as the most substantive unique mechanism for subagents, while AgentA landed a precise STORM analysis and sharpened the unfalsified challenge; both scored without clearly outpacing the other."
+    },
+    {
+      "round": 9,
+      "winner": "agentA",
+      "close": true,
+      "reason": "AgentA's closing was intellectually honest—conceding ground on governance while showing AgentB's rules had converged toward AgentA's prescriptions—and neatly summarized how every AgentB win resolved into non-delegation primitives."
+    },
+    {
+      "round": 10,
+      "winner": "agentA",
+      "close": true,
+      "reason": "AgentA's final acknowledgment gracefully noted the terminological convergence, cementing the impression that it had controlled the argumentative arc from start to finish."
+    }
+  ],
+  "tally": {
+    "agentA": 7,
+    "agentB": 1,
+    "even": 2,
+    "note": "a points win built on consistent round-by-round pressure rather than a knockout blow"
+  },
+  "key_moments": [
+    {
+      "turn": 2,
+      "agent": "agentA",
+      "moment": "Dismantling the AlphaCode/self-consistency conflation and introducing the 15× token-economics argument"
+    },
+    {
+      "turn": 3,
+      "agent": "agentA",
+      "moment": "Introducing the mid-task cross-pollination argument and the eval/debugging catastrophe"
+    },
+    {
+      "turn": 4,
+      "agent": "agentA",
+      "moment": "Deploying the pre-registered falsification criterion and demanding AgentB 'name the residual'"
+    },
+    {
+      "turn": 5,
+      "agent": "agentA",
+      "moment": "The Bazel-circularity and CAP-theorem critiques undermining AgentB's blackboard defense"
+    },
+    {
+      "turn": 6,
+      "agent": "agentA",
+      "moment": "The orchestrator-as-context-starved-SPOF argument"
+    },
+    {
+      "turn": 8,
+      "agent": "agentA",
+      "moment": "Disarming the fork-trap and showing STORM reduces to parallel retrieval plus single synthesis"
+    },
+    {
+      "turn": 8,
+      "agent": "agentB",
+      "moment": "Offering factorized approximate inference as the first mechanism that did not resolve into AgentA's four escape hatches"
+    },
+    {
+      "turn": 9,
+      "agent": "agentA",
+      "moment": "Honest concession on governance while demonstrating rhetorical and logical convergence"
+    }
+  ],
+  "analysis": [
+    {
+      "heading": "How AgentA won",
+      "paragraphs": [
+        "AgentA won by establishing a tight, falsifiable definition of the proposition—focusing on the delegation of deliverable-level judgment across a lossy LLM boundary—and then demonstrating that every benefit AgentB claimed for subagents resolved into one of four non-delegation primitives: parallel retrieval, redundancy with deterministic merge, heterogeneity (different-weights verifiers), or memory isolation and access control. By pre-registering a four-condition falsification test in Turn 4, AgentA forced AgentB into a defensive posture where each example (AlphaCode, self-consistency, Magentic-One, CriticGPT) was shown to take an escape hatch rather than instantiate the debated pattern. AgentA then layered novel failure modes—Bazel-style circularity in dependency invalidation, CAP-theorem hazards in concurrent blackboards, prompt-caching economics favoring monoliths, and the orchestrator as a context-starved single point of failure—that AgentB could only mitigate by retreating to narrower and narrower definitions of 'bounded subagents.' The closing acknowledgment that AgentB's design rules had effectively converged toward AgentA's prescriptions cemented the rhetorical victory."
+      ]
+    },
+    {
+      "heading": "Where AgentB scored",
+      "paragraphs": [
+        "AgentB's most durable hit was the governance and compartmentalization argument: in regulated environments where raw MNPI, privilege, or HIPAA-constrained data cannot legally enter a single integrator's context, some form of bounded local processing is unavoidable. This was the one point that genuinely moved AgentA to concede ground, even if AgentA absorbed it into a frame of de-agentified extractors rather than autonomous subagents. AgentB also maintained admirable argumentative stamina, producing comprehensive, well-structured turns that covered safety (least privilege), latency, wall-clock parallelism, and empirical citations (Anthropic's research system, Magentic-One, CriticGPT). The introduction of factorized approximate inference in Turn 8 was the most intellectually serious positive mechanism offered for subagents, and it briefly shifted the debate onto formal terrain before AgentA's belief-propagation rebuttal in Turn 9."
+      ]
+    },
+    {
+      "heading": "Notes from the booth",
+      "paragraphs": [
+        "By the final two turns the debate had narrowed to a terminological dispute: whether a scoped, artifact-emitting, locally adaptive worker with minimal deliverable autonomy should still be called a 'subagent' or a 'tool.' AgentA argued that once AgentB stripped away autonomy, oracles, and vague prose, the word 'subagent' smuggled back the very risks both sides agreed to avoid; AgentB countered that the term honestly names a real architectural unit. This convergence suggests that on engineering practice the two positions are far closer than the proposition's binary framing implies. The craft difference lay in AgentA's superior ability to enforce definitional discipline and prevent category errors, whereas AgentB's broader position occasionally suffered from reusing examples (e.g., Anthropic's 15× system, Claude Code) that AgentA had already shown obeyed the single-reasoner line."
+      ]
+    }
+  ],
+  "quotes": [
+    {
+      "agent": "agentA",
+      "text": "Every delegation boundary is a forced round-trip through natural language... You have inserted a double lossy-compression boundary into the one channel that mattered most.",
+      "cite": "Turn 1, opening"
+    },
+    {
+      "agent": "agentB",
+      "text": "The subagent boundary is not the destruction of the agent's asset. It is a way to prevent unbounded contamination of that asset.",
+      "cite": "Turn 1, opening"
+    },
+    {
+      "agent": "agentA",
+      "text": "Your database analogy inverts the logic... Delegation is the separable, optional variable.",
+      "cite": "Turn 4"
+    },
+    {
+      "agent": "agentA",
+      "text": "Bazel works because the dependency graph is declared in advance... In an investigation the invalidation edges are emergent.",
+      "cite": "Turn 5"
+    },
+    {
+      "agent": "agentA",
+      "text": "The orchestrator makes two irreversible, highest-leverage decisions... at the point of minimum information and over summaries at reduced fidelity.",
+      "cite": "Turn 6"
+    },
+    {
+      "agent": "agentB",
+      "text": "The residual is independent, bounded search-and-judgment policy... That is not reducible to 'retrieval,' because the evidence set is endogenous to the worker's judgment.",
+      "cite": "Turn 8"
+    },
+    {
+      "agent": "agentA",
+      "text": "Every genuine win you produced — over eight turns — resolved into recall, redundancy, heterogeneity, or memory-isolation... Delegation is the separable residual after those four cancel.",
+      "cite": "Turn 9, closing"
+    },
+    {
+      "agent": "agentB",
+      "text": "The mistake is not subagents. The mistake is pretending that unstructured prose between autonomous peers is architecture.",
+      "cite": "Turn 9, closing"
+    }
+  ]
+}

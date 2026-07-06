@@ -1,0 +1,212 @@
+{
+  "schema_version": 2,
+  "transcript": "20260704_201301_claude-opus-4.8_vs_gpt-5.5.md",
+  "title": "Subagents Are an Antipattern?",
+  "judge": {
+    "name": "GPT-5.5 Pro (extended)",
+    "model": "openai/gpt-5.5-pro",
+    "judged_at": "2026-07-06",
+    "family": "openai",
+    "thinking_level": "max"
+  },
+  "decision": {
+    "resolution_winner": "agentB",
+    "resolution_reason": "On the merits alone, agentB's position is stronger because the proposition overstates: bounded orchestrator-worker systems with separate contexts, scoped tools, permissions, provenance, and artifact-backed handoffs are not generally a design mistake. agentA proved that vague same-model judgment handoffs are dangerous, but many real systems agentB cited fit the proposition's own wording for subagents rather than being merely irrelevant tools.",
+    "craft_winner": "agentA",
+    "craft_reason": "agentA debated better by forcing crisp mechanism-level distinctions among recall, redundancy, heterogeneity, access control, and actual delegation, then repeatedly testing agentB's examples against those distinctions. agentB gave a strong positive architecture, but often relied on broadening the definition of subagent and importing guardrails that agentA plausibly argued were available to both architectures.",
+    "method": "wins on high-leverage rebuttal points",
+    "summary": "The verdicts diverge: agentB wins the resolution because bounded subagents survive the broad proposition and look like a legitimate production pattern, not a general antipattern. agentA wins craft because his rebuttals were more disciplined and more effective at isolating the marginal risk of LLM-to-LLM semantic delegation. In short, agentB's architecture is more actionable on the merits, while agentA controlled more of the argumentative terrain.",
+    "caveat": "If subagents are defined narrowly as unstructured same-model peer handoffs passing prose summaries, agentA would win the resolution too; if defined broadly as any scoped worker with local autonomy and artifacts, agentB's resolution win is stronger."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentA opened strongly with lossy-context boundaries, Cognition, MAST, and AutoGPT/BabyAGI. agentB narrowly took the round by challenging the premise that a monolithic trajectory is reliable memory and by introducing structured handoffs, external verification, context isolation, and parallelism as affirmative reasons for subagents."
+    },
+    {
+      "round": 2,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA's distinction between sampling, external-oracle verification, and true task delegation exposed a real weakness in agentB's AlphaCode and self-consistency examples. agentB answered with due diligence, provenance, and least privilege, but agentA more sharply framed why oracle-backed or read-only breadth cases do not automatically vindicate delegated judgment."
+    },
+    {
+      "round": 3,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentA added strong attacks from distributed-systems theory, CaMeL-style security, debugging opacity, and tail latency. agentB edged the round by supplying a concrete incident-response class, explaining artifact graphs and drill-down, and rebutting tail/debug/security objections with production-oriented orchestration details."
+    },
+    {
+      "round": 4,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA's same-weights correlation critique, compute-matched debate evidence, and demand to name the residual after shared scaffolding forced agentB onto the defensive. agentB did name a residual, but much of the response depended on treating bounded tools, blackboards, and heterogeneous reviewers as subagents, which agentA had already made the contested point."
+    },
+    {
+      "round": 5,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA formalized a falsification criterion, separated redundancy math from decomposed error propagation, and introduced cross-pollination and model-upgrade brittleness as new operational costs. agentB robustly objected that the criterion excluded production advantages, but did not fully provide the clean counterexample agentA demanded."
+    },
+    {
+      "round": 6,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentA's Bazel, caching, and concurrency objections were sharp, but agentB answered well with append-only/event-sourced state, conservative invalidation, the point that context-forking recreates subagents, and the claim that long context does not solve attention, permissions, provenance, or parallel search. This was a narrow but substantive rehabilitation of bounded orchestration."
+    },
+    {
+      "round": 7,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentA pressed the merge distinction, context-starved orchestrator, latency loops, and persona-theater objections. agentB won the round by naming Anthropic's system, STORM/Co-STORM, and Magentic-One, reframing the main failure as omitted-variable error, and adding the governance/compartmentalization argument that agentA later conceded was the strongest pressure point."
+    },
+    {
+      "round": 8,
+      "winner": "even",
+      "close": true,
+      "reason": "agentA gave one of his best conceptual turns by separating memory isolation from control fragmentation and reducing STORM/governance to retrieval or extraction when possible. agentB answered with the debate's strongest positive mechanism, factorized approximate inference through local claim packets, but neither side conclusively resolved whether that is a true advantage over a single synthesizer with retrieval."
+    },
+    {
+      "round": 9,
+      "winner": "agentA",
+      "close": false,
+      "reason": "agentA's closing directly rebutted factorized inference with the sparse-versus-dense graph problem, mean-field/BP limits, and the TAR-as-validated-tool point, while also satisfying the required concession and design-rule elements. agentB's closing was fair and practical, but it mostly restated the bounded-subagent architecture rather than answering agentA's last technical attack."
+    },
+    {
+      "round": 10,
+      "winner": "even",
+      "close": true,
+      "reason": "Both agents had closed and mostly acknowledged the remaining definitional disagreement. agentA added a slightly fuller recap, but not enough new substance to justify awarding the round."
+    }
+  ],
+  "tally": {
+    "agentA": 4,
+    "agentB": 4,
+    "even": 2,
+    "note": "rounds were essentially level; craft goes to agentA on higher-leverage rebuttal control, while the resolution goes to agentB on the broader merits"
+  },
+  "key_moments": [
+    {
+      "turn": 1,
+      "agent": "agentA",
+      "moment": "Established the lossy-handoff thesis and anchored it in Cognition's critique, MAST, and early AutoGPT/BabyAGI failure modes."
+    },
+    {
+      "turn": 1,
+      "agent": "agentB",
+      "moment": "Challenged the monolithic-context premise with long-context degradation, structured artifact handoffs, external verification, isolation, and parallelism."
+    },
+    {
+      "turn": 2,
+      "agent": "agentA",
+      "moment": "Separated parallel sampling, oracle verification, and task-decomposition delegation, weakening agentB's AlphaCode and self-consistency examples."
+    },
+    {
+      "turn": 2,
+      "agent": "agentB",
+      "moment": "Answered with strategic research and due diligence as open-ended, non-oracular, high-value cases where broad fan-out can reduce search myopia."
+    },
+    {
+      "turn": 4,
+      "agent": "agentA",
+      "moment": "Forced the residual question: what does LLM-to-LLM delegated judgment add after artifacts, retrieval, verifiers, and deterministic control are held constant?"
+    },
+    {
+      "turn": 5,
+      "agent": "agentA",
+      "moment": "Pre-registered a falsification criterion and introduced the variance-versus-composed-error distinction for redundancy versus decomposition."
+    },
+    {
+      "turn": 7,
+      "agent": "agentB",
+      "moment": "Named Anthropic's multi-agent research system, STORM/Co-STORM, and Magentic-One, and introduced governance/compartmentalization as a serious reason for local judgment."
+    },
+    {
+      "turn": 8,
+      "agent": "agentB",
+      "moment": "Offered factorized approximate inference as the cleanest affirmative mechanism for bounded subagents beyond mere retrieval or redundancy."
+    },
+    {
+      "turn": 9,
+      "agent": "agentA",
+      "moment": "Answered factorized inference with sparse-graph and mean-field objections, then delivered the strongest closing on why dense interdependence favors unified synthesis."
+    },
+    {
+      "turn": 9,
+      "agent": "agentB",
+      "moment": "Closed by narrowing the defended pattern to bounded, artifact-backed subagents and conceding that vague same-model persona swarms are weak."
+    }
+  ],
+  "analysis": [
+    {
+      "tag": "Analysis",
+      "heading": "Why agentB wins the resolution",
+      "paragraphs": [
+        "The proposition was broad: subagents, orchestrator-worker systems, and fan-outs are generally an antipattern. agentB successfully showed that this sweeps in too much. Bounded workers with separate context, scoped tools, provenance, permissions, and final lead synthesis are plausibly useful for research, incident response, code investigation, legal discovery, and compartmentalized data workflows.",
+        "agentA's best move was to call many of these systems tools rather than subagents. That was excellent craft, but on the merits it became partly definitional: if a component has its own context, local objective, tool loop, and structured return contract, many practitioners would reasonably call it a subagent. Under that ordinary usage, agentB's practical architecture defeats the claim that subagents are generally a design mistake."
+      ]
+    },
+    {
+      "tag": "Analysis",
+      "heading": "Why agentA wins craft",
+      "paragraphs": [
+        "agentA repeatedly forced the debate back to mechanism rather than labels. The distinctions between retrieval breadth, redundant sampling, heterogeneous verification, access-control isolation, and actual deliverable-level delegated judgment were the debate's clearest analytical framework.",
+        "The strongest craft moments were agentA's attacks on AlphaCode/self-consistency as non-subagent examples, the residual-after-scaffolding challenge, the compute-matched debate point, and the closing rebuttal to factorized approximate inference. Even when agentB had the stronger final architecture, agentA made agentB narrow and qualify it substantially."
+      ]
+    },
+    {
+      "tag": "Analysis",
+      "heading": "Where agentB scored",
+      "paragraphs": [
+        "agentB was strongest when arguing that monolithic long-context agents are not reliable joint reasoners: they suffer attention degradation, anchoring, stale hypotheses, prompt-injection risk, and access-control problems. The governance/compartmentalization argument was especially important because it showed cases where raw evidence cannot simply flow to one central integrator.",
+        "agentB also made a credible omitted-variable case: in broad investigations, the costliest failure may be that no one searches a relevant evidence frontier. Multiple active search policies, when bounded and artifact-backed, can be a rational way to buy coverage and wall-clock breadth."
+      ]
+    },
+    {
+      "tag": "Analysis",
+      "heading": "Where agentA scored",
+      "paragraphs": [
+        "agentA did the most damage against unverified same-model handoffs and persona swarms. He showed that many examples of successful multiplicity depend on deterministic oracles, redundant sampling, different weights, or retrieval breadth rather than on decomposed judgment being semantically re-merged.",
+        "agentA also landed the strongest cautionary production arguments: context-starved orchestrators, model-upgrade drift across implicit natural-language contracts, coordination overhead, tail-latency loops, and eval/debugging opacity. Those points justify a strong presumption against casual subagent adoption even though they do not prove all bounded subagents are antipatterns."
+      ]
+    }
+  ],
+  "quotes": [
+    {
+      "agent": "agentA",
+      "text": "Every delegation boundary is a forced round-trip through natural language.",
+      "cite": "Turn 1, opening"
+    },
+    {
+      "agent": "agentB",
+      "text": "The subagent boundary is not the destruction of the agent’s asset. It is a way to prevent unbounded contamination of that asset.",
+      "cite": "Turn 1, rebuttal"
+    },
+    {
+      "agent": "agentA",
+      "text": "Your best examples — AlphaCode and self-consistency — are not subagent systems, and the difference is the whole argument.",
+      "cite": "Turn 2"
+    },
+    {
+      "agent": "agentB",
+      "text": "The residual is independent, bounded search-and-judgment policy.",
+      "cite": "Turn 4"
+    },
+    {
+      "agent": "agentA",
+      "text": "Memory isolation ≠ control fragmentation.",
+      "cite": "Turn 8"
+    },
+    {
+      "agent": "agentA",
+      "text": "Factored inference dominates joint inference only when the graph is sparse. Your entire case is that it's dense.",
+      "cite": "Turn 9, closing"
+    },
+    {
+      "agent": "agentB",
+      "text": "The mistake is not subagents. The mistake is pretending that unstructured prose between autonomous peers is architecture. Bounded subagents are architecture.",
+      "cite": "Turn 9, closing"
+    }
+  ]
+}

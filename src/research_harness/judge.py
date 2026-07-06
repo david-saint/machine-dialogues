@@ -101,7 +101,10 @@ A "round" is both agents' Turn N taken together. {rounds_line}
 
 YOUR JOB — produce a complete scorecard:
 - rounds: one entry per round, each with the round number, a winner ("agentA", "agentB", or "even"), a "close" boolean (true for a narrow 10-9-style round, false for a decisive one), and a 1-to-3-sentence "reason".
-- decision: the overall "winner" ("agentA", "agentB", or "draw"), a short "method" qualifier (e.g. "wins on points"), a "summary" paragraph, and an optional honest "caveat".
+- decision: TWO SEPARATE verdicts — do not blend them:
+  - "resolution_winner" ("agentA", "agentB", or "draw"): whose position on the proposition stands stronger ON THE MERITS at the end — judged on the question itself, as if you had to act on it — with a 1-to-3-sentence "resolution_reason" justified on the merits alone.
+  - "craft_winner" ("agentA", "agentB", or "draw"): who DEBATED better — rebuttals, evidence discipline, logical force — independent of which position is actually right, with a 1-to-3-sentence "craft_reason" justified on debating quality alone.
+  - These may well diverge (a weaker position argued brilliantly, a stronger one argued lazily); when they do, say so explicitly in the "summary" paragraph. Also include an optional short "method" qualifier for craft_winner (e.g. "wins on points") and an optional honest "caveat".
 - tally: integer counts of agentA / agentB / even rounds (must equal the counts implied by rounds[].winner).
 - key_moments: an ordered highlight reel of pivotal turns.
 - analysis: prose sections (each with a heading and one or more paragraphs) covering how the winner won and where the loser scored.
@@ -206,8 +209,8 @@ def validate_judgment(obj) -> list[str]:
     if not isinstance(obj, dict):
         return ["Top-level value must be a JSON object."]
 
-    if obj.get("schema_version") != 1:
-        errors.append("schema_version must equal the integer 1.")
+    if obj.get("schema_version") != 2:
+        errors.append("schema_version must equal the integer 2.")
 
     if not _is_str(obj.get("transcript")):
         errors.append("transcript must be a string.")
@@ -223,7 +226,7 @@ def validate_judgment(obj) -> list[str]:
             errors.append("judge.name must be a string.")
         if not _is_str(judge.get("model")):
             errors.append("judge.model must be a string.")
-        for k in ("thinking_level", "judged_at"):
+        for k in ("family", "thinking_level", "judged_at"):
             if k in judge and not _is_str(judge[k]):
                 errors.append(f"judge.{k} must be a string.")
 
@@ -231,13 +234,19 @@ def validate_judgment(obj) -> list[str]:
     if not isinstance(decision, dict):
         errors.append("decision must be an object.")
     else:
-        if decision.get("winner") not in ("agentA", "agentB", "draw"):
-            errors.append('decision.winner must be one of "agentA", "agentB", "draw".')
-        if not _is_str(decision.get("summary")):
-            errors.append("decision.summary must be a string.")
+        for k in ("resolution_winner", "craft_winner"):
+            if decision.get(k) not in ("agentA", "agentB", "draw"):
+                errors.append(f'decision.{k} must be one of "agentA", "agentB", "draw".')
+        for k in ("resolution_reason", "craft_reason", "summary"):
+            if not _is_str(decision.get(k)):
+                errors.append(f"decision.{k} must be a string.")
         for k in ("method", "caveat"):
             if k in decision and not _is_str(decision[k]):
                 errors.append(f"decision.{k} must be a string.")
+        if "winner" in decision:
+            errors.append(
+                'decision.winner no longer exists — output "resolution_winner" and "craft_winner" separately.'
+            )
 
     rounds = obj.get("rounds")
     if not isinstance(rounds, list) or len(rounds) == 0:
@@ -340,8 +349,10 @@ def judgment_output_path(output_dir: str | Path, transcript_basename: str, judge
     return Path(output_dir) / stem / f"{judge_slug}.json"
 
 
-def build_judge_block(judge_name: str, model: str, thinking_level: str | None, judged_at: str) -> dict:
+def build_judge_block(judge_name: str, model: str, thinking_level: str | None, judged_at: str, family: str | None = None) -> dict:
     block = {"name": judge_name, "model": model, "judged_at": judged_at}
+    if family:
+        block["family"] = family
     if thinking_level:
         block["thinking_level"] = thinking_level
     return block
@@ -362,7 +373,7 @@ def finalize_judgment(raw: str, transcript_basename: str, judge_block: dict) -> 
     if not isinstance(obj, dict):
         return None, ["Top-level JSON value must be an object."]
 
-    obj["schema_version"] = 1
+    obj["schema_version"] = 2
     obj["transcript"] = transcript_basename
     obj["judge"] = judge_block
 
@@ -382,15 +393,13 @@ def _print_summary(judgment: dict, agent_a_name: str, agent_b_name: str, output_
     console.print(Rule("[bold green]Judgment[/bold green]", style="bold green"))
 
     decision = judgment.get("decision", {})
-    winner = decision.get("winner")
-    winner_display = {
-        "agentA": agent_a_name,
-        "agentB": agent_b_name,
-        "draw": "Draw",
-    }.get(winner, str(winner))
+    display = {"agentA": agent_a_name, "agentB": agent_b_name, "draw": "Draw"}
+    resolution = display.get(decision.get("resolution_winner"), str(decision.get("resolution_winner")))
+    craft = display.get(decision.get("craft_winner"), str(decision.get("craft_winner")))
     method = decision.get("method")
     method_suffix = f" [dim]({method})[/dim]" if method else ""
-    console.print(f"[bold]Winner:[/bold] {winner_display}{method_suffix}")
+    console.print(f"[bold]Resolution:[/bold] {resolution}")
+    console.print(f"[bold]Craft:[/bold] {craft}{method_suffix}")
 
     tally = judgment.get("tally", {})
     table = Table(show_header=True, header_style="bold")
@@ -433,6 +442,7 @@ def run_judge(
     provider: str = "openrouter",
     thinking_level: str | None = None,
     judge_name: str | None = None,
+    judge_family: str | None = None,
     output_dir: str | Path = "judgments",
     *,
     temperature: float = JUDGE_TEMPERATURE,
@@ -450,7 +460,7 @@ def run_judge(
 
     effective_judge_name = judge_name or model
     judged_at = today or date.today().isoformat()
-    judge_block = build_judge_block(effective_judge_name, model, thinking_level, judged_at)
+    judge_block = build_judge_block(effective_judge_name, model, thinking_level, judged_at, judge_family)
 
     prompt = build_prompt(transcript_text, agent_a_name, agent_b_name, schema_text, num_rounds)
 

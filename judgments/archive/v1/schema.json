@@ -2,12 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "machine-dialogues-judgment.schema.json",
   "title": "Debate judgment",
-  "description": "One judge's scoring of one debate transcript. agentA/agentB refer to the transcript's agent_a (speaks first each round) and agent_b. Files live at judgments/<transcript_basename>/<judge_slug>.json. v2 splits the decision into resolution_winner (whose position stands stronger on the merits) and craft_winner (who debated better) so the two judgments can never be silently conflated.",
+  "description": "One judge's scoring of one debate transcript. agentA/agentB refer to the transcript's agent_a (speaks first each round) and agent_b. Files live at judgments/<transcript_basename>/<judge_slug>.json.",
   "type": "object",
   "required": ["schema_version", "transcript", "judge", "decision", "rounds", "tally"],
   "additionalProperties": false,
   "properties": {
-    "schema_version": { "const": 2 },
+    "schema_version": { "const": 1 },
     "transcript": {
       "type": "string",
       "description": "Transcript filename this judgment scores, e.g. 20260704_201301_claude-opus-4.8_vs_gpt-5.5.md"
@@ -20,37 +20,18 @@
       "properties": {
         "name": { "type": "string", "description": "Human-readable judge name, e.g. Claude Fable 5" },
         "model": { "type": "string", "description": "Model id, e.g. claude-fable-5 or anthropic/claude-opus-4.8" },
-        "family": { "type": "string", "description": "Model family casting this vote (one vote per family), e.g. anthropic, openai, google, moonshot, deepseek, xai" },
         "thinking_level": { "type": "string", "description": "Reasoning effort the judge ran at, e.g. high, xhigh, max" },
         "judged_at": { "type": "string", "description": "ISO date or datetime of the judgment" }
       }
     },
     "decision": {
       "type": "object",
-      "required": ["resolution_winner", "resolution_reason", "craft_winner", "craft_reason", "summary"],
+      "required": ["winner", "summary"],
       "additionalProperties": false,
       "properties": {
-        "resolution_winner": {
-          "enum": ["agentA", "agentB", "draw"],
-          "description": "Whose position on the proposition stands stronger on the merits at the end of the debate — judged on the question itself, not on performance"
-        },
-        "resolution_reason": {
-          "type": "string",
-          "description": "One-to-three sentences justifying resolution_winner on the merits alone"
-        },
-        "craft_winner": {
-          "enum": ["agentA", "agentB", "draw"],
-          "description": "Who debated better — rebuttals, evidence discipline, logical force — independent of which position is actually right"
-        },
-        "craft_reason": {
-          "type": "string",
-          "description": "One-to-three sentences justifying craft_winner on debating quality alone"
-        },
-        "method": { "type": "string", "description": "Short qualifier for craft_winner, e.g. 'wins on points'" },
-        "summary": {
-          "type": "string",
-          "description": "The decision paragraph, covering both verdicts and explicitly noting when they diverge"
-        },
+        "winner": { "enum": ["agentA", "agentB", "draw"] },
+        "method": { "type": "string", "description": "Short qualifier, e.g. 'wins on points'" },
+        "summary": { "type": "string", "description": "The decision paragraph" },
         "caveat": { "type": "string", "description": "Optional honest asterisk on the decision" }
       }
     },

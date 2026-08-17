@@ -9,6 +9,8 @@ class ProviderResponse:
     output_tokens: int
     thinking_tokens: int = 0
     warnings: list[str] = field(default_factory=list)
+    finish_reason: str | None = None
+    native_finish_reason: str | None = None
 
 
 def collapse_exact_duplicate(content: str) -> tuple[str, bool]:

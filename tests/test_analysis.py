@@ -198,3 +198,20 @@ class TestAnalyze:
             fit = result["regressions"][metric]
             assert fit["slope"] == pytest.approx(1.0)
             assert fit["intercept"] == pytest.approx(0.0)
+
+    def test_family_row_lists_every_judge_that_filled_the_seat(self, tmp_path):
+        # The panel seats one judge per family, but the model in a seat can
+        # change between runs; the family row must name all of them.
+        old = _judgment(D1, "google", 5, 5)
+        new = _judgment(D2, "google", 5, 5)
+        old["judge"].update(name="Gemini 3.1 Pro", model="google/gemini-3.1-pro-preview")
+        new["judge"].update(name="Gemini 3.7 Flash", model="google/gemini-3.7-flash")
+        jdir, tdir = _write_corpus(tmp_path, [old, new, _judgment(D1, "anthropic", 5, 5)])
+        result = analyze(jdir, tdir, today="2026-07-06")
+
+        by_family = {j["family"]: j for j in result["judges"]}
+        assert by_family["google"]["judge"] == "Gemini 3.1 Pro / Gemini 3.7 Flash"
+        assert by_family["google"]["judge_names"] == ["Gemini 3.1 Pro", "Gemini 3.7 Flash"]
+        assert by_family["anthropic"]["judge"] == "Claude Fable 5"
+        assert by_family["anthropic"]["judge_names"] == ["Claude Fable 5"]
+

@@ -166,21 +166,31 @@ def analyze(judgments_dir: str | Path, transcripts_dir: str | Path, today: str |
         for metric in SHIFT_METRICS
     }
 
+    # One row per judge *family* (the panel seats one judge per family, but the
+    # model filling a seat can change between runs, so a row may aggregate
+    # several judge names — all of them are listed in the label).
     judges: dict[str, dict] = {}
     for p in points:
         j = judges.setdefault(
             p["judge_family"],
-            {"family": p["judge_family"], "judge": p["judge"], "contrast_points": 0, "position_points": 0},
+            {"family": p["judge_family"], "judge_names": [], "contrast_points": 0, "position_points": 0},
         )
+        if p["judge"] not in j["judge_names"]:
+            j["judge_names"].append(p["judge"])
         j["position_points"] += 1
         j["_position"] = j.get("_position", 0.0) + p["position_first_share"]
         if "interest" in p:
             j["contrast_points"] += 1
-            j["interest"] = p["interest"]
+            # Interest is per debate; a family's row may mix interested and
+            # neutral points. Keep the non-zero value if the family was ever an
+            # interested party, so the viewer flags it as such.
+            if p["interest"] != 0 or "interest" not in j:
+                j["interest"] = p["interest"]
             for metric in SHIFT_METRICS:
                 j[f"_{metric}"] = j.get(f"_{metric}", 0.0) + p[metric]
 
     for j in judges.values():
+        j["judge"] = " / ".join(j["judge_names"])
         j["mean_position_first_share"] = j.pop("_position") / j["position_points"]
         for metric in SHIFT_METRICS:
             total = j.pop(f"_{metric}", None)

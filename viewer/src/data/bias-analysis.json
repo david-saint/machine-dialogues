@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-06",
-  "n_judgments": 12,
+  "generated_at": "2026-08-20",
+  "n_judgments": 18,
   "debates": [
     {
       "transcript": "20260704_201301_claude-opus-4.8_vs_gpt-5.5.md",
@@ -26,6 +26,19 @@
       "agentB": {
         "name": "Claude Opus 4.8",
         "model": "anthropic/claude-opus-4.8",
+        "family": "anthropic"
+      }
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "agentA": {
+        "name": "Grok 4.6",
+        "model": "x-ai/grok-4.6",
+        "family": "xai"
+      },
+      "agentB": {
+        "name": "Claude Opus 5",
+        "model": "anthropic/claude-opus-5",
         "family": "anthropic"
       }
     }
@@ -210,99 +223,212 @@
       "net_round_shift": 0.5,
       "resolution_shift": 1,
       "craft_shift": 1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "Claude Fable 5",
+      "judge_family": "anthropic",
+      "rounds_scored": 10,
+      "position_first_share": -0.2,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": 1,
+      "net_round_shift": 0.2,
+      "resolution_shift": 1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "DeepSeek V4 Pro 0813",
+      "judge_family": "deepseek",
+      "rounds_scored": 10,
+      "position_first_share": -0.1,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": 0,
+      "net_round_shift": 0.1,
+      "resolution_shift": -1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "Gemini 3.7 Flash",
+      "judge_family": "google",
+      "rounds_scored": 10,
+      "position_first_share": -0.3,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": 0,
+      "net_round_shift": 0.3,
+      "resolution_shift": 1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "GPT-5.6 Sol",
+      "judge_family": "openai",
+      "rounds_scored": 10,
+      "position_first_share": 0.3,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": 0,
+      "net_round_shift": -0.3,
+      "resolution_shift": -1,
+      "craft_shift": -1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "Grok 4.5",
+      "judge_family": "xai",
+      "rounds_scored": 10,
+      "position_first_share": -0.1,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": -1,
+      "net_round_shift": 0.1,
+      "resolution_shift": -1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+      "judge": "Kimi K3",
+      "judge_family": "moonshot",
+      "rounds_scored": 10,
+      "position_first_share": -0.5,
+      "pair": [
+        "anthropic",
+        "xai"
+      ],
+      "interest": 0,
+      "net_round_shift": 0.5,
+      "resolution_shift": 1,
+      "craft_shift": 1
     }
   ],
   "judges": [
     {
       "family": "anthropic",
-      "judge": "Claude Fable 5",
-      "contrast_points": 2,
-      "position_points": 2,
+      "judge_names": [
+        "Claude Fable 5"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
       "interest": 1,
-      "mean_position_first_share": -0.14999999999999997,
-      "mean_net_round_shift": 0.55,
+      "judge": "Claude Fable 5",
+      "mean_position_first_share": -0.16666666666666666,
+      "mean_net_round_shift": 0.43333333333333335,
       "mean_resolution_shift": 1.0,
       "mean_craft_shift": 1.0
     },
     {
       "family": "deepseek",
-      "judge": "DeepSeek V4 Pro",
-      "contrast_points": 2,
-      "position_points": 2,
+      "judge_names": [
+        "DeepSeek V4 Pro",
+        "DeepSeek V4 Pro 0813"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
       "interest": 0,
+      "judge": "DeepSeek V4 Pro / DeepSeek V4 Pro 0813",
       "mean_position_first_share": -0.09999999999999998,
-      "mean_net_round_shift": 0.5,
-      "mean_resolution_shift": 1.0,
+      "mean_net_round_shift": 0.3666666666666667,
+      "mean_resolution_shift": 0.3333333333333333,
       "mean_craft_shift": 1.0
     },
     {
       "family": "google",
-      "judge": "Gemini 3.1 Pro",
-      "contrast_points": 2,
-      "position_points": 2,
+      "judge_names": [
+        "Gemini 3.1 Pro",
+        "Gemini 3.7 Flash"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
       "interest": 0,
-      "mean_position_first_share": -0.1,
+      "judge": "Gemini 3.1 Pro / Gemini 3.7 Flash",
+      "mean_position_first_share": -0.16666666666666666,
       "mean_net_round_shift": 0.30000000000000004,
       "mean_resolution_shift": 1.0,
       "mean_craft_shift": 1.0
     },
     {
       "family": "moonshot",
-      "judge": "Kimi K2.6",
-      "contrast_points": 2,
-      "position_points": 2,
+      "judge_names": [
+        "Kimi K2.6",
+        "Kimi K3"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
       "interest": 0,
-      "mean_position_first_share": 0.04999999999999999,
-      "mean_net_round_shift": 0.55,
+      "judge": "Kimi K2.6 / Kimi K3",
+      "mean_position_first_share": -0.13333333333333333,
+      "mean_net_round_shift": 0.5333333333333333,
       "mean_resolution_shift": 1.0,
       "mean_craft_shift": 1.0
     },
     {
       "family": "openai",
-      "judge": "GPT-5.5 Pro (extended)",
-      "contrast_points": 2,
-      "position_points": 2,
+      "judge_names": [
+        "GPT-5.5 Pro (extended)",
+        "GPT-5.6 Sol"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
       "interest": -1,
-      "mean_position_first_share": -0.15,
-      "mean_net_round_shift": 0.15,
-      "mean_resolution_shift": 0.0,
-      "mean_craft_shift": 1.0
+      "judge": "GPT-5.5 Pro (extended) / GPT-5.6 Sol",
+      "mean_position_first_share": 0.0,
+      "mean_net_round_shift": 0.0,
+      "mean_resolution_shift": -0.3333333333333333,
+      "mean_craft_shift": 0.3333333333333333
     },
     {
       "family": "xai",
-      "judge": "Grok 4.3",
-      "contrast_points": 2,
-      "position_points": 2,
-      "interest": 0,
-      "mean_position_first_share": 0.15,
-      "mean_net_round_shift": -0.35,
+      "judge_names": [
+        "Grok 4.3",
+        "Grok 4.5"
+      ],
+      "contrast_points": 3,
+      "position_points": 3,
+      "interest": -1,
+      "judge": "Grok 4.3 / Grok 4.5",
+      "mean_position_first_share": 0.06666666666666667,
+      "mean_net_round_shift": -0.19999999999999998,
       "mean_resolution_shift": -1.0,
-      "mean_craft_shift": -1.0
+      "mean_craft_shift": -0.3333333333333333
     }
   ],
   "regressions": {
     "net_round_shift": {
-      "n": 12,
-      "slope": 0.2,
-      "intercept": 0.2833333333333333,
-      "r_squared": 0.11455847255369933,
-      "se_slope": 0.17583135859870577,
-      "t_slope": 1.1374535327139998
+      "n": 18,
+      "slope": 0.15,
+      "intercept": 0.23888888888888887,
+      "r_squared": 0.07406278573605607,
+      "se_slope": 0.13259343316514027,
+      "t_slope": 1.1312777444504396
     },
     "resolution_shift": {
-      "n": 12,
-      "slope": 0.5,
-      "intercept": 0.5,
-      "r_squared": 0.11111111111111116,
-      "se_slope": 0.4472135954999579,
-      "t_slope": 1.118033988749895
+      "n": 18,
+      "slope": 0.6666666666666666,
+      "intercept": 0.3333333333333333,
+      "r_squared": 0.16666666666666663,
+      "se_slope": 0.37267799624996495,
+      "t_slope": 1.7888543819998317
     },
     "craft_shift": {
-      "n": 12,
+      "n": 18,
       "slope": 0.0,
       "intercept": 0.6666666666666666,
       "r_squared": 0.0,
-      "se_slope": 0.408248290463863,
+      "se_slope": 0.32274861218395134,
       "t_slope": 0.0
     }
   }

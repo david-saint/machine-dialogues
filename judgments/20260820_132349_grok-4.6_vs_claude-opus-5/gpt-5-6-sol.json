@@ -1,0 +1,212 @@
+{
+  "schema_version": 2,
+  "transcript": "20260820_132349_grok-4.6_vs_claude-opus-5.md",
+  "title": "Skills, as they're used today, are an antipattern",
+  "judge": {
+    "name": "GPT-5.6 Sol",
+    "model": "openai/gpt-5.6-sol",
+    "judged_at": "2026-08-20",
+    "family": "openai",
+    "thinking_level": "max"
+  },
+  "decision": {
+    "resolution_winner": "agentA",
+    "resolution_reason": "The defining current-practice control plane—description-matched loading of model-interpreted instructions—remains weakly measured, lacks reliable completion and composition semantics, and often lacks mature supply-chain controls. agentB established a legitimate need for on-demand institutional knowledge, but its strongest remedies generally replaced fuzzy triggering, narrowed the content, or added governance not characteristic of the practice being judged.",
+    "craft_winner": "agentA",
+    "craft_reason": "agentA won narrowly by consistently separating conditional retrieval in general from the stipulated description-matched natural-language execution pattern, and by exposing where Agentless, ToolLLM, Voyager, and scoped editor rules were only partial analogues. agentB showed greater empirical breadth and made excellent concessions, but too often defended a reformed typed or explicit system rather than current practice.",
+    "method": "wins on points",
+    "summary": "The merits and craft verdicts align: agentA made the stronger case that teams should default away from present-day description-triggered SKILL.md bundles, and also debated the exact proposition more consistently. agentB convincingly preserved a narrower role for reviewed, dual-audience procedural files—especially for non-lintable institutional knowledge—but that case supported carefully governed exceptions more than the current pattern as broadly practiced.",
+    "caveat": "Neither side produced direct production precision/recall data or a controlled study of ordinary SKILL.md libraries; many security and benchmark examples were analogical. agentA also treated allowed-tools as a privilege expander more confidently than the transcript's evidence warranted."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentB effectively challenged the claim that skill activation is wholly invisible, supplied a substantial context-economics case for conditional loading, and introduced document skills as a concrete code-backed example. The tool-dispatch analogy overstated the equivalence between selecting a typed function and loading an instruction payload, keeping the round close."
+    },
+    {
+      "round": 2,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA drew the debate's pivotal distinction between a fuzzy dispatcher choosing typed execution and the same dispatcher injecting an unconstrained natural-language program, then tied it to fail-open operational behavior. agentB's candid admission that no published production trigger precision/recall was known materially helped agentA, although the policy-residue and research arguments kept this competitive."
+    },
+    {
+      "round": 3,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA persuasively distinguished Voyager and Agent Workflow Memory's verified, closed-loop reuse from untested marketplace markdown and emphasized agentB's concession that no current compositor prevents conflicting skills. agentB scored with the authorability, diagnostic, and confabulation arguments, but mostly answered a current-practice defect with controls teams could build."
+    },
+    {
+      "round": 4,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentB made the round's strongest technical correction: an appended skill initially occupies the recency edge and does not invalidate the cached prefix, undermining part of agentA's cache and Lost-in-the-Middle framing. The comparison to actual rotting documentation, advisory controls, and low-frequency knowledge economics also gave agentB a credible practical baseline."
+    },
+    {
+      "round": 5,
+      "winner": "agentA",
+      "close": true,
+      "reason": "agentA showed why rare procedures are particularly poor candidates for unmeasured semantic routing and offered an explicit, logged playbook entrypoint as a concrete alternative. agentB's claim that this was simply a skill under another directory name blurred the stipulated differences in trigger and executing interpreter, while its Agentless analogy did not establish description-triggered SKILL.md performance."
+    },
+    {
+      "round": 6,
+      "winner": "agentA",
+      "close": false,
+      "reason": "agentA decisively explained that Agentless enforced control flow in the host program, whereas ordinary skills ask the model to interpret and self-report completion of prose. The completion-semantics, stochastic-interpreter, model-versioning, and instruction-soup arguments directly targeted current practice; agentB's subagent, todo, typed-trigger, and content-lint answers largely described a stronger future implementation."
+    },
+    {
+      "round": 7,
+      "winner": "agentB",
+      "close": true,
+      "reason": "agentB exposed the hardest limitation in agentA's framework: much valuable work and institutional knowledge has no decidable post-condition, so validators alone cannot supply the needed prior. Its statistical-CI and low-cost trigger-test answers also weakened the claim of inherent untestability, though agentA's description-as-SEO argument was a major structural hit."
+    },
+    {
+      "round": 8,
+      "winner": "agentA",
+      "close": false,
+      "reason": "agentA answered agentB's strongest concrete example by attaching freshness information to the producing tool, guaranteeing relevance without semantic routing, and extended that approach with templates, examples, and human review for non-lintable work. agentB's closing then conceded that description-only triggering is indefensible for low-frequency, high-blast-radius procedures and relied on governance rules not representative of current practice."
+    },
+    {
+      "round": 9,
+      "winner": "agentA",
+      "close": false,
+      "reason": "agentA delivered a complete closing that identified the strongest opposing point, acknowledged real counterexamples, synthesized the stochastic-interpreter and routing objections, and supplied three operationally specific replacement rules. agentB appropriately did not reopen after its prior closing and therefore offered no substantive counterweight in this round."
+    },
+    {
+      "round": 10,
+      "winner": "even",
+      "close": true,
+      "reason": "Both agents merely acknowledged the settled line of disagreement and stopped. Neither advanced a substantive argument."
+    }
+  ],
+  "tally": {
+    "agentA": 6,
+    "agentB": 3,
+    "even": 1,
+    "note": "A competitive debate whose decisive separation came in the second half."
+  },
+  "key_moments": [
+    {
+      "turn": 1,
+      "agent": "agentB",
+      "moment": "Challenged the invisibility claim, introduced context-economics evidence, and argued that skill files localize otherwise monolithic instructions."
+    },
+    {
+      "turn": 2,
+      "agent": "agentA",
+      "moment": "Separated typed tool execution from instruction-payload injection with the formulation that tools have an ABI while skills have a paste."
+    },
+    {
+      "turn": 2,
+      "agent": "agentB",
+      "moment": "Honestly conceded the absence of published production trigger precision/recall and offered Voyager and Agent Workflow Memory as the closest measured analogues."
+    },
+    {
+      "turn": 3,
+      "agent": "agentA",
+      "moment": "Distinguished verified, executable skill-memory research from unverified human-authored marketplace files and highlighted the missing conflict compositor."
+    },
+    {
+      "turn": 4,
+      "agent": "agentB",
+      "moment": "Corrected agentA's cache and positional account by noting that a just-loaded skill arrives at the recency edge while the prior transcript remains cacheable."
+    },
+    {
+      "turn": 5,
+      "agent": "agentA",
+      "moment": "Argued that rare procedures have too little traffic to validate fuzzy triggering and proposed explicit, permissioned playbook entrypoints instead."
+    },
+    {
+      "turn": 6,
+      "agent": "agentA",
+      "moment": "Reframed Agentless as evidence for enforced host-language scaffolding rather than model-interpreted SKILL.md control flow."
+    },
+    {
+      "turn": 7,
+      "agent": "agentA",
+      "moment": "Introduced the description-as-SEO argument: the routed-to party writes the routing key and bears little cost for false positives."
+    },
+    {
+      "turn": 7,
+      "agent": "agentB",
+      "moment": "Presented the strongest defense of skills by identifying valuable institutional priors and qualitative tasks with no deterministic enforcement surface."
+    },
+    {
+      "turn": 8,
+      "agent": "agentA",
+      "moment": "Answered the stale-staging example with producer-attached freshness metadata, replacing fuzzy recall with a deterministic join between fact and datum."
+    },
+    {
+      "turn": 8,
+      "agent": "agentB",
+      "moment": "Conceded that description-only triggering is indefensible for low-frequency, high-blast-radius procedures while presenting a detailed governance regime."
+    },
+    {
+      "turn": 9,
+      "agent": "agentA",
+      "moment": "Closed by tying fuzzy routing, stochastic interpretation, missing completion semantics, and immature marketplace governance into one operational case for avoidance."
+    }
+  ],
+  "analysis": [
+    {
+      "tag": "Analysis",
+      "heading": "How agentA won",
+      "paragraphs": [
+        "agentA's central distinction held up: generative dispatch is not equally dangerous for every payload. A wrong typed tool call crosses a schema, permission, execution, and result boundary; a wrong skill load changes the model's active procedural context before any such boundary exists. That distinction answered agentB's recurring claim that tools and skills share the same fuzzy selector.",
+        "agentA also kept the burden on current practice. When agentB proposed trigger evals, pairwise conflict checks, install-time capability review, explicit invocation, typed triggers, subagent isolation, and token caps, agentA correctly observed that this was a substantial redesign of the unmeasured description-triggered ecosystem named by the proposition."
+      ]
+    },
+    {
+      "tag": "Countercase",
+      "heading": "Where agentB scored",
+      "paragraphs": [
+        "agentB's best substantive point was that institutional knowledge is not exhausted by lintable invariants. Diagnostic priors, qualitative workflows, organizational context, and domain judgment often cannot be compiled into a validator, while a reviewed document can cheaply give the model a better prior than pretraining or silence.",
+        "agentB also made several strong technical corrections: conditional loading can be a genuine context-economics win; newly loaded material initially has recency; files provide git review and provenance; and statistical agent evals need not have deterministic per-run oracles. Those points preserved a legitimate, narrower design space for well-governed internal skills."
+      ]
+    },
+    {
+      "tag": "Evidence",
+      "heading": "Why the analogies did not decide the case",
+      "paragraphs": [
+        "Voyager, Agent Workflow Memory, Agentless, ToolLLM, and contextual retrieval all support selective procedural guidance or retrieval in some form, but none directly establishes that ordinary description-triggered SKILL.md files, interpreted as natural-language control flow amid other instructions, are reliable. agentA was right to emphasize the verifier in Voyager, the host-program scaffold in Agentless, and the typed execution target in API retrieval.",
+        "Conversely, agentA's Invariant MCP, tj-actions, and context-degradation evidence was also indirect. It established plausible mechanisms and governance risks rather than measured harm from a representative skill deployment. The decision therefore rests more on architecture, operational failure semantics, and the concessions about present practice than on a clean empirical knockout."
+      ]
+    },
+    {
+      "tag": "The asterisk",
+      "heading": "The useful exception",
+      "paragraphs": [
+        "The proposition should not be read as saying that every markdown-plus-script folder is harmful. Thin, internal, reviewed bundles that route quickly into deterministic code—such as the document-processing examples—can be useful, particularly when invoked explicitly or scoped by path.",
+        "What agentA established is a sound default policy: compile enforceable requirements into tools and gates, attach facts to their producers, keep human documentation authoritative, and treat automatic description-matched instruction loading as an exception requiring evidence rather than as the normal home for procedure."
+      ]
+    }
+  ],
+  "quotes": [
+    {
+      "agent": "agentA",
+      "text": "Tool use has an ABI. Skills have a paste.",
+      "cite": "Turn 2, rebuttal"
+    },
+    {
+      "agent": "agentB",
+      "text": "Much of it is knowledge that has no enforcement surface.",
+      "cite": "Turn 3, reply"
+    },
+    {
+      "agent": "agentA",
+      "text": "The description field is SEO.",
+      "cite": "Turn 7, argument"
+    },
+    {
+      "agent": "agentB",
+      "text": "Description-only triggering for low-frequency, high-blast-radius procedures is indefensible.",
+      "cite": "Turn 8, closing"
+    },
+    {
+      "agent": "agentA",
+      "text": "The executing VM is a stochastic, vendor-shipped checkpoint with no completion semantics and no cheap PR-time oracle.",
+      "cite": "Turn 9, closing"
+    }
+  ]
+}

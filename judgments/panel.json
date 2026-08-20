@@ -1,5 +1,5 @@
 {
-  "description": "The judge panel: exactly one judge per model family, so no family gets two votes. Anthropic and OpenAI are interested parties in the subagents debates; Google, Moonshot, DeepSeek, and xAI are neutral. Pricing for every model id must exist in pricing.json.",
+  "description": "The judge panel: exactly one judge per model family, so no family gets two votes. Whether a judge is an interested party depends on the debate (e.g. Anthropic and OpenAI in the subagents debates; Anthropic and xAI in the Opus 5 vs Grok 4.6 debates) \u2014 rh analyze-bias derives interest from the debaters' model families. Pricing for every model id must exist in pricing.json.",
   "judges": [
     {
       "family": "anthropic",
@@ -9,30 +9,33 @@
     },
     {
       "family": "openai",
-      "name": "GPT-5.5 Pro (extended)",
-      "model": "openai/gpt-5.5-pro",
+      "name": "GPT-5.6 Sol",
+      "model": "openai/gpt-5.6-sol",
       "thinking_level": "max"
     },
     {
       "family": "google",
-      "name": "Gemini 3.1 Pro",
-      "model": "google/gemini-3.1-pro-preview",
+      "name": "Gemini 3.7 Flash",
+      "model": "google/gemini-3.7-flash",
       "thinking_level": "high"
     },
     {
       "family": "moonshot",
-      "name": "Kimi K2.6",
-      "model": "moonshotai/kimi-k2.6"
+      "name": "Kimi K3",
+      "model": "moonshotai/kimi-k3",
+      "thinking_level": "max"
     },
     {
       "family": "deepseek",
-      "name": "DeepSeek V4 Pro",
-      "model": "deepseek/deepseek-v4-pro"
+      "name": "DeepSeek V4 Pro 0813",
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "thinking_level": "max"
     },
     {
       "family": "xai",
-      "name": "Grok 4.3",
-      "model": "x-ai/grok-4.3"
+      "name": "Grok 4.5",
+      "model": "x-ai/grok-4.5",
+      "thinking_level": "xhigh"
     }
   ]
 }

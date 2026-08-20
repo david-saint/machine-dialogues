@@ -231,6 +231,36 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
           color: var(--muted);
         }
 
+        .provider-status {
+          line-height: 1.45;
+          overflow-wrap: anywhere;
+        }
+
+        /* A glyph as well as a hue, so the outcome reads without colour. */
+        .provider-status::before {
+          margin-right: 0.4em;
+        }
+
+        .provider-status--pending::before {
+          content: '…';
+        }
+
+        .provider-status--ok {
+          color: var(--agent-b);
+        }
+
+        .provider-status--ok::before {
+          content: '✓';
+        }
+
+        .provider-status--error {
+          color: var(--agent-a);
+        }
+
+        .provider-status--error::before {
+          content: '✕';
+        }
+
         .provider-actions {
           display: flex;
           gap: 0.5rem;

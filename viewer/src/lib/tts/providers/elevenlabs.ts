@@ -1,6 +1,7 @@
 import { AudioCache, buildAudioCacheKey } from '../cache';
 import type {
   ElevenLabsVoiceConfig,
+  ProviderCheck,
   TTSEvents,
   TTSProvider,
   TTSProviderVoice,
@@ -91,9 +92,9 @@ export class ElevenLabsProvider implements TTSProvider {
     }
   }
 
-  async checkAvailability(opts?: { apiKey?: string }): Promise<boolean> {
+  async checkAvailability(opts?: { apiKey?: string }): Promise<ProviderCheck> {
     if (!opts?.apiKey) {
-      return false;
+      return { ok: false, message: 'Enter an API key first' };
     }
 
     try {
@@ -102,9 +103,18 @@ export class ElevenLabsProvider implements TTSProvider {
           'xi-api-key': opts.apiKey,
         },
       });
-      return response.ok;
+
+      if (response.ok) {
+        return { ok: true, message: 'API key validated' };
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return { ok: false, message: `ElevenLabs rejected the key (${response.status})` };
+      }
+
+      return { ok: false, message: `ElevenLabs returned HTTP ${response.status}` };
     } catch {
-      return false;
+      return { ok: false, message: 'Could not reach ElevenLabs — check your connection' };
     }
   }
 

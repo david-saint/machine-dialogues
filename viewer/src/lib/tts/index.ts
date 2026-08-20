@@ -15,6 +15,7 @@ import type {
   ElevenLabsVoiceConfig,
   GeminiVoiceConfig,
   KokoroVoiceConfig,
+  ProviderCheck,
   SpeakerContext,
   TTSEvents,
   TTSProvider,
@@ -151,26 +152,26 @@ export class TTSOrchestrator {
     }
   }
 
-  async checkKokoroConnection(serverUrl: string): Promise<boolean> {
+  async checkKokoroConnection(serverUrl: string): Promise<ProviderCheck> {
     const provider = this.providers.get('kokoro');
     if (!provider?.checkAvailability) {
-      return false;
+      return { ok: false, message: 'Kokoro provider unavailable' };
     }
     return provider.checkAvailability({ serverUrl });
   }
 
-  async validateElevenLabsKey(apiKey: string): Promise<boolean> {
+  async validateElevenLabsKey(apiKey: string): Promise<ProviderCheck> {
     const provider = this.providers.get('elevenlabs');
     if (!provider?.checkAvailability) {
-      return false;
+      return { ok: false, message: 'ElevenLabs provider unavailable' };
     }
     return provider.checkAvailability({ apiKey });
   }
 
-  async validateGeminiKey(apiKey: string): Promise<boolean> {
+  async validateGeminiKey(apiKey: string): Promise<ProviderCheck> {
     const provider = this.providers.get('gemini');
     if (!provider?.checkAvailability) {
-      return false;
+      return { ok: false, message: 'Gemini provider unavailable' };
     }
     return provider.checkAvailability({ apiKey });
   }

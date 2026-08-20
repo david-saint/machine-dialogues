@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GEMINI_TTS_MODELS, GEMINI_VOICES } from '../../lib/tts/defaults';
-import type { AgentKey, TTSProviderId, TTSProviderVoice } from '../../lib/tts/types';
+import type { AgentKey, ProviderCheck, TTSProviderId, TTSProviderVoice } from '../../lib/tts/types';
 import { useTTSSettingsStore } from '../../stores/ttsSettings';
 
 type ProviderConfigProps = {
   provider: TTSProviderId;
   cacheSizeLabel: string;
-  onCheckKokoro: (serverUrl: string) => Promise<boolean>;
-  onValidateElevenLabs: (apiKey: string) => Promise<boolean>;
-  onValidateGemini: (apiKey: string) => Promise<boolean>;
+  onCheckKokoro: (serverUrl: string) => Promise<ProviderCheck>;
+  onValidateElevenLabs: (apiKey: string) => Promise<ProviderCheck>;
+  onValidateGemini: (apiKey: string) => Promise<ProviderCheck>;
   onLoadElevenLabsVoices: (apiKey: string) => Promise<TTSProviderVoice[]>;
   onClearCache: () => Promise<void>;
 };
 
 const agentLabel = (agent: AgentKey) => (agent === 'agentA' ? 'Agent A' : 'Agent B');
+
+type Status = {
+  tone: 'pending' | 'ok' | 'error';
+  text: string;
+};
 
 export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   provider,
@@ -39,23 +44,43 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   const setElevenLabsApiKey = useTTSSettingsStore((state) => state.setElevenLabsApiKey);
   const setGeminiApiKey = useTTSSettingsStore((state) => state.setGeminiApiKey);
 
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<Status | null>(null);
   const [voices, setVoices] = useState<TTSProviderVoice[]>([]);
   const [busy, setBusy] = useState(false);
+
+  // A result stops describing the current inputs the moment they change.
+  useEffect(() => {
+    setStatus(null);
+  }, [provider, elevenLabsApiKey, geminiApiKey, kokoroServerUrl]);
 
   const getVoiceNameById = (voiceId: string): string => {
     const match = voices.find((voice) => voice.id === voiceId);
     return match ? `${match.name} (${match.id})` : voiceId;
   };
 
-  const withBusy = async (job: () => Promise<void>) => {
+  // Every action reports something: a pending line while it runs, then the
+  // outcome — including thrown errors, which used to leave the panel silent.
+  const run = async (pendingText: string, job: () => Promise<ProviderCheck>) => {
     setBusy(true);
+    setStatus({ tone: 'pending', text: pendingText });
     try {
-      await job();
+      const result = await job();
+      setStatus({ tone: result.ok ? 'ok' : 'error', text: result.message });
+    } catch (error) {
+      setStatus({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'Unexpected error',
+      });
     } finally {
       setBusy(false);
     }
   };
+
+  const statusLine = status ? (
+    <p className={`provider-status provider-status--${status.tone}`} role="status" aria-live="polite">
+      {status.text}
+    </p>
+  ) : null;
 
   if (provider === 'webspeech') {
     return (
@@ -114,15 +139,11 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           </label>
           <button
             disabled={busy}
-            onClick={() =>
-              withBusy(async () => {
-                const ok = await onCheckKokoro(kokoroServerUrl);
-                setStatus(ok ? 'Connected to Kokoro server' : 'Unable to reach Kokoro server');
-              })
-            }
+            onClick={() => run('Testing connection…', () => onCheckKokoro(kokoroServerUrl))}
           >
             Test Connection
           </button>
+          {statusLine}
         </div>
 
         {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
@@ -160,12 +181,18 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
         <div className="provider-card provider-card--full">
           <p className="provider-title">Audio Cache</p>
           <p className="provider-meta">Current cache size: {cacheSizeLabel}</p>
-          <button disabled={busy} onClick={() => withBusy(onClearCache)}>
+          <button
+            disabled={busy}
+            onClick={() =>
+              run('Clearing cache…', async () => {
+                await onClearCache();
+                return { ok: true, message: 'Audio cache cleared' };
+              })
+            }
+          >
             Clear Audio Cache
           </button>
         </div>
-
-        {status && <p className="provider-status">{status}</p>}
       </div>
     );
   }
@@ -186,15 +213,11 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           </label>
           <button
             disabled={busy || !geminiApiKey.trim()}
-            onClick={() =>
-              withBusy(async () => {
-                const ok = await onValidateGemini(geminiApiKey);
-                setStatus(ok ? 'API key validated' : 'API key invalid');
-              })
-            }
+            onClick={() => run('Validating key…', () => onValidateGemini(geminiApiKey))}
           >
             Validate Key
           </button>
+          {statusLine}
           <p className="provider-meta">
             Each turn is voiced in character — use {'{speaker}'} and {'{opponent}'} in the debate
             direction to reference the agents by name.
@@ -244,12 +267,18 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
         <div className="provider-card provider-card--full">
           <p className="provider-title">Audio Cache</p>
           <p className="provider-meta">Current cache size: {cacheSizeLabel}</p>
-          <button disabled={busy} onClick={() => withBusy(onClearCache)}>
+          <button
+            disabled={busy}
+            onClick={() =>
+              run('Clearing cache…', async () => {
+                await onClearCache();
+                return { ok: true, message: 'Audio cache cleared' };
+              })
+            }
+          >
             Clear Audio Cache
           </button>
         </div>
-
-        {status && <p className="provider-status">{status}</p>}
       </div>
     );
   }
@@ -270,28 +299,26 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
         <div className="provider-actions">
           <button
             disabled={busy || !elevenLabsApiKey.trim()}
-            onClick={() =>
-              withBusy(async () => {
-                const ok = await onValidateElevenLabs(elevenLabsApiKey);
-                setStatus(ok ? 'API key validated' : 'API key invalid');
-              })
-            }
+            onClick={() => run('Validating key…', () => onValidateElevenLabs(elevenLabsApiKey))}
           >
             Validate Key
           </button>
           <button
             disabled={busy || !elevenLabsApiKey.trim()}
             onClick={() =>
-              withBusy(async () => {
+              run('Loading voices…', async () => {
                 const fetched = await onLoadElevenLabsVoices(elevenLabsApiKey);
                 setVoices(fetched);
-                setStatus(fetched.length > 0 ? `Loaded ${fetched.length} voices` : 'No voices returned');
+                return fetched.length > 0
+                  ? { ok: true, message: `Loaded ${fetched.length} voices` }
+                  : { ok: false, message: 'No voices returned' };
               })
             }
           >
             Fetch Voices
           </button>
         </div>
+        {statusLine}
       </div>
 
       {(['agentA', 'agentB'] as AgentKey[]).map((agent) => (
@@ -356,12 +383,18 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
       <div className="provider-card provider-card--full">
         <p className="provider-title">Audio Cache</p>
         <p className="provider-meta">Current cache size: {cacheSizeLabel}</p>
-        <button disabled={busy} onClick={() => withBusy(onClearCache)}>
+        <button
+          disabled={busy}
+          onClick={() =>
+            run('Clearing cache…', async () => {
+              await onClearCache();
+              return { ok: true, message: 'Audio cache cleared' };
+            })
+          }
+        >
           Clear Audio Cache
         </button>
       </div>
-
-      {status && <p className="provider-status">{status}</p>}
     </div>
   );
 };

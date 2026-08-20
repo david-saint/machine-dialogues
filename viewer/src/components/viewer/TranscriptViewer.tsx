@@ -473,6 +473,14 @@ export const TranscriptViewer: React.FC = () => {
           }
         }
 
+        /* Matches the playbar's own breakpoint, where it wraps onto extra
+           rows and needs more clearance under the transcript. */
+        @media (max-width: 600px) {
+          .viewer {
+            padding-bottom: 10rem;
+          }
+        }
+
         @media (max-width: 480px) {
           .viewer__faceoff {
             gap: 0.9rem;

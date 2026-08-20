@@ -383,13 +383,46 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ transcript }
         }
 
         @media (max-width: 600px) {
-          .playbar__info,
-          .playbar__controls {
+          .playbar__inner {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.45rem 0.6rem;
+            padding: 0.5rem var(--gutter) calc(0.5rem + env(safe-area-inset-bottom, 0px));
+          }
+
+          /* Progress takes a row of its own so the transport and the audio
+             controls — mute, speed, settings — still fit side by side. */
+          .playbar__info {
+            flex: 1 0 100%;
+            min-width: 0;
+          }
+
+          .playbar__status {
+            margin-bottom: 0.25rem;
+          }
+
+          /* The active provider is named inside the settings panel, so drop
+             the badge here rather than the button that opens the panel. */
+          .playbar__provider-badge {
             display: none;
           }
 
-          .playbar__inner {
-            justify-content: center;
+          .playbar__controls {
+            gap: 0.5rem;
+          }
+
+          .playbar__btn {
+            padding: 0.35rem 0.5rem;
+          }
+
+          .playbar__speed-btn {
+            padding: 0.32rem 0.42rem;
+          }
+
+          /* Comfortable tap targets on touch screens. */
+          .playbar__btn,
+          .playbar__speed-btn {
+            min-height: 32px;
           }
         }
       `}</style>

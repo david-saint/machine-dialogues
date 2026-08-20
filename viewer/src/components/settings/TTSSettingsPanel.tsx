@@ -311,6 +311,30 @@ export const TTSSettingsPanel: React.FC<TTSSettingsPanelProps> = ({ open, onClos
             max-height: 95vh;
           }
         }
+
+        @media (max-width: 600px) {
+          .tts-modal {
+            padding: 0.75rem;
+            align-items: flex-start;
+            padding-top: 1.25rem;
+          }
+
+          /* iOS Safari zooms the page when a focused field is under 16px,
+             which strands the panel off-screen mid-edit. */
+          .provider-card input,
+          .provider-card select,
+          .provider-card textarea {
+            font-size: 1rem;
+          }
+
+          .provider-card input[type="range"] {
+            height: 32px;
+          }
+
+          .provider-card button {
+            min-height: 36px;
+          }
+        }
       `}</style>
     </div>
   );

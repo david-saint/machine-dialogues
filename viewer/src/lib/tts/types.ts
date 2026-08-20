@@ -85,6 +85,16 @@ export type TTSProviderVoice = {
   name: string;
 };
 
+/**
+ * Outcome of a credential or connection check. The message is written for the
+ * settings panel, so a rejected key and an unreachable host read differently
+ * instead of both collapsing to "invalid".
+ */
+export type ProviderCheck = {
+  ok: boolean;
+  message: string;
+};
+
 export interface TTSProvider {
   readonly id: TTSProviderId;
   speak(request: TTSRequest, events?: TTSEvents): Promise<void>;
@@ -94,6 +104,6 @@ export interface TTSProvider {
   pause(): void;
   resume(): void;
   setPlaybackRate?(rate: number): void;
-  checkAvailability?(opts?: { apiKey?: string; serverUrl?: string }): Promise<boolean>;
+  checkAvailability?(opts?: { apiKey?: string; serverUrl?: string }): Promise<ProviderCheck>;
   getVoices?(opts?: { apiKey?: string; serverUrl?: string }): Promise<TTSProviderVoice[]>;
 }

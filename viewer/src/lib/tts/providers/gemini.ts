@@ -3,6 +3,7 @@ import { GEMINI_VOICES } from '../defaults';
 import { chunkSpeakableText, toSpeakableText } from '../speakable';
 import type {
   GeminiVoiceConfig,
+  ProviderCheck,
   SpeakerContext,
   TTSEvents,
   TTSProvider,
@@ -196,18 +197,35 @@ export class GeminiProvider implements TTSProvider {
     return blob;
   }
 
-  async checkAvailability(opts?: { apiKey?: string }): Promise<boolean> {
+  async checkAvailability(opts?: { apiKey?: string }): Promise<ProviderCheck> {
     if (!opts?.apiKey) {
-      return false;
+      return { ok: false, message: 'Enter an API key first' };
     }
 
     try {
       const response = await fetch(`${GEMINI_API_BASE}/models?pageSize=1`, {
         headers: { 'x-goog-api-key': opts.apiKey },
       });
-      return response.ok;
+
+      if (response.ok) {
+        return { ok: true, message: 'API key validated' };
+      }
+
+      // Google answers a bad or referrer-restricted key with 400/403 and an
+      // explanatory status message — surface it rather than guessing.
+      const detail = await response
+        .json()
+        .then((body: { error?: { message?: string } }) => body?.error?.message ?? '')
+        .catch(() => '');
+
+      return {
+        ok: false,
+        message: detail
+          ? `Gemini rejected the key (${response.status}): ${detail}`
+          : `Gemini returned HTTP ${response.status}`,
+      };
     } catch {
-      return false;
+      return { ok: false, message: 'Could not reach Gemini — check your connection' };
     }
   }
 

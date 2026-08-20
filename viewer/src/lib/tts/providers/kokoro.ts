@@ -1,5 +1,5 @@
 import { AudioCache, buildAudioCacheKey } from '../cache';
-import type { KokoroVoiceConfig, TTSEvents, TTSProvider, TTSRequest } from '../types';
+import type { KokoroVoiceConfig, ProviderCheck, TTSEvents, TTSProvider, TTSRequest } from '../types';
 
 export class KokoroProvider implements TTSProvider {
   readonly id = 'kokoro' as const;
@@ -64,10 +64,10 @@ export class KokoroProvider implements TTSProvider {
     }
   }
 
-  async checkAvailability(opts?: { serverUrl?: string }): Promise<boolean> {
+  async checkAvailability(opts?: { serverUrl?: string }): Promise<ProviderCheck> {
     const serverUrl = opts?.serverUrl;
     if (!serverUrl) {
-      return false;
+      return { ok: false, message: 'Enter a server URL first' };
     }
 
     const controller = new AbortController();
@@ -77,9 +77,18 @@ export class KokoroProvider implements TTSProvider {
         method: 'GET',
         signal: controller.signal,
       });
-      return response.ok;
-    } catch {
-      return false;
+
+      return response.ok
+        ? { ok: true, message: 'Connected to Kokoro server' }
+        : { ok: false, message: `Kokoro server returned HTTP ${response.status}` };
+    } catch (error) {
+      const timedOut = error instanceof DOMException && error.name === 'AbortError';
+      return {
+        ok: false,
+        message: timedOut
+          ? 'Kokoro server timed out after 3s'
+          : 'Unable to reach Kokoro server — check the URL and that it is running',
+      };
     } finally {
       window.clearTimeout(timeoutId);
     }

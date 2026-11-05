@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-20",
-  "n_judgments": 18,
+  "generated_at": "2026-11-05",
+  "n_judgments": 24,
   "debates": [
     {
       "transcript": "20260704_201301_claude-opus-4.8_vs_gpt-5.5.md",
@@ -40,6 +40,19 @@
         "name": "Claude Opus 5",
         "model": "anthropic/claude-opus-5",
         "family": "anthropic"
+      }
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "agentA": {
+        "name": "Claude Opus 5.5",
+        "model": "anthropic/claude-opus-5.5",
+        "family": "anthropic"
+      },
+      "agentB": {
+        "name": "Gemini 4 Argon",
+        "model": "google/gemini-4-argon",
+        "family": "google"
       }
     }
   ],
@@ -313,52 +326,159 @@
       "net_round_shift": 0.5,
       "resolution_shift": 1,
       "craft_shift": 1
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "Claude Fable 5.1",
+      "judge_family": "anthropic",
+      "rounds_scored": 8,
+      "position_first_share": 0.0,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": 1,
+      "net_round_shift": 0.0,
+      "resolution_shift": -1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "DeepSeek V4.1 Flash 1017",
+      "judge_family": "deepseek",
+      "rounds_scored": 8,
+      "position_first_share": -0.25,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": 0,
+      "net_round_shift": -0.25,
+      "resolution_shift": 1,
+      "craft_shift": -1
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "Gemini 3.8 Flash",
+      "judge_family": "google",
+      "rounds_scored": 8,
+      "position_first_share": -0.5,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": -1,
+      "net_round_shift": -0.5,
+      "resolution_shift": -1,
+      "craft_shift": -1
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "GPT-6.1 Sol",
+      "judge_family": "openai",
+      "rounds_scored": 8,
+      "position_first_share": 0.125,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": 0,
+      "net_round_shift": 0.125,
+      "resolution_shift": -1,
+      "craft_shift": 1
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "Grok 4.6",
+      "judge_family": "xai",
+      "rounds_scored": 8,
+      "position_first_share": 0.0,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": 0,
+      "net_round_shift": 0.0,
+      "resolution_shift": -1,
+      "craft_shift": 0
+    },
+    {
+      "transcript": "20261105_091529_claude-opus-5.5_vs_gemini-4-argon.md",
+      "judge": "Muse Wonder",
+      "judge_family": "meta",
+      "rounds_scored": 8,
+      "position_first_share": -0.125,
+      "pair": [
+        "anthropic",
+        "google"
+      ],
+      "interest": 0,
+      "net_round_shift": -0.125,
+      "resolution_shift": -1,
+      "craft_shift": -1
     }
   ],
   "judges": [
     {
       "family": "anthropic",
       "judge_names": [
-        "Claude Fable 5"
+        "Claude Fable 5",
+        "Claude Fable 5.1"
       ],
-      "contrast_points": 3,
-      "position_points": 3,
+      "contrast_points": 4,
+      "position_points": 4,
       "interest": 1,
-      "judge": "Claude Fable 5",
-      "mean_position_first_share": -0.16666666666666666,
-      "mean_net_round_shift": 0.43333333333333335,
-      "mean_resolution_shift": 1.0,
+      "judge": "Claude Fable 5 / Claude Fable 5.1",
+      "mean_position_first_share": -0.12499999999999999,
+      "mean_net_round_shift": 0.325,
+      "mean_resolution_shift": 0.5,
       "mean_craft_shift": 1.0
     },
     {
       "family": "deepseek",
       "judge_names": [
         "DeepSeek V4 Pro",
-        "DeepSeek V4 Pro 0813"
+        "DeepSeek V4 Pro 0813",
+        "DeepSeek V4.1 Flash 1017"
       ],
-      "contrast_points": 3,
-      "position_points": 3,
+      "contrast_points": 4,
+      "position_points": 4,
       "interest": 0,
-      "judge": "DeepSeek V4 Pro / DeepSeek V4 Pro 0813",
-      "mean_position_first_share": -0.09999999999999998,
-      "mean_net_round_shift": 0.3666666666666667,
-      "mean_resolution_shift": 0.3333333333333333,
-      "mean_craft_shift": 1.0
+      "judge": "DeepSeek V4 Pro / DeepSeek V4 Pro 0813 / DeepSeek V4.1 Flash 1017",
+      "mean_position_first_share": -0.13749999999999998,
+      "mean_net_round_shift": 0.21250000000000002,
+      "mean_resolution_shift": 0.5,
+      "mean_craft_shift": 0.5
     },
     {
       "family": "google",
       "judge_names": [
         "Gemini 3.1 Pro",
-        "Gemini 3.7 Flash"
+        "Gemini 3.7 Flash",
+        "Gemini 3.8 Flash"
       ],
-      "contrast_points": 3,
-      "position_points": 3,
+      "contrast_points": 4,
+      "position_points": 4,
+      "interest": -1,
+      "judge": "Gemini 3.1 Pro / Gemini 3.7 Flash / Gemini 3.8 Flash",
+      "mean_position_first_share": -0.25,
+      "mean_net_round_shift": 0.10000000000000003,
+      "mean_resolution_shift": 0.5,
+      "mean_craft_shift": 0.5
+    },
+    {
+      "family": "meta",
+      "judge_names": [
+        "Muse Wonder"
+      ],
+      "contrast_points": 1,
+      "position_points": 1,
       "interest": 0,
-      "judge": "Gemini 3.1 Pro / Gemini 3.7 Flash",
-      "mean_position_first_share": -0.16666666666666666,
-      "mean_net_round_shift": 0.30000000000000004,
-      "mean_resolution_shift": 1.0,
-      "mean_craft_shift": 1.0
+      "judge": "Muse Wonder",
+      "mean_position_first_share": -0.125,
+      "mean_net_round_shift": -0.125,
+      "mean_resolution_shift": -1.0,
+      "mean_craft_shift": -1.0
     },
     {
       "family": "moonshot",
@@ -379,57 +499,59 @@
       "family": "openai",
       "judge_names": [
         "GPT-5.5 Pro (extended)",
-        "GPT-5.6 Sol"
+        "GPT-5.6 Sol",
+        "GPT-6.1 Sol"
       ],
-      "contrast_points": 3,
-      "position_points": 3,
+      "contrast_points": 4,
+      "position_points": 4,
       "interest": -1,
-      "judge": "GPT-5.5 Pro (extended) / GPT-5.6 Sol",
-      "mean_position_first_share": 0.0,
-      "mean_net_round_shift": 0.0,
-      "mean_resolution_shift": -0.3333333333333333,
-      "mean_craft_shift": 0.3333333333333333
+      "judge": "GPT-5.5 Pro (extended) / GPT-5.6 Sol / GPT-6.1 Sol",
+      "mean_position_first_share": 0.03125,
+      "mean_net_round_shift": 0.03125,
+      "mean_resolution_shift": -0.5,
+      "mean_craft_shift": 0.5
     },
     {
       "family": "xai",
       "judge_names": [
         "Grok 4.3",
-        "Grok 4.5"
+        "Grok 4.5",
+        "Grok 4.6"
       ],
-      "contrast_points": 3,
-      "position_points": 3,
+      "contrast_points": 4,
+      "position_points": 4,
       "interest": -1,
-      "judge": "Grok 4.3 / Grok 4.5",
-      "mean_position_first_share": 0.06666666666666667,
-      "mean_net_round_shift": -0.19999999999999998,
+      "judge": "Grok 4.3 / Grok 4.5 / Grok 4.6",
+      "mean_position_first_share": 0.049999999999999996,
+      "mean_net_round_shift": -0.15,
       "mean_resolution_shift": -1.0,
-      "mean_craft_shift": -0.3333333333333333
+      "mean_craft_shift": -0.25
     }
   ],
   "regressions": {
     "net_round_shift": {
-      "n": 18,
-      "slope": 0.15,
-      "intercept": 0.23888888888888887,
-      "r_squared": 0.07406278573605607,
-      "se_slope": 0.13259343316514027,
-      "t_slope": 1.1312777444504396
+      "n": 24,
+      "slope": 0.175,
+      "intercept": 0.14791666666666667,
+      "r_squared": 0.09180686209453925,
+      "se_slope": 0.11734868964807921,
+      "t_slope": 1.4912820971824496
     },
     "resolution_shift": {
-      "n": 18,
-      "slope": 0.6666666666666666,
-      "intercept": 0.3333333333333333,
-      "r_squared": 0.16666666666666663,
-      "se_slope": 0.37267799624996495,
-      "t_slope": 1.7888543819998317
+      "n": 24,
+      "slope": 0.5,
+      "intercept": 0.08333333333333333,
+      "r_squared": 0.08391608391608374,
+      "se_slope": 0.3522116271547978,
+      "t_slope": 1.419601062120101
     },
     "craft_shift": {
-      "n": 18,
-      "slope": 0.0,
-      "intercept": 0.6666666666666666,
-      "r_squared": 0.0,
-      "se_slope": 0.32274861218395134,
-      "t_slope": 0.0
+      "n": 24,
+      "slope": 0.25,
+      "intercept": 0.4583333333333333,
+      "r_squared": 0.02784222737819031,
+      "se_slope": 0.3149524976207932,
+      "t_slope": 0.793770495197035
     }
   }
 }

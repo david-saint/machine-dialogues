@@ -12,14 +12,10 @@ import httpx
 import openai
 import pytest
 
-from research_harness.providers import openrouter as openrouter_mod
-from research_harness.providers.openrouter import (
-    EMPTY_ATTEMPTS,
-    OpenRouterEmptyResponseError,
-    OpenRouterProvider,
-    OpenRouterTransientError,
-    TRANSIENT_ATTEMPTS,
-)
+from research_harness.providers import openai_compat as compat_mod
+from research_harness.providers.base import EMPTY_ATTEMPTS, EmptyResponseError
+from research_harness.providers.openai_compat import ProviderTransientError, TRANSIENT_ATTEMPTS
+from research_harness.providers.openrouter import OpenRouterProvider
 
 
 def _good_response(content="hello", reasoning_tokens=0, finish_reason="stop", native_finish_reason=None, reasoning=None):
@@ -58,7 +54,7 @@ class _StubCompletions:
 
 def _make_provider(monkeypatch, results):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
-    monkeypatch.setattr(openrouter_mod.time, "sleep", lambda s: None)
+    monkeypatch.setattr(compat_mod.time, "sleep", lambda s: None)
     provider = OpenRouterProvider(
         model="openai/gpt-5.5-pro",
         system_prompt="You are a judge.",
@@ -104,7 +100,7 @@ class TestTransientRetry:
             monkeypatch,
             [SimpleNamespace(choices=None, error={"code": 500})] * TRANSIENT_ATTEMPTS,
         )
-        with pytest.raises(OpenRouterTransientError, match="error body"):
+        with pytest.raises(ProviderTransientError, match="error body"):
             provider.send([{"role": "user", "content": "judge this"}])
         assert stub.calls == TRANSIENT_ATTEMPTS
 
@@ -167,13 +163,13 @@ class TestEmptyResponseRetry:
 
     def test_exhaustion_raises_instead_of_blank_turn(self, monkeypatch):
         provider, stub = _make_provider(monkeypatch, [_empty_response()] * EMPTY_ATTEMPTS)
-        with pytest.raises(OpenRouterEmptyResponseError, match="no text"):
+        with pytest.raises(EmptyResponseError, match="no text"):
             provider.send([{"role": "user", "content": "judge this"}])
         assert stub.calls == EMPTY_ATTEMPTS
 
     def test_thinking_only_truncation_raises_immediately(self, monkeypatch):
         provider, stub = _make_provider(monkeypatch, [_empty_response(finish_reason="length"), _good_response()])
-        with pytest.raises(OpenRouterEmptyResponseError, match="max_tokens"):
+        with pytest.raises(EmptyResponseError, match="max_tokens"):
             provider.send([{"role": "user", "content": "judge this"}])
         assert stub.calls == 1
 

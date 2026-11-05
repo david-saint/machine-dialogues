@@ -1,25 +1,25 @@
-from .base import LLMProvider, ProviderResponse
+from .base import Completion, LLMProvider
 
 
 class MockProvider(LLMProvider):
     """Provider that echoes back turn info for testing. No API calls."""
+
+    label = "mock"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_count = 0
         self.captured_system_prompts: list[str] = []
 
-    def send(self, messages: list[dict]) -> ProviderResponse:
+    def _complete(self, messages: list[dict]) -> Completion:
         self.call_count += 1
         system = self.get_system_prompt()
         self.captured_system_prompts.append(system)
 
         last_msg = messages[-1]["content"] if messages else ""
-        content = f"[{self.model} | call #{self.call_count}] Responding to: {last_msg[:80]}..."
-
-        return ProviderResponse(
-            content=content,
+        return Completion(
+            content=f"[{self.model} | call #{self.call_count}] Responding to: {last_msg[:80]}...",
             input_tokens=100,
             output_tokens=50,
-            thinking_tokens=0,
+            finish_reason="stop",
         )

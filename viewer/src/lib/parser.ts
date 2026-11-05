@@ -3,7 +3,9 @@ import type { Transcript, TranscriptTurn, AgentInfo, CostSummaryItem, SelfReport
 const AVATARS: Record<string, string> = {
   'Claude Opus 4.6': '/avatars/claude-opus-4.6.png',
   'Claude Opus 4.8': '/avatars/claude-opus-4.6.png',
+  'Claude Opus 5.5': '/avatars/claude-opus-5.5.png',
   'Claude Sonnet 4.6': '/avatars/claude-sonnet-4.6.png',
+  'Gemini 4 Argon': '/avatars/gemini-4-argon.png',
   'Gemini 3.1 Pro': '/avatars/gemini-3.1-pro.png',
   'Gemini 3 Flash': '/avatars/gemini-3-flash.png',
   'GPT-5.4': '/avatars/gpt-5.4-xhigh.png',

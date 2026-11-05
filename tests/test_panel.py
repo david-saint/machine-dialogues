@@ -30,8 +30,17 @@ class TestModelFamily:
         assert model_family("moonshotai/kimi-k2.6") == "moonshot"
         assert model_family("x-ai/grok-4.3") == "xai"
 
-    def test_bare_model_id(self):
-        assert model_family("claude-fable-5") == "claude-fable-5"
+    def test_bare_native_ids_map_to_family(self):
+        # Native-provider configs may use the lab's own bare id.
+        assert model_family("claude-fable-5") == "anthropic"
+        assert model_family("gpt-5.5") == "openai"
+        assert model_family("gemini-3.7-flash") == "google"
+        assert model_family("grok-4.6") == "xai"
+        assert model_family("kimi-k3") == "moonshot"
+        assert model_family("deepseek-v4-pro") == "deepseek"
+
+    def test_unknown_bare_id_is_its_own_family(self):
+        assert model_family("mocka") == "mocka"
 
 
 class TestLoadPanel:

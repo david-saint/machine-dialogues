@@ -5,6 +5,7 @@ from .analysis import write_analysis
 from .config import ExperimentConfig
 from .judge import JudgeError, run_judge
 from .panel import PANEL_PATH, run_panel
+from .providers import PROVIDERS
 from .runner import run_experiment, resume_experiment
 
 
@@ -43,11 +44,14 @@ def resume(config_path: str, transcript_path: str, turns: int):
 @main.command()
 @click.argument("transcript_path", type=click.Path(exists=True))
 @click.option("--model", required=True, help="Judge model id, e.g. anthropic/claude-opus-4.8")
-@click.option("--provider", default="openrouter", show_default=True, help="Provider to route the judge model through")
+@click.option("--provider", default="openrouter", show_default=True, type=click.Choice(sorted(PROVIDERS)), help="Provider to route the judge model through")
 @click.option("--thinking-level", default=None, help="Reasoning effort for the judge, e.g. high, xhigh, max")
+@click.option("--api-model", default=None, help="Model id sent to the provider, if it differs from --model")
+@click.option("--base-url", default=None, help="Endpoint override (required for openai-compatible)")
+@click.option("--api-key-env", default=None, help="Env var holding the API key, if not the provider's default")
 @click.option("--judge-name", default=None, help="Human-readable judge name (defaults to the model id)")
 @click.option("--output-dir", default="judgments", show_default=True, type=click.Path(), help="Directory to write judgments under")
-def judge(transcript_path: str, model: str, provider: str, thinking_level: str | None, judge_name: str | None, output_dir: str):
+def judge(transcript_path: str, model: str, provider: str, thinking_level: str | None, api_model: str | None, base_url: str | None, api_key_env: str | None, judge_name: str | None, output_dir: str):
     """Score a debate transcript with a judge model."""
     try:
         run_judge(
@@ -55,6 +59,9 @@ def judge(transcript_path: str, model: str, provider: str, thinking_level: str |
             model=model,
             provider=provider,
             thinking_level=thinking_level,
+            api_model=api_model,
+            base_url=base_url,
+            api_key_env=api_key_env,
             judge_name=judge_name,
             output_dir=output_dir,
         )

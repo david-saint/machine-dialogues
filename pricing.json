@@ -166,5 +166,33 @@
   "deepseek/deepseek-v4-pro-0813": {
     "input": 1.188,
     "output": 3.564
+  },
+  "anthropic/claude-opus-5.5": {
+    "input": 4.0,
+    "output": 20.0
+  },
+  "google/gemini-4-argon": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "anthropic/claude-fable-5.1": {
+    "input": 10.0,
+    "output": 50.0
+  },
+  "openai/gpt-6.1-sol": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "google/gemini-3.8-flash": {
+    "input": 0.825,
+    "output": 4.125
+  },
+  "meta/muse-wonder": {
+    "input": 4.0,
+    "output": 20.0
+  },
+  "deepseek/deepseek-v4.1-flash-1017": {
+    "input": 0.3,
+    "output": 1.2
   }
 }

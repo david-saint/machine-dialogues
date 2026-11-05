@@ -22,6 +22,50 @@ uv sync
 uv run rh --help
 ```
 
+### Providers
+
+Each agent (and each judge) picks its own `provider`, so you can spend each
+lab's credits on that lab's models and mix freely within one debate.
+
+| `provider`          | Key env var (default)              | Endpoint                         |
+| ------------------- | ---------------------------------- | -------------------------------- |
+| `openrouter`        | `OPENROUTER_API_KEY`               | openrouter.ai (default)          |
+| `anthropic`         | `ANTHROPIC_API_KEY`                | Anthropic Messages API           |
+| `openai`            | `OPENAI_API_KEY`                   | OpenAI Chat Completions          |
+| `google`            | `GEMINI_API_KEY` / `GOOGLE_API_KEY`| Gemini API                       |
+| `xai`               | `XAI_API_KEY`                      | api.x.ai                         |
+| `moonshot`          | `MOONSHOT_API_KEY`                 | api.moonshot.ai                  |
+| `deepseek`          | `DEEPSEEK_API_KEY`                 | api.deepseek.com                 |
+| `openai-compatible` | `api_key_env` (optional)           | any `base_url` (Mistral, Groq, vLLM, Ollama…) |
+
+Keep `model` as the canonical OpenRouter-style id (`anthropic/claude-opus-5`):
+pricing, model families and bias analysis key on it. Each provider translates
+it to its own id — the vendor prefix is dropped, and for Anthropic dots become
+dashes (`anthropic/claude-opus-4.8` → `claude-opus-4-8`). When a lab's id
+differs, set `api_model`.
+
+```yaml
+agent_a:
+  name: "Claude Opus 5"
+  provider: anthropic
+  model: anthropic/claude-opus-5
+  thinking_level: xhigh          # -> adaptive thinking + output_config.effort
+agent_b:
+  name: "Grok 4.6"
+  provider: xai
+  model: x-ai/grok-4.6
+  # api_model: grok-4.6-0817     # only if xAI's id differs
+  # api_key_env: MY_XAI_KEY      # only if not XAI_API_KEY
+  # extra_body: {...}            # extra JSON merged into the request
+```
+
+`thinking_level` goes to each API's own effort setting, under that API's rules:
+Anthropic `low`–`max`; OpenAI `reasoning_effort`; Gemini `minimal`/`low`/`medium`/`high`
+only; xAI/Moonshot/DeepSeek get `reasoning_effort`, which some of their models
+reject, so leave it unset there if they do. Judges take the same keys in
+`judgments/panel.json` (`provider`, `api_model`, `base_url`, `api_key_env`) or
+on the command line (`rh judge --provider anthropic …`).
+
 ### Viewer (Frontend)
 The viewer is built with React and Vite.
 ```bash

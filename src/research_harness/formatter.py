@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
-from .config import ExperimentConfig
 from .pricing import CostTracker
+
+if TYPE_CHECKING:  # config -> providers -> formatter would otherwise be circular
+    from .config import ExperimentConfig
 
 console = Console()
 

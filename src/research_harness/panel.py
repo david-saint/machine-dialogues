@@ -21,11 +21,33 @@ def model_family(model_id: str) -> str:
     """Family slug for a model id, e.g. 'anthropic/claude-opus-4.8' -> 'anthropic'.
 
     Used to relate judges to debaters; the OpenRouter vendor prefixes that
-    differ from our family slugs are normalized.
+    differ from our family slugs are normalized. Bare native ids (e.g.
+    'claude-opus-5' run through the anthropic provider) are recognised by
+    their name prefix so they land in the same family.
     """
-    vendor = model_id.split("/", 1)[0].lower() if "/" in model_id else model_id.lower()
-    aliases = {"moonshotai": "moonshot", "x-ai": "xai"}
-    return aliases.get(vendor, vendor)
+    if "/" in model_id:
+        vendor = model_id.split("/", 1)[0].lower()
+        aliases = {"moonshotai": "moonshot", "x-ai": "xai"}
+        return aliases.get(vendor, vendor)
+    bare = model_id.lower()
+    for prefix, family in _BARE_PREFIXES:
+        if bare.startswith(prefix):
+            return family
+    return bare
+
+
+_BARE_PREFIXES = (
+    ("claude", "anthropic"),
+    ("gpt", "openai"),
+    ("chatgpt", "openai"),
+    ("o1", "openai"), ("o3", "openai"), ("o4", "openai"),
+    ("gemini", "google"),
+    ("gemma", "google"),
+    ("grok", "xai"),
+    ("kimi", "moonshot"),
+    ("moonshot", "moonshot"),
+    ("deepseek", "deepseek"),
+)
 
 
 def load_panel(panel_path: str | Path = PANEL_PATH) -> list[dict]:
@@ -72,6 +94,9 @@ def run_panel(
                     model=spec["model"],
                     provider=spec.get("provider", "openrouter"),
                     thinking_level=spec.get("thinking_level"),
+                    api_model=spec.get("api_model"),
+                    base_url=spec.get("base_url"),
+                    api_key_env=spec.get("api_key_env"),
                     judge_name=spec["name"],
                     judge_family=spec["family"],
                     output_dir=output_dir,

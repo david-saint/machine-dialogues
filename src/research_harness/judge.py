@@ -445,6 +445,9 @@ def run_judge(
     judge_family: str | None = None,
     output_dir: str | Path = "judgments",
     *,
+    api_model: str | None = None,
+    base_url: str | None = None,
+    api_key_env: str | None = None,
     temperature: float = JUDGE_TEMPERATURE,
     max_tokens: int = JUDGE_MAX_TOKENS,
     today: str | None = None,
@@ -471,6 +474,9 @@ def run_judge(
         temperature=temperature,
         max_tokens=max_tokens,
         thinking_level=thinking_level,
+        api_model=api_model,
+        base_url=base_url,
+        api_key_env=api_key_env,
     )
 
     tracker = CostTracker(pricing=load_pricing())

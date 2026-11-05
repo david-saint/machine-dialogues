@@ -3,38 +3,38 @@
   "judges": [
     {
       "family": "anthropic",
-      "name": "Claude Fable 5",
-      "model": "anthropic/claude-fable-5",
+      "name": "Claude Fable 5.1",
+      "model": "anthropic/claude-fable-5.1",
       "thinking_level": "xhigh"
     },
     {
       "family": "openai",
-      "name": "GPT-5.6 Sol",
-      "model": "openai/gpt-5.6-sol",
+      "name": "GPT-6.1 Sol",
+      "model": "openai/gpt-6.1-sol",
       "thinking_level": "max"
     },
     {
       "family": "google",
-      "name": "Gemini 3.7 Flash",
-      "model": "google/gemini-3.7-flash",
+      "name": "Gemini 3.8 Flash",
+      "model": "google/gemini-3.8-flash",
       "thinking_level": "high"
     },
     {
-      "family": "moonshot",
-      "name": "Kimi K3",
-      "model": "moonshotai/kimi-k3",
+      "family": "meta",
+      "name": "Muse Wonder",
+      "model": "meta/muse-wonder",
       "thinking_level": "max"
     },
     {
       "family": "deepseek",
-      "name": "DeepSeek V4 Pro 0813",
-      "model": "deepseek/deepseek-v4-pro-0813",
+      "name": "DeepSeek V4.1 Flash 1017",
+      "model": "deepseek/deepseek-v4.1-flash-1017",
       "thinking_level": "max"
     },
     {
       "family": "xai",
-      "name": "Grok 4.5",
-      "model": "x-ai/grok-4.5",
+      "name": "Grok 4.6",
+      "model": "x-ai/grok-4.6",
       "thinking_level": "xhigh"
     }
   ]

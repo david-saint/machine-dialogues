@@ -47,6 +47,7 @@ _BARE_PREFIXES = (
     ("kimi", "moonshot"),
     ("moonshot", "moonshot"),
     ("deepseek", "deepseek"),
+    ("muse", "meta"),
 )
 
 

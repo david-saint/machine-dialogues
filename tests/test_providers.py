@@ -112,15 +112,22 @@ class TestOpenAICompatibleRequests:
 class _RecordingAnthropicMessages:
     def __init__(self, blocks, stop_reason="end_turn"):
         self.kwargs = None
+        self.calls = []
         self.blocks = blocks
         self.stop_reason = stop_reason
 
     @contextmanager
     def stream(self, **kwargs):
         self.kwargs = kwargs
+        self.calls.append(kwargs)
+        # A list of stop reasons plays out one per call (pause_turn, then end_turn).
+        if isinstance(self.stop_reason, list):
+            stop = self.stop_reason[min(len(self.calls), len(self.stop_reason)) - 1]
+        else:
+            stop = self.stop_reason
         msg = SimpleNamespace(
             content=self.blocks,
-            stop_reason=self.stop_reason,
+            stop_reason=stop,
             usage=SimpleNamespace(input_tokens=10, output_tokens=7,
                                   cache_creation_input_tokens=None, cache_read_input_tokens=None),
         )
@@ -163,14 +170,63 @@ class TestAnthropic:
         assert resp.native_finish_reason == "refusal"
         assert any("safety filter" in w for w in resp.warnings)
 
+    def test_no_tools_without_web_search(self):
+        _, kw = self._run([SimpleNamespace(type="text", text="a")])
+        assert "tools" not in kw
+
+    def test_web_search_adds_server_tool(self):
+        blocks = [SimpleNamespace(type="server_tool_use"), SimpleNamespace(type="web_search_tool_result"),
+                  SimpleNamespace(type="text", text="found "), SimpleNamespace(type="text", text="it")]
+        resp, kw = self._run(blocks, web_search=True)
+        assert kw["tools"] == [{"type": "web_search_20260209", "name": "web_search", "max_uses": 5}]
+        assert resp.content == "found it"
+
+    def test_paused_search_turn_is_resumed(self):
+        p = create_provider(provider="anthropic", model="anthropic/claude-sonnet-5.5", web_search=True, **BASE)
+        rec = _RecordingAnthropicMessages([SimpleNamespace(type="text", text="part ")],
+                                          stop_reason=["pause_turn", "end_turn"])
+        p.client = SimpleNamespace(messages=rec)
+        resp = p.send([{"role": "user", "content": "go"}])
+        assert len(rec.calls) == 2
+        # The paused turn goes back as an assistant message, with no new user message.
+        assert [m["role"] for m in rec.calls[1]["messages"]] == ["user", "assistant"]
+        assert rec.calls[1]["messages"][1]["content"] is rec.blocks
+        assert resp.content == "part part "
+        assert (resp.input_tokens, resp.output_tokens) == (20, 14)
+        assert resp.finish_reason == "stop"
+
 
 class TestGoogle:
     def test_rejects_effort_levels_gemini_lacks(self):
         with pytest.raises(ValueError, match="thinking_level"):
-            create_provider(provider="google", model="google/gemini-3.7-flash", thinking_level="xhigh", **BASE)
+            create_provider(provider="google", model="google/gemini-4-hydrogen", thinking_level="max", **BASE)
 
     def test_accepts_gemini_levels(self):
         create_provider(provider="google", model="google/gemini-3.7-flash", thinking_level="high", **BASE)
+        create_provider(provider="google", model="google/gemini-4-hydrogen", thinking_level="xhigh", **BASE)
+
+    @pytest.mark.parametrize("flag", ["web_search", "google_search"])
+    def test_either_search_flag_turns_on_grounding(self, flag):
+        p = create_provider(provider="google", model="google/gemini-4-hydrogen", **BASE, **{flag: True})
+        seen = {}
+
+        def generate_content(**kwargs):
+            seen.update(kwargs)
+            return SimpleNamespace(text="hi", usage_metadata=None, candidates=None, prompt_feedback=None)
+
+        p.client = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
+        p.send([{"role": "user", "content": "go"}])
+        assert seen["config"].tools[0].google_search is not None
+
+
+class TestWebSearchFlag:
+    def test_unsupported_provider_warns(self, capsys):
+        _compat("openrouter", "x-ai/grok-4.6", web_search=True)
+        assert "web_search is not wired" in capsys.readouterr().out
+
+    def test_config_passes_flag_through(self):
+        cfg = AgentConfig(model="anthropic/claude-sonnet-5.5", provider="anthropic", web_search=True)
+        assert create_provider(**cfg.provider_kwargs()).web_search is True
 
 
 class TestConfig:

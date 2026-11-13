@@ -78,6 +78,7 @@ class LLMProvider(ABC):
     label = "provider"
     default_api_key_env: str | None = None
     strip_vendor_prefix = True
+    supports_web_search = False
 
     def __init__(
         self,
@@ -86,6 +87,7 @@ class LLMProvider(ABC):
         temperature: float,
         max_tokens: int,
         no_thinking: bool = False,
+        web_search: bool = False,
         google_search: bool = False,
         thinking_level: str | None = None,
         api_model: str | None = None,
@@ -98,6 +100,7 @@ class LLMProvider(ABC):
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.no_thinking = no_thinking
+        self.web_search = web_search
         self.google_search = google_search
         self.thinking_level = thinking_level
         self.api_model = api_model
@@ -105,6 +108,11 @@ class LLMProvider(ABC):
         self.api_key_env = api_key_env
         self.extra_body = extra_body
         self._system_prompt_suffix: str = ""
+        if web_search and not self.supports_web_search:
+            console.print(
+                f"[yellow]{self.label}: web_search is not wired for this provider; "
+                f"{model} will answer without search[/yellow]"
+            )
 
     # -- configuration helpers ------------------------------------------------
 

@@ -34,7 +34,7 @@ def create_provider(
     **options,
 ) -> LLMProvider:
     """Instantiate a provider. `options` are the optional LLMProvider kwargs:
-    no_thinking, google_search, thinking_level, api_model, base_url,
+    no_thinking, web_search, google_search, thinking_level, api_model, base_url,
     api_key_env, extra_body."""
     cls = PROVIDERS.get(provider)
     if cls is None:

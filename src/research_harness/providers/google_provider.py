@@ -5,7 +5,7 @@ from google.genai import types
 
 from .base import REQUEST_TIMEOUT, Completion, LLMProvider
 
-GEMINI_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
+GEMINI_THINKING_LEVELS = {"minimal", "low", "medium", "high", "xhigh"}
 
 _FILTERED = {"SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION"}
 
@@ -14,12 +14,18 @@ class GoogleProvider(LLMProvider):
     """Gemini via the Gemini API (google-genai).
 
     Model ids: "google/gemini-3.1-pro-preview" -> "gemini-3.1-pro-preview".
-    thinking_level maps to ThinkingConfig.thinking_level, which Gemini limits
-    to minimal | low | medium | high.
+    thinking_level maps to ThinkingConfig.thinking_level. Gemini takes
+    minimal | low | medium | high | xhigh, and each model accepts a subset
+    (Gemini 4 Hydrogen: low-xhigh; Gemini 4 Argon: low-high); the API
+    rejects a level the model lacks.
+
+    web_search (or the older google_search) turns on Grounding with Google
+    Search.
     """
 
     label = "google"
     default_api_key_env = "GEMINI_API_KEY"
+    supports_web_search = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -51,7 +57,7 @@ class GoogleProvider(LLMProvider):
         ]
 
         config = types.GenerateContentConfig(max_output_tokens=self.max_tokens, temperature=self.temperature)
-        if self.google_search:
+        if self.web_search or self.google_search:
             config.tools = [types.Tool(google_search=types.GoogleSearch())]
         if self.wants_reasoning:
             config.thinking_config = types.ThinkingConfig(thinking_level=self.thinking_level)

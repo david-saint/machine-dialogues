@@ -15,7 +15,8 @@ class AgentConfig(BaseModel):
     temperature: float = 1.0
     max_tokens: int = 8192
     no_thinking: bool = False
-    google_search: bool = False
+    web_search: bool = False             # let the model search the web (anthropic, google)
+    google_search: bool = False          # older spelling of web_search; google only
     thinking_level: str | None = None   # reasoning effort, passed to the provider's own effort knob
     include_thoughts: bool = False       # capture & store thinking content in transcript
     # Provider routing overrides (all optional):
@@ -46,6 +47,7 @@ class AgentConfig(BaseModel):
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "no_thinking": self.no_thinking,
+            "web_search": self.web_search,
             "google_search": self.google_search,
             "thinking_level": self.thinking_level,
             "api_model": self.api_model,

@@ -60,9 +60,18 @@ agent_b:
 ```
 
 `thinking_level` goes to each API's own effort setting, under that API's rules:
-Anthropic `low`–`max`; OpenAI `reasoning_effort`; Gemini `minimal`/`low`/`medium`/`high`
-only; xAI/Moonshot/DeepSeek get `reasoning_effort`, which some of their models
-reject, so leave it unset there if they do. Judges take the same keys in
+Anthropic `low`–`max`; OpenAI `reasoning_effort`; Gemini `minimal`–`xhigh`, of which
+each model takes a subset (Gemini 4 Hydrogen `low`–`xhigh`, Gemini 4 Argon `low`–`high`);
+xAI/Moonshot/DeepSeek get `reasoning_effort`, which some of their models
+reject, so leave it unset there if they do.
+
+`web_search: true` on an agent lets it search the web while it writes a turn. It
+is off by default and wired for two providers: `anthropic` (the web search server
+tool, up to 5 searches a turn) and `google` (Grounding with Google Search; the
+older `google_search: true` still works). Other providers print a warning and
+answer without search. Only the text of a turn is kept, so the other debater sees
+a source only if the model names it. Searches are billed per request on top of
+tokens and are not in the cost summary. Judges take the same keys in
 `judgments/panel.json` (`provider`, `api_model`, `base_url`, `api_key_env`) or
 on the command line (`rh judge --provider anthropic …`).
 

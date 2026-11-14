@@ -46,12 +46,24 @@ export const DEFAULT_ELEVENLABS_CONFIG: Record<AgentKey, ElevenLabsVoiceConfig> 
 };
 
 export const GEMINI_TTS_MODELS = [
+  'gemini-3.8-flash-tts',
+  'gemini-3.8-flash-lite-tts',
   'gemini-3.1-flash-tts-preview',
   'gemini-2.5-flash-preview-tts',
   'gemini-2.5-pro-preview-tts',
 ] as const;
 
 export const DEFAULT_GEMINI_MODEL = GEMINI_TTS_MODELS[0];
+
+// The default before Gemini 3.8 TTS; the settings store moves anyone still on
+// it to the current default.
+export const PREVIOUS_DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-tts-preview';
+
+// Gemini 3.8 TTS reads its input as a verbatim transcript and takes delivery
+// direction in a separate field, through the Interactions API. The 2.5 and 3.1
+// preview models take the direction inside the prompt, through generateContent.
+// Unknown (newer) models are assumed to follow the 3.8 shape.
+export const usesSpeechMetadata = (model: string): boolean => !/^gemini-(2\.5|3\.1)-/.test(model);
 
 export const GEMINI_VOICES: Array<{ id: string; name: string }> = [
   { id: 'Zephyr', name: 'Zephyr — Bright' },

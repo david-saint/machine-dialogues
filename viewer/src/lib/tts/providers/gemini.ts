@@ -1,5 +1,5 @@
 import { AudioCache, buildAudioCacheKey } from '../cache';
-import { GEMINI_VOICES } from '../defaults';
+import { GEMINI_VOICES, usesSpeechMetadata } from '../defaults';
 import { chunkSpeakableText, toSpeakableText } from '../speakable';
 import type {
   GeminiVoiceConfig,
@@ -31,6 +31,19 @@ type GeminiGenerateContentResponse = {
   }>;
   error?: { message?: string };
 };
+
+type GeminiInteractionResponse = {
+  steps?: Array<{
+    type?: string;
+    content?: Array<{ type?: string; data?: string; mime_type?: string }>;
+  }>;
+  error?: { message?: string };
+};
+
+// One chunk of a turn. `prompt` is the direction and transcript in one text,
+// which the preview models are sent as is; it also keys the audio cache for
+// every model. Gemini 3.8 TTS is sent `transcript` and `style` separately.
+type SpeechChunk = { prompt: string; transcript: string; style: string };
 
 export class GeminiProvider implements TTSProvider {
   readonly id = 'gemini' as const;
@@ -134,13 +147,13 @@ export class GeminiProvider implements TTSProvider {
     );
   }
 
-  private async fetchChunkAudio(prompt: string, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
-    const cacheKey = await buildAudioCacheKey(this.id, `${config.model}:${config.voiceName}`, prompt);
+  private async fetchChunkAudio(chunk: SpeechChunk, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
+    const cacheKey = await buildAudioCacheKey(this.id, `${config.model}:${config.voiceName}`, chunk.prompt);
     const inflight = this.inflight.get(cacheKey);
     if (inflight) {
       return inflight;
     }
-    const promise = this.fetchChunkAudioUncached(cacheKey, prompt, config, apiKey).finally(() => {
+    const promise = this.fetchChunkAudioUncached(cacheKey, chunk, config, apiKey).finally(() => {
       this.inflight.delete(cacheKey);
     });
     this.inflight.set(cacheKey, promise);
@@ -149,7 +162,7 @@ export class GeminiProvider implements TTSProvider {
 
   private async fetchChunkAudioUncached(
     cacheKey: string,
-    prompt: string,
+    chunk: SpeechChunk,
     config: GeminiVoiceConfig,
     apiKey: string,
   ): Promise<Blob> {
@@ -158,6 +171,62 @@ export class GeminiProvider implements TTSProvider {
       return cached;
     }
 
+    const blob = usesSpeechMetadata(config.model)
+      ? await this.requestInteraction(chunk, config, apiKey)
+      : await this.requestGenerateContent(chunk.prompt, config, apiKey);
+    await this.cache.set(cacheKey, blob);
+    return blob;
+  }
+
+  // Gemini 3.8 TTS: the transcript is spoken verbatim and the delivery
+  // direction rides along as a speech_metadata annotation.
+  private async requestInteraction(chunk: SpeechChunk, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
+    const response = await fetch(`${GEMINI_API_BASE}/interactions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        input: [
+          {
+            type: 'user_input',
+            content: [
+              {
+                type: 'text',
+                text: chunk.transcript,
+                ...(chunk.style ? { annotations: [{ type: 'speech_metadata', style: chunk.style }] } : {}),
+              },
+            ],
+          },
+        ],
+        response_format: { type: 'audio' },
+        generation_config: { speech_config: [{ voice: config.voiceName }] },
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as GeminiInteractionResponse | null;
+
+    if (!response.ok) {
+      const detail = payload?.error?.message ?? `status ${response.status}`;
+      throw new Error(`Gemini TTS request failed (${detail})`);
+    }
+
+    const audio = (payload?.steps ?? [])
+      .filter((step) => step.type === 'model_output')
+      .flatMap((step) => step.content ?? [])
+      .filter((item) => item.type === 'audio' && item.data)
+      .at(-1);
+    if (!audio?.data) {
+      throw new Error('Gemini TTS response contained no audio');
+    }
+
+    return audioBase64ToBlob(audio.data, audio.mime_type);
+  }
+
+  // The 2.5 and 3.1 preview models: direction and transcript in one prompt.
+  private async requestGenerateContent(prompt: string, config: GeminiVoiceConfig, apiKey: string): Promise<Blob> {
     const response = await fetch(
       `${GEMINI_API_BASE}/models/${config.model}:generateContent`,
       {
@@ -192,9 +261,7 @@ export class GeminiProvider implements TTSProvider {
       throw new Error('Gemini TTS response contained no audio');
     }
 
-    const blob = pcmBase64ToWavBlob(inlineData.data, parseSampleRate(inlineData.mimeType));
-    await this.cache.set(cacheKey, blob);
-    return blob;
+    return audioBase64ToBlob(inlineData.data, inlineData.mimeType);
   }
 
   async checkAvailability(opts?: { apiKey?: string }): Promise<ProviderCheck> {
@@ -323,14 +390,39 @@ const buildChunkPrompts = (
   rawText: string,
   config: GeminiVoiceConfig,
   context?: SpeakerContext,
-): string[] => {
+): SpeechChunk[] => {
   const text = toSpeakableText(rawText);
   if (!text) {
     return [];
   }
-  return chunkSpeakableText(text).map((chunk, index) =>
-    buildDebatePrompt(config.styleInstruction, chunk, context, index > 0),
-  );
+  return chunkSpeakableText(text).map((chunk, index) => ({
+    prompt: buildDebatePrompt(config.styleInstruction, chunk, context, index > 0),
+    transcript: chunk,
+    style: buildSpeechStyle(config.styleInstruction, context, index > 0),
+  }));
+};
+
+const resolveStyleInstruction = (styleInstruction: string, context?: SpeakerContext): string =>
+  styleInstruction
+    .replaceAll('{speaker}', context?.speakerName ?? 'a debater')
+    .replaceAll('{opponent}', context?.opponentName ?? 'your opponent')
+    .trim()
+    .replace(/[:\s]+$/, '');
+
+// Delivery direction for Gemini 3.8 TTS, which takes it apart from the
+// transcript. Later chunks of a turn are told they continue the same speech.
+export const buildSpeechStyle = (
+  styleInstruction: string,
+  context?: SpeakerContext,
+  isContinuation = false,
+): string => {
+  const instruction = resolveStyleInstruction(styleInstruction, context);
+  if (!instruction) {
+    return '';
+  }
+  return isContinuation
+    ? `${instruction}. This passage continues the same speech: keep exactly the same voice, volume, energy, and pacing as the passage before it.`
+    : `${instruction}.`;
 };
 
 // Vague prompts can make the model read the style direction aloud; the docs'
@@ -342,11 +434,7 @@ export const buildDebatePrompt = (
   context?: SpeakerContext,
   isContinuation = false,
 ): string => {
-  const instruction = styleInstruction
-    .replaceAll('{speaker}', context?.speakerName ?? 'a debater')
-    .replaceAll('{opponent}', context?.opponentName ?? 'your opponent')
-    .trim()
-    .replace(/[:\s]+$/, '');
+  const instruction = resolveStyleInstruction(styleInstruction, context);
 
   if (!instruction) {
     return text;
@@ -371,13 +459,18 @@ const parseSampleRate = (mimeType?: string): number => {
   return match ? Number(match[1]) : 24000;
 };
 
-// The API returns headerless 16-bit mono PCM; HTMLAudioElement needs a RIFF/WAV wrapper.
-const pcmBase64ToWavBlob = (base64: string, sampleRate: number): Blob => {
+// Gemini 3.8 TTS returns a complete WAV file; the preview models return
+// headerless 16-bit mono PCM, which HTMLAudioElement needs wrapped in RIFF/WAV.
+const audioBase64ToBlob = (base64: string, mimeType?: string): Blob => {
   const bytes = atob(base64);
   const pcm = new Uint8Array(bytes.length);
   for (let i = 0; i < bytes.length; i += 1) {
     pcm[i] = bytes.charCodeAt(i);
   }
+  if (bytes.startsWith('RIFF')) {
+    return new Blob([pcm], { type: 'audio/wav' });
+  }
+  const sampleRate = parseSampleRate(mimeType);
 
   const numChannels = 1;
   const bytesPerSample = 2;

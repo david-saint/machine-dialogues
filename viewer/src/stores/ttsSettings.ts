@@ -9,6 +9,8 @@ import {
   DEFAULT_PROVIDER,
   DEFAULT_WEBSPEECH_CONFIG,
   LEGACY_GEMINI_STYLE_INSTRUCTIONS,
+  DEFAULT_GEMINI_MODEL,
+  PREVIOUS_DEFAULT_GEMINI_MODEL,
 } from '../lib/tts/defaults';
 import type {
   AgentKey,
@@ -131,14 +133,18 @@ export const useTTSSettingsStore = create<TTSSettingsState>()(
     }),
     {
       name: 'tts-settings-v1',
-      version: 2,
-      migrate: (persisted) => {
+      version: 3,
+      migrate: (persisted, version) => {
         const state = persisted as Partial<TTSSettingsState>;
         if (state.gemini) {
           for (const agent of ['agentA', 'agentB'] as AgentKey[]) {
             const config = state.gemini[agent];
             if (config && LEGACY_GEMINI_STYLE_INSTRUCTIONS.includes(config.styleInstruction)) {
               config.styleInstruction = DEFAULT_GEMINI_STYLE_INSTRUCTION;
+            }
+            // v3: Gemini 3.8 TTS became the default model.
+            if (config && version < 3 && config.model === PREVIOUS_DEFAULT_GEMINI_MODEL) {
+              config.model = DEFAULT_GEMINI_MODEL;
             }
           }
         }
